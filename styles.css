@@ -297,7 +297,7 @@ select,.stepper,.segmented button,.chip-row button{
   .bottom-nav button small{font-size:8px}
 }
 
-/* Beatronome v0.5 - Basic samples, Tuner, Mini Mode */
+/* Beatronome v0.6 - Output Boost, iOS Playback Session, Basic samples, Tuner, Mini Mode */
 .topbar-actions{display:flex;align-items:center;gap:8px}
 .mini-launch{font-size:17px}
 .bottom-nav{grid-template-columns:repeat(5,1fr)}

@@ -1,30 +1,16 @@
-# Beatronome v0.5
+# Beatronome v0.6
 
-Jazz UI 기반의 메트로놈 · 리듬 트레이너 · 드럼 그루브 · 기타/베이스 튜너 PWA입니다.
+## 이번 패치
+- 전체 출력 부스트 50~250%
+- Web Audio 출력에 리미터/컴프레서 추가
+- iOS/iPadOS Audio Session API가 지원되는 환경에서 `playback` 모드를 자동 요청
+- iPhone 옆면 무음 스위치가 켜진 상태에서도 재생되도록 대응
+- 튜너 마이크 사용 중에는 `play-and-record`, 종료 후 `playback`으로 복귀
+- PWA 복귀/재생 시 Audio Session 재설정
 
-## v0.5 주요 기능
-- `Basic · Sample` 클릭 사운드: 사용자 제공 녹음에서 추출한 강세/약세/일반 샘플
-- 세분박 6종: 4분, 8분, 3연음, 3연음(1·3), 16분, 16분(1·4)
-- Guitar/Bass Tuner
-  - 일렉기타 / 어쿠스틱기타
-  - 베이스 4현 / 5현 / 6현
-  - Chromatic
-  - Standard, Drop D/C#/C/B, 반음/온음 다운, D/C#/C Standard, Open G/D/E/C, DADGAD 등
-  - A4 430~450Hz 보정
-  - 줄별 기준음 재생
-  - Custom tuning: 각 줄 반음 단위 수정
-- Mini Mode
-  - BPM, Start/Stop, +/- BPM, Tap, Mute만 표시하는 악보 연습용 작은 화면
-  - 갤럭시에서는 `최근 앱 → Beatronome 아이콘 → 팝업 화면으로 보기`와 함께 사용 권장
-- 기존 Groove Engine / Meter Chain / Training / Presets 유지
+## 업데이트
+기존 Beatronome 저장소에 파일을 모두 덮어쓴 후 GitHub Desktop에서 Commit → Push origin 하세요.
+브라우저에서 한 번 새로고침(Ctrl+F5)하면 v0.6 캐시로 갱신됩니다.
 
-## 다른 앱 위에 표시 관련
-Beatronome은 PWA이므로 Android의 `SYSTEM_ALERT_WINDOW` 권한을 직접 요청할 수 없습니다. 완전한 시스템 오버레이는 네이티브 Android 앱이 필요합니다. 현재 PWA에서는 삼성 갤럭시의 팝업 보기/분할 화면 + Beatronome Mini Mode 조합을 권장합니다.
-
-## GitHub Pages 업데이트
-1. 이 ZIP의 파일 전체를 기존 `Beatronome` 저장소 폴더에 덮어쓰기
-2. GitHub Desktop에서 `Commit to main`
-3. `Push origin`
-4. 사이트에서 한 번 새로고침. v0.5 Service Worker가 이전 캐시를 자동 교체합니다.
-
-마이크 튜너는 HTTPS 환경(GitHub Pages)에서 권한 허용 후 사용할 수 있습니다.
+## iPhone 참고
+최신 iOS의 Safari/PWA는 Audio Session API의 `playback` 타입을 지원하면 무음 스위치의 영향을 받지 않도록 설정할 수 있습니다. 구형 iOS 또는 일부 WebKit 상태에서는 시스템 정책/버그로 예외가 있을 수 있습니다.

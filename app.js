@@ -124,7 +124,7 @@
   ];
 
   const defaults = {
-    bpm:120, beatsPerBar:4, denominator:4, subdivision:1, sound:'classic', volume:.82,
+    bpm:120, beatsPerBar:4, denominator:4, subdivision:1, sound:'classic', volume:.82, outputBoost:1,
     pattern:makePattern(4), meterChainEnabled:false, meterChain:[],
     playbackMode:'both',
     groove:{
@@ -163,6 +163,7 @@
     merged.meterChainEnabled=!!obj?.meterChainEnabled;
     if(merged.meterChainEnabled&&!merged.meterChain.length) merged.meterChain=[normalizeMeter({beats:merged.beatsPerBar,denominator:merged.denominator,pattern:merged.pattern})];
     merged.playbackMode=['metro','drum','both'].includes(merged.playbackMode)?merged.playbackMode:'both';
+    merged.outputBoost=clamp(Number(merged.outputBoost ?? 1),.5,2.5);
     merged.groove.volume=clamp(Number(merged.groove.volume ?? .82),0,1);
     merged.groove.swing=clamp(Number(merged.groove.swing)||0,0,75);
     merged.groove.humanize=clamp(Number(merged.groove.humanize)||0,0,100);
@@ -188,7 +189,7 @@
 
   let playing=false,currentBeat=-1,currentDrumStep=-1,elapsed=0,trainingExpanded=true,selectedChainIndex=0;
   let playbackChainIndex=0,playbackChainBarCount=0,visualChainIndex=-1,visualChainBarCount=0;
-  let audioCtx=null,master=null,noiseCache=null,scheduler=null,nextNoteTime=0,stepIndex=0,barIndex=0,startTime=0,sessionBaseBpm=state.bpm,tempoDir=1;
+  let audioCtx=null,master=null,limiter=null,noiseCache=null,scheduler=null,nextNoteTime=0,stepIndex=0,barIndex=0,startTime=0,sessionBaseBpm=state.bpm,tempoDir=1;
   let wakeLock=null,visualQueue=[],drumVisualQueue=[],rafId=null,tapTimes=[],toastTimer=null,drag=null,dialDragging=false,repeatDelay=null,repeatTimer=null;
   let selectedGenre=state.groove.genre||'Rock';
   let basicBuffers={},basicLoading=null,miniMuted=false;
@@ -259,7 +260,7 @@
     const count=['randomMuteEnabled','internalEnabled','autoTempoEnabled','timerEnabled','gradualEnabled'].filter(k=>t[k]).length;$('trainingCount').textContent=count;$('trainingCount').classList.toggle('hidden',count===0);$('trainingList').classList.toggle('hidden',!trainingExpanded);$('trainingChevron').textContent=trainingExpanded?'⌃':'⌄';
   }
   function renderSound(){
-    const g=$('soundGrid');g.innerHTML='';Object.entries(SOUND_LABELS).forEach(([key,label])=>{const b=document.createElement('button');b.dataset.sound=key;b.className=`sound-card card ${state.sound===key?'selected':''}`;b.innerHTML=`<span class="sound-symbol">${key==='basic'?'◉':'♪'}</span><strong>${label}</strong><span>${state.sound===key?'✓ 사용 중':key==='basic'?'녹음 샘플 · 강/약/일반':'미리듣기'}</span>`;b.onclick=async()=>{state.sound=key;persist();renderSound();renderCore();await ensureAudio();if(key==='basic')await loadBasicSamples();synthClick(audioCtx.currentTime+.03,key,true,state.volume,'strong',SUBDIVISIONS[state.subdivision]?.bank||1);};g.appendChild(b);});$('volume').value=Math.round(state.volume*100);$('volumeOut').textContent=`${Math.round(state.volume*100)}%`;setRangeStyle($('volume'),10,100,Math.round(state.volume*100));
+    const g=$('soundGrid');g.innerHTML='';Object.entries(SOUND_LABELS).forEach(([key,label])=>{const b=document.createElement('button');b.dataset.sound=key;b.className=`sound-card card ${state.sound===key?'selected':''}`;b.innerHTML=`<span class="sound-symbol">${key==='basic'?'◉':'♪'}</span><strong>${label}</strong><span>${state.sound===key?'✓ 사용 중':key==='basic'?'녹음 샘플 · 강/약/일반':'미리듣기'}</span>`;b.onclick=async()=>{state.sound=key;persist();renderSound();renderCore();await ensureAudio();if(key==='basic')await loadBasicSamples();synthClick(audioCtx.currentTime+.03,key,true,state.volume,'strong',SUBDIVISIONS[state.subdivision]?.bank||1);};g.appendChild(b);});$('volume').value=Math.round(state.volume*100);$('volumeOut').textContent=`${Math.round(state.volume*100)}%`;setRangeStyle($('volume'),10,100,Math.round(state.volume*100));if($('outputBoost')){$('outputBoost').value=Math.round(state.outputBoost*100);$('outputBoostOut').textContent=`${Math.round(state.outputBoost*100)}%`;setRangeStyle($('outputBoost'),50,250,Math.round(state.outputBoost*100));}
   }
 
   function applyGroovePreset(preset){
@@ -333,12 +334,12 @@
   }
   function renderTunerStringsOnly(){if(state.tuner.instrument==='chromatic')return;$$('#tunerStrings .tuner-string').forEach((b,i)=>b.classList.toggle('active',i===tunerActiveString));}
   async function startTunerMic(){
-    if(tunerStream)return;if(playing)stop();if(!navigator.mediaDevices?.getUserMedia){notify('이 브라우저는 마이크 튜너를 지원하지 않습니다.');return;}try{await ensureAudio();tunerStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});tunerSource=audioCtx.createMediaStreamSource(tunerStream);tunerAnalyser=audioCtx.createAnalyser();tunerAnalyser.fftSize=8192;tunerAnalyser.smoothingTimeConstant=.1;tunerSource.connect(tunerAnalyser);$('tunerMicState').textContent='MIC ON';$('tunerMicState').classList.add('on');$('toggleTunerMic').textContent='튜너 정지';$('toggleTunerMic').classList.add('on');const buf=new Float32Array(tunerAnalyser.fftSize);let last=0;const loop=ts=>{if(!tunerStream)return;if(ts-last>85){tunerAnalyser.getFloatTimeDomainData(buf);updateTunerDisplay(detectPitch(buf,audioCtx.sampleRate));last=ts;}tunerRaf=requestAnimationFrame(loop);};tunerRaf=requestAnimationFrame(loop);}catch(e){console.warn(e);notify('마이크 권한을 허용해주세요.');stopTunerMic();}
+    if(tunerStream)return;if(playing)stop();if(!navigator.mediaDevices?.getUserMedia){notify('이 브라우저는 마이크 튜너를 지원하지 않습니다.');return;}try{await ensureAudio();configureIOSAudioSession('play-and-record');tunerStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});tunerSource=audioCtx.createMediaStreamSource(tunerStream);tunerAnalyser=audioCtx.createAnalyser();tunerAnalyser.fftSize=8192;tunerAnalyser.smoothingTimeConstant=.1;tunerSource.connect(tunerAnalyser);$('tunerMicState').textContent='MIC ON';$('tunerMicState').classList.add('on');$('toggleTunerMic').textContent='튜너 정지';$('toggleTunerMic').classList.add('on');const buf=new Float32Array(tunerAnalyser.fftSize);let last=0;const loop=ts=>{if(!tunerStream)return;if(ts-last>85){tunerAnalyser.getFloatTimeDomainData(buf);updateTunerDisplay(detectPitch(buf,audioCtx.sampleRate));last=ts;}tunerRaf=requestAnimationFrame(loop);};tunerRaf=requestAnimationFrame(loop);}catch(e){console.warn(e);notify('마이크 권한을 허용해주세요.');stopTunerMic();}
   }
-  function stopTunerMic(){if(tunerRaf)cancelAnimationFrame(tunerRaf);tunerRaf=null;try{tunerSource?.disconnect();}catch{}tunerSource=null;tunerAnalyser=null;if(tunerStream)tunerStream.getTracks().forEach(t=>t.stop());tunerStream=null;tunerActiveString=-1;if($('tunerMicState')){$('tunerMicState').textContent='MIC OFF';$('tunerMicState').classList.remove('on');$('toggleTunerMic').textContent='마이크로 튜닝 시작';$('toggleTunerMic').classList.remove('on');$('tunerTargetText').textContent='목표음을 선택하거나 마이크를 시작하세요';$('tunerNeedle').style.left='50%';$('tunerNeedle').classList.remove('in-tune');$('tunerCents').textContent='0 cents';renderTunerStringsOnly();}}
+  function stopTunerMic(){configureIOSAudioSession('playback');if(tunerRaf)cancelAnimationFrame(tunerRaf);tunerRaf=null;try{tunerSource?.disconnect();}catch{}tunerSource=null;tunerAnalyser=null;if(tunerStream)tunerStream.getTracks().forEach(t=>t.stop());tunerStream=null;tunerActiveString=-1;if($('tunerMicState')){$('tunerMicState').textContent='MIC OFF';$('tunerMicState').classList.remove('on');$('toggleTunerMic').textContent='마이크로 튜닝 시작';$('toggleTunerMic').classList.remove('on');$('tunerTargetText').textContent='목표음을 선택하거나 마이크를 시작하세요';$('tunerNeedle').style.left='50%';$('tunerNeedle').classList.remove('in-tune');$('tunerCents').textContent='0 cents';renderTunerStringsOnly();}}
 
   function setMiniMode(on){document.body.classList.toggle('mini-mode',!!on);$('settingsModal')?.classList.add('hidden');renderCore();}
-  function toggleMiniMute(){miniMuted=!miniMuted;if(master)master.gain.setTargetAtTime(miniMuted?0:.94,audioCtx.currentTime,.015);renderCore();}
+  function toggleMiniMute(){miniMuted=!miniMuted;if(master&&audioCtx)master.gain.setTargetAtTime(miniMuted?0:state.outputBoost,audioCtx.currentTime,.015);renderCore();}
 
   function renderPresets(){
     const list=$('presetList');list.innerHTML='';if(!presets.length){list.innerHTML='<div class="empty-state"><div class="big">☆</div><strong>아직 저장된 프리셋이 없습니다.</strong><span>Meter Chain · Training · Groove 패턴까지 함께 저장됩니다.</span></div>';return;}
@@ -346,7 +347,31 @@
   }
   function renderAll(){renderCore();renderTraining();renderSound();renderGroove();renderTuner();renderPresets();}
 
-  async function ensureAudio(){if(!audioCtx){const Ctx=window.AudioContext||window.webkitAudioContext;audioCtx=new Ctx({latencyHint:'interactive'});master=audioCtx.createGain();master.gain.value=miniMuted?0:.94;master.connect(audioCtx.destination);}if(audioCtx.state==='suspended')await audioCtx.resume();if(state.sound==='basic')await loadBasicSamples();}
+  function configureIOSAudioSession(mode='playback',forceCycle=false){
+    try{
+      const session=navigator.audioSession;
+      if(!session)return;
+      if(forceCycle&&mode==='playback'){
+        try{session.type='ambient';}catch{}
+        setTimeout(()=>{try{session.type='playback';}catch{}},0);
+      }else session.type=mode;
+    }catch{}
+  }
+  function applyOutputBoost(){if(master&&audioCtx)master.gain.setTargetAtTime(miniMuted?0:state.outputBoost,audioCtx.currentTime,.012);}
+  async function ensureAudio(){
+    configureIOSAudioSession('playback');
+    if(!audioCtx){
+      const Ctx=window.AudioContext||window.webkitAudioContext;audioCtx=new Ctx({latencyHint:'interactive'});
+      master=audioCtx.createGain();master.gain.value=miniMuted?0:state.outputBoost;
+      limiter=audioCtx.createDynamicsCompressor();
+      limiter.threshold.value=-3;limiter.knee.value=9;limiter.ratio.value=12;limiter.attack.value=.002;limiter.release.value=.12;
+      master.connect(limiter).connect(audioCtx.destination);
+    }
+    if(audioCtx.state==='suspended')await audioCtx.resume();
+    applyOutputBoost();
+    configureIOSAudioSession('playback');
+    if(state.sound==='basic')await loadBasicSamples();
+  }
   async function loadBasicSamples(){
     if(Object.keys(basicBuffers).length>=18)return basicBuffers;if(basicLoading)return basicLoading;
     basicLoading=(async()=>{const roles=['strong','weak','normal'];for(let bank=1;bank<=6;bank++){for(const role of roles){const key=`${bank}:${role}`;if(basicBuffers[key])continue;const res=await fetch(`./audio/basic/bank${bank}_${role}.wav`,{cache:'force-cache'});if(!res.ok)throw new Error(`Basic sample ${key} load failed`);basicBuffers[key]=await audioCtx.decodeAudioData(await res.arrayBuffer());}}return basicBuffers;})().catch(err=>{console.warn(err);notify('Basic 샘플을 불러오지 못했습니다.');return basicBuffers;}).finally(()=>{basicLoading=null;});
@@ -401,7 +426,7 @@
     return meter;
   }
 
-  async function start(){
+  async function start(){configureIOSAudioSession('playback',true);
     if(tunerStream)stopTunerMic();await ensureAudio();ensureNormalPattern();if(state.meterChainEnabled)ensureChain();stepIndex=0;barIndex=0;playbackChainIndex=0;playbackChainBarCount=0;visualChainIndex=state.meterChainEnabled?0:-1;visualChainBarCount=0;selectedChainIndex=state.meterChainEnabled?0:selectedChainIndex;sessionBaseBpm=state.bpm;tempoDir=state.training.tempoMode==='down'?-1:1;nextNoteTime=audioCtx.currentTime+.06;startTime=audioCtx.currentTime;visualQueue=[];drumVisualQueue=[];elapsed=0;playing=true;currentBeat=-1;currentDrumStep=-1;requestWakeLock();
     const tick=()=>{const ahead=.11;while(nextNoteTime<audioCtx.currentTime+ahead){const m=scheduleStep(nextNoteTime),beatDuration=(60/state.bpm)*(4/m.denominator),subInfo=SUBDIVISIONS[state.subdivision]||SUBDIVISIONS[1];nextNoteTime+=beatDuration/subInfo.count;}};tick();scheduler=setInterval(tick,25);renderCore();startVisualLoop();
   }
@@ -436,7 +461,7 @@
   $('bpmDrag').onpointerdown=e=>{drag={x:e.clientX,y:e.clientY,bpm:state.bpm};$('bpmDrag').setPointerCapture?.(e.pointerId);};$('bpmDrag').onpointermove=e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=drag.y-e.clientY;setBpm(drag.bpm+Math.round((dx+dy*.65)/6));};$('bpmDrag').onpointerup=$('bpmDrag').onpointercancel=()=>drag=null;$('bpmDrag').onwheel=e=>{e.preventDefault();setBpm(state.bpm+(e.deltaY<0?1:-1));};
   function dialToBpm(e){const r=$('tempoDial').getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let deg=Math.atan2(e.clientY-cy,e.clientX-cx)*180/Math.PI+90;if(deg>180)deg-=360;deg=clamp(deg,-135,135);setBpm(BPM_MIN+(deg+135)/270*(BPM_MAX-BPM_MIN));}
   $('tempoDial').onpointerdown=e=>{dialDragging=true;$('tempoDial').setPointerCapture?.(e.pointerId);dialToBpm(e);};$('tempoDial').onpointermove=e=>{if(dialDragging)dialToBpm(e);};$('tempoDial').onpointerup=$('tempoDial').onpointercancel=()=>dialDragging=false;
-  $('trainingToggle').onclick=()=>{trainingExpanded=!trainingExpanded;renderTraining();};$$('[data-toggle]').forEach(btn=>btn.onclick=()=>setTraining(btn.dataset.toggle,!state.training[btn.dataset.toggle]));$('randomMute').oninput=e=>setTraining('randomMute',Number(e.target.value));$('gradualTarget').oninput=e=>setTraining('gradualTarget',Number(e.target.value));$('volume').oninput=e=>{state.volume=Number(e.target.value)/100;persist();renderSound();};
+  $('trainingToggle').onclick=()=>{trainingExpanded=!trainingExpanded;renderTraining();};$$('[data-toggle]').forEach(btn=>btn.onclick=()=>setTraining(btn.dataset.toggle,!state.training[btn.dataset.toggle]));$('randomMute').oninput=e=>setTraining('randomMute',Number(e.target.value));$('gradualTarget').oninput=e=>setTraining('gradualTarget',Number(e.target.value));$('volume').oninput=e=>{state.volume=Number(e.target.value)/100;persist();renderSound();};$('outputBoost').oninput=e=>{state.outputBoost=Number(e.target.value)/100;persist();applyOutputBoost();renderSound();};
   $$('.stepper').forEach(s=>s.querySelectorAll('[data-step]').forEach(btn=>btn.onclick=()=>{const k=s.dataset.stepper,delta=Number(btn.dataset.step),bounds={soundBars:[1,16],muteBars:[1,16],tempoStep:[1,20],everyBars:[1,16],targetBpm:[30,300]}[k];setTraining(k,clamp(state.training[k]+delta,bounds[0],bounds[1]));}));
   $$('#tempoMode button').forEach(b=>b.onclick=()=>setTraining('tempoMode',b.dataset.mode));$$('#gradualSeconds button').forEach(b=>b.onclick=()=>setTraining('gradualSeconds',Number(b.dataset.sec)));$$('#timerMinutes button').forEach(b=>b.onclick=()=>setTraining('timerMinutes',Number(b.dataset.min)));
 
@@ -456,7 +481,7 @@
   $('openMiniMode').onclick=()=>setMiniMode(true);$('settingsMiniMode').onclick=()=>setMiniMode(true);$('closeMiniMode').onclick=()=>setMiniMode(false);$('miniPlay').onclick=()=>playing?stop():start();$('miniTap').onclick=()=>$('tapTempo').click();$('miniMinus').onpointerdown=()=>startRepeat(-1);$('miniPlus').onpointerdown=()=>startRepeat(1);['pointerup','pointercancel','pointerleave'].forEach(ev=>{$('miniMinus').addEventListener(ev,stopRepeat);$('miniPlus').addEventListener(ev,stopRepeat);});$('miniMute').onclick=toggleMiniMute;
 
   $$('.bottom-nav button').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));$('savePreset').onclick=savePreset;$('openSettings').onclick=()=>$('settingsModal').classList.remove('hidden');$('closeSettings').onclick=()=>$('settingsModal').classList.add('hidden');$('settingsModal').onclick=e=>{if(e.target===$('settingsModal'))$('settingsModal').classList.add('hidden');};$('resetSettings').onclick=resetSettings;
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&playing)requestWakeLock();});window.addEventListener('beforeunload',()=>{if(scheduler)clearInterval(scheduler);if(tunerStream)stopTunerMic();if(audioCtx)audioCtx.close();});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){configureIOSAudioSession('playback',true);if(playing)requestWakeLock();}});window.addEventListener('pageshow',()=>configureIOSAudioSession('playback',true));window.addEventListener('beforeunload',()=>{if(scheduler)clearInterval(scheduler);if(tunerStream)stopTunerMic();if(audioCtx)audioCtx.close();});
 
   ensureNormalPattern();if(state.meterChainEnabled)ensureChain();renderAll();
 })();

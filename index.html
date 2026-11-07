@@ -8,10 +8,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Beatronome" />
   <title>Beatronome</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=0.5" />
+  <link rel="manifest" href="./manifest.webmanifest?v=0.6" />
   <link rel="icon" href="./favicon.png" type="image/png" />
   <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
-  <link rel="stylesheet" href="./styles.css?v=0.5" />
+  <link rel="stylesheet" href="./styles.css?v=0.6" />
 </head>
 <body>
 <div id="app">
@@ -134,6 +134,8 @@
       <div class="page-title"><div><span class="eyebrow">SOUND</span><h2>클릭 사운드</h2></div><span class="page-symbol">♪</span></div>
       <div class="sound-grid" id="soundGrid"></div>
       <div class="card volume-card"><div class="section-heading inline"><div class="training-icon">◖</div><div><span class="eyebrow">VOLUME</span><h2>클릭 음량</h2></div></div><div class="range-wrap"><input id="volume" type="range" min="10" max="100" step="5"><output id="volumeOut"></output></div></div>
+      <div class="card volume-card"><div class="section-heading inline"><div class="training-icon">⇈</div><div><span class="eyebrow">MASTER BOOST</span><h2>전체 출력 부스트</h2></div></div><div class="range-wrap"><input id="outputBoost" type="range" min="50" max="250" step="10"><output id="outputBoostOut"></output></div><div class="groove-tip">메트로놈·드럼·튜너 기준음을 함께 증폭합니다. 150% 이상에서는 기기 스피커에 따라 왜곡이 생길 수 있습니다.</div></div>
+      <div class="card volume-card"><div class="section-heading inline"><div class="training-icon">◉</div><div><span class="eyebrow">IPHONE AUDIO</span><h2>무음 스위치 대응</h2></div></div><div class="groove-tip">지원되는 iPhone/iPad에서는 재생 시 Audio Session을 <strong>Playback</strong>으로 전환해 옆면 무음 스위치가 켜져 있어도 소리가 나도록 시도합니다. 구형 iOS/브라우저에서는 시스템 제한으로 동작이 다를 수 있습니다.</div></div>
     </section>
 
     <section id="tabGroove" class="tab-page">
@@ -231,10 +233,10 @@
     <div class="mini-help">갤럭시: 최근 앱 → Beatronome 아이콘 → 팝업 화면으로 보기</div>
   </section>
 
-  <div class="modal-backdrop hidden" id="settingsModal"><div class="settings-sheet"><div class="sheet-handle"></div><div class="page-title"><div><span class="eyebrow">SETTINGS</span><h2>앱 설정</h2></div><button class="icon-button" id="closeSettings">×</button></div><div class="settings-item"><span class="settings-icon">⌂</span><div><strong>PWA 홈 화면 설치</strong><span>브라우저 메뉴에서 ‘홈 화면에 추가’를 선택하면 앱처럼 사용할 수 있습니다.</span></div></div><div class="settings-item"><span class="settings-icon">☀</span><div><strong>화면 자동 꺼짐 방지</strong><span>재생 중 지원되는 기기에서 Screen Wake Lock을 자동 사용합니다.</span></div></div><div class="settings-item"><span class="settings-icon">▣</span><div><strong>악보 연습 Mini Mode</strong><span>Beatronome을 작은 컨트롤 화면으로 바꿉니다. 갤럭시에서는 최근 앱 → Beatronome 아이콘 → ‘팝업 화면으로 보기’를 함께 사용하면 PDF 악보 위에 작은 창으로 둘 수 있습니다.</span></div><button class="outline-small" id="settingsMiniMode">열기</button></div><div class="settings-item"><span class="settings-icon">↺</span><div><strong>현재 설정 초기화</strong><span>프리셋은 유지하고 메트로놈/훈련 설정만 기본값으로 되돌립니다.</span></div><button class="outline-small" id="resetSettings">초기화</button></div><div class="version-note">Beatronome v0.5<br>Basic Sample Click · Guitar/Bass Tuner · Mini Mode<br>Groove Engine · Meter Chain · Training · Jazz UI</div></div></div>
+  <div class="modal-backdrop hidden" id="settingsModal"><div class="settings-sheet"><div class="sheet-handle"></div><div class="page-title"><div><span class="eyebrow">SETTINGS</span><h2>앱 설정</h2></div><button class="icon-button" id="closeSettings">×</button></div><div class="settings-item"><span class="settings-icon">⌂</span><div><strong>PWA 홈 화면 설치</strong><span>브라우저 메뉴에서 ‘홈 화면에 추가’를 선택하면 앱처럼 사용할 수 있습니다.</span></div></div><div class="settings-item"><span class="settings-icon">☀</span><div><strong>화면 자동 꺼짐 방지</strong><span>재생 중 지원되는 기기에서 Screen Wake Lock을 자동 사용합니다.</span></div></div><div class="settings-item"><span class="settings-icon">▣</span><div><strong>악보 연습 Mini Mode</strong><span>Beatronome을 작은 컨트롤 화면으로 바꿉니다. 갤럭시에서는 최근 앱 → Beatronome 아이콘 → ‘팝업 화면으로 보기’를 함께 사용하면 PDF 악보 위에 작은 창으로 둘 수 있습니다.</span></div><button class="outline-small" id="settingsMiniMode">열기</button></div><div class="settings-item"><span class="settings-icon">↺</span><div><strong>현재 설정 초기화</strong><span>프리셋은 유지하고 메트로놈/훈련 설정만 기본값으로 되돌립니다.</span></div><button class="outline-small" id="resetSettings">초기화</button></div><div class="version-note">Beatronome v0.6<br>250% Output Boost · iPhone Silent-Switch Playback<br>Basic Sample Click · Guitar/Bass Tuner · Mini Mode<br>Groove Engine · Meter Chain · Training · Jazz UI</div></div></div>
   <div class="toast hidden" id="toast"></div>
 </div>
-<script src="./app.js?v=0.5"></script>
-<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=0.5',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}));}</script>
+<script src="./app.js?v=0.6"></script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=0.6',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}));}</script>
 </body>
 </html>
