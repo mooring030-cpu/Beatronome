@@ -8,10 +8,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Beatronome" />
   <title>Beatronome</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=0.3" />
+  <link rel="manifest" href="./manifest.webmanifest?v=0.4" />
   <link rel="icon" href="./favicon.png" type="image/png" />
   <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
-  <link rel="stylesheet" href="./styles.css?v=0.3" />
+  <link rel="stylesheet" href="./styles.css?v=0.4" />
 </head>
 <body>
 <div id="app">
@@ -136,6 +136,46 @@
       <div class="card volume-card"><div class="section-heading inline"><div class="training-icon">◖</div><div><span class="eyebrow">VOLUME</span><h2>클릭 음량</h2></div></div><div class="range-wrap"><input id="volume" type="range" min="10" max="100" step="5"><output id="volumeOut"></output></div></div>
     </section>
 
+    <section id="tabGroove" class="tab-page">
+      <div class="page-title"><div><span class="eyebrow">GROOVE ENGINE</span><h2>드럼 & 장르</h2></div><span class="page-symbol">♬</span></div>
+
+      <section class="groove-hero card">
+        <div class="groove-hero-head">
+          <div><span class="eyebrow">PLAYBACK</span><h3>재생 모드</h3></div>
+          <span id="grooveStatusBadge" class="groove-status-badge">BOTH</span>
+        </div>
+        <div class="segmented groove-mode" id="playbackMode">
+          <button data-playback="metro">METRO</button>
+          <button data-playback="drum">DRUM</button>
+          <button data-playback="both">BOTH</button>
+        </div>
+      </section>
+
+      <section class="card groove-library">
+        <div class="section-heading"><div><span class="eyebrow">STYLE LIBRARY</span><h2>장르 프리셋</h2></div><span class="muted">선택 후 자유 편집</span></div>
+        <div class="genre-scroll" id="genreChips"></div>
+        <div class="groove-preset-grid" id="groovePresetGrid"></div>
+      </section>
+
+      <section class="card groove-controls">
+        <div class="section-heading"><div><span class="eyebrow">FEEL</span><h2>그루브 설정</h2></div><span class="muted" id="selectedGrooveName">Custom</span></div>
+        <div class="groove-control-grid">
+          <label>Drum Kit<select id="drumKit"></select></label>
+          <label>Groove Volume<div class="mini-range"><input id="drumVolume" type="range" min="0" max="100" step="5"><output id="drumVolumeOut"></output></div></label>
+          <label>Swing<div class="mini-range"><input id="swingAmount" type="range" min="0" max="75" step="1"><output id="swingAmountOut"></output></div></label>
+          <label>Humanize<div class="mini-range"><input id="humanizeAmount" type="range" min="0" max="100" step="5"><output id="humanizeAmountOut"></output></div></label>
+          <label>Drum Dropout<div class="mini-range"><input id="drumDropout" type="range" min="0" max="80" step="5"><output id="drumDropoutOut"></output></div></label>
+        </div>
+        <div class="groove-tip">Swing은 짝수 16분 스텝을 뒤로 밀어 셔플감을 만들고, Humanize는 타이밍과 세기를 미세하게 흔듭니다.</div>
+      </section>
+
+      <section class="card sequencer-card">
+        <div class="section-heading"><div><span class="eyebrow">16-STEP EDITOR</span><h2>드럼 패턴</h2></div><button class="outline-small" id="clearDrums">전체 지우기</button></div>
+        <div class="sequencer-help"><span>● ON</span><span>각 악기 MUTE / VOL 개별 설정</span><span>1·5·9·13 = 박 시작</span></div>
+        <div class="sequencer-wrap" id="sequencer"></div>
+      </section>
+    </section>
+
     <section id="tabPresets" class="tab-page">
       <div class="page-title"><div><span class="eyebrow">PRESETS</span><h2>내 연습 설정</h2></div><span class="page-symbol">☆</span></div>
       <div class="save-preset card"><input id="presetName" placeholder="예: 기타 크로매틱 80→140"><button class="primary-small" id="savePreset">현재 설정 저장</button></div>
@@ -143,12 +183,12 @@
     </section>
   </main>
 
-  <nav class="bottom-nav"><button class="active" data-tab="metronome"><span>◉</span><small>메트로놈</small></button><button data-tab="sound"><span>♪</span><small>사운드</small></button><button data-tab="presets"><span>☆</span><small>프리셋</small></button></nav>
+  <nav class="bottom-nav"><button class="active" data-tab="metronome"><span>◉</span><small>메트로놈</small></button><button data-tab="groove"><span>♬</span><small>그루브</small></button><button data-tab="sound"><span>♪</span><small>클릭음</small></button><button data-tab="presets"><span>☆</span><small>프리셋</small></button></nav>
 
-  <div class="modal-backdrop hidden" id="settingsModal"><div class="settings-sheet"><div class="sheet-handle"></div><div class="page-title"><div><span class="eyebrow">SETTINGS</span><h2>앱 설정</h2></div><button class="icon-button" id="closeSettings">×</button></div><div class="settings-item"><span class="settings-icon">⌂</span><div><strong>PWA 홈 화면 설치</strong><span>브라우저 메뉴에서 ‘홈 화면에 추가’를 선택하면 앱처럼 사용할 수 있습니다.</span></div></div><div class="settings-item"><span class="settings-icon">☀</span><div><strong>화면 자동 꺼짐 방지</strong><span>재생 중 지원되는 기기에서 Screen Wake Lock을 자동 사용합니다.</span></div></div><div class="settings-item"><span class="settings-icon">↺</span><div><strong>현재 설정 초기화</strong><span>프리셋은 유지하고 메트로놈/훈련 설정만 기본값으로 되돌립니다.</span></div><button class="outline-small" id="resetSettings">초기화</button></div><div class="version-note">Beatronome v0.3<br>Meter Chain 반복 마디 · Jazz UI · 강제 캐시 갱신<br>다음: Supabase 동기화 · 연습 기록 · Bluetooth 시각 보정</div></div></div>
+  <div class="modal-backdrop hidden" id="settingsModal"><div class="settings-sheet"><div class="sheet-handle"></div><div class="page-title"><div><span class="eyebrow">SETTINGS</span><h2>앱 설정</h2></div><button class="icon-button" id="closeSettings">×</button></div><div class="settings-item"><span class="settings-icon">⌂</span><div><strong>PWA 홈 화면 설치</strong><span>브라우저 메뉴에서 ‘홈 화면에 추가’를 선택하면 앱처럼 사용할 수 있습니다.</span></div></div><div class="settings-item"><span class="settings-icon">☀</span><div><strong>화면 자동 꺼짐 방지</strong><span>재생 중 지원되는 기기에서 Screen Wake Lock을 자동 사용합니다.</span></div></div><div class="settings-item"><span class="settings-icon">↺</span><div><strong>현재 설정 초기화</strong><span>프리셋은 유지하고 메트로놈/훈련 설정만 기본값으로 되돌립니다.</span></div><button class="outline-small" id="resetSettings">초기화</button></div><div class="version-note">Beatronome v0.4<br>Groove Engine · 16-Step Drum Sequencer · Genre Presets<br>Meter Chain · Training · Jazz UI · PWA Cache Refresh</div></div></div>
   <div class="toast hidden" id="toast"></div>
 </div>
-<script src="./app.js?v=0.3"></script>
-<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=0.3',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}));}</script>
+<script src="./app.js?v=0.4"></script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=0.4',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}));}</script>
 </body>
 </html>

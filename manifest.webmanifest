@@ -1,13 +1,13 @@
 {
-  "name": "Beatronome - Rhythm Trainer",
+  "name": "Beatronome",
   "short_name": "Beatronome",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#081019",
-  "theme_color": "#0b1118",
+  "theme_color": "#081019",
   "orientation": "portrait-primary",
-  "description": "Beatronome jazz rhythm trainer with meter chains with per-meter bar repeats, precision metronome and internal-clock practice modes",
+  "description": "Jazz-inspired metronome, rhythm trainer, meter-chain and drum groove practice PWA.",
   "icons": [
     {
       "src": "./icon-192.png",
