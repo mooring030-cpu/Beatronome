@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0a0c" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Beatronome" />
+  <title>Beatronome</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./favicon.png" type="image/png" />
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div><div class="eyebrow">RHYTHM TRAINER</div><h1>Beatronome</h1></div>
+    <button class="icon-button" id="openSettings" aria-label="설정">☰</button>
+  </header>
+
+  <main>
+    <section id="tabMetronome" class="tab-page active">
+      <section class="bpm-card">
+        <div class="bpm-topline"><span id="meterTop">4/4</span><span id="sessionStatus">READY</span></div>
+        <div class="bpm-drag" id="bpmDrag" title="좌우/위아래 드래그 또는 마우스 휠">
+          <span class="note-mark">♩</span><strong id="bpmValue">120</strong><span class="bpm-unit">BPM</span>
+        </div>
+        <div class="tempo-name" id="tempoName">ALLEGRO</div>
+        <div class="bpm-hint">숫자를 좌우·위아래 드래그 / 마우스 휠</div>
+        <div class="tempo-dial" id="tempoDial" aria-label="BPM 다이얼">
+          <div class="dial-face"><span class="dial-marker"></span><span class="dial-center">ROTATE</span></div>
+        </div>
+        <div class="bpm-controls">
+          <button class="round-control" id="minusBpm">−</button>
+          <button class="tap-button" id="tapTempo">TAP</button>
+          <button class="round-control" id="plusBpm">＋</button>
+        </div>
+      </section>
+
+      <section class="beat-section card">
+        <div class="section-heading"><div><span class="eyebrow">BEAT PATTERN</span><h2 id="meterTitle">4/4</h2></div><span class="muted">강박 → 일반 → 무음</span></div>
+        <div class="beat-grid" id="beatGrid"></div>
+        <div class="quick-options">
+          <label>박자<select id="beatsPerBar"></select></label>
+          <label>분모<select id="denominator"><option>2</option><option selected>4</option><option>8</option><option>16</option></select></label>
+          <label>분할<select id="subdivision"><option value="1">♩ 1</option><option value="2">♪ 2</option><option value="3">3연음</option><option value="4">16분</option></select></label>
+        </div>
+      </section>
+
+      <section class="transport-card card">
+        <button class="play-button" id="playButton" aria-label="재생"><span id="playIcon">▶</span></button>
+        <div class="transport-copy"><strong id="playLabel">START</strong><span id="soundSummary">Classic Click · Quarter</span></div>
+      </section>
+
+      <section class="training-panel card">
+        <button class="section-toggle" id="trainingToggle">
+          <div class="section-heading inline"><div class="training-icon">◎</div><div><span class="eyebrow">TRAINING</span><h2>Internal Clock</h2></div><span class="count-badge hidden" id="trainingCount">0</span></div>
+          <span id="trainingChevron">⌃</span>
+        </button>
+        <div class="training-list" id="trainingList">
+          <div class="training-row" data-row="randomMute">
+            <div class="training-row-head"><div class="training-row-icon">⤨</div><div class="training-row-copy"><strong>Random Mute</strong><span>클릭을 무작위로 숨깁니다</span></div><button class="switch" data-toggle="randomMuteEnabled"><i></i></button></div>
+            <div class="training-row-body hidden" data-body="randomMuteEnabled"><div class="range-wrap"><input id="randomMute" type="range" min="0" max="90" step="5"><output id="randomMuteOut"></output></div></div>
+          </div>
+
+          <div class="training-row" data-row="internal">
+            <div class="training-row-head"><div class="training-row-icon">◷</div><div class="training-row-copy"><strong>Internal Clock</strong><span>소리/무음 마디를 반복합니다</span></div><button class="switch" data-toggle="internalEnabled"><i></i></button></div>
+            <div class="training-row-body hidden" data-body="internalEnabled"><div class="dual-inputs"><div class="stepper" data-stepper="soundBars"><span>소리</span><div><button data-step="-1">−</button><strong data-value></strong><button data-step="1">+</button></div></div><div class="stepper" data-stepper="muteBars"><span>무음</span><div><button data-step="-1">−</button><strong data-value></strong><button data-step="1">+</button></div></div></div></div>
+          </div>
+
+          <div class="training-row" data-row="autoTempo">
+            <div class="training-row-head"><div class="training-row-icon">↗</div><div class="training-row-copy"><strong>Auto Tempo</strong><span>설정한 마디마다 BPM을 변경합니다</span></div><button class="switch" data-toggle="autoTempoEnabled"><i></i></button></div>
+            <div class="training-row-body hidden" data-body="autoTempoEnabled">
+              <div class="segmented" id="tempoMode"><button data-mode="up">증가</button><button data-mode="down">감소</button><button data-mode="pyramid">왕복</button></div>
+              <div class="dual-inputs three"><div class="stepper" data-stepper="tempoStep"><span>변화</span><div><button data-step="-1">−</button><strong data-value></strong><button data-step="1">+</button></div></div><div class="stepper" data-stepper="everyBars"><span>마다</span><div><button data-step="-1">−</button><strong data-value></strong><button data-step="1">+</button></div></div><div class="stepper" data-stepper="targetBpm"><span>목표 BPM</span><div><button data-step="-5">−</button><strong data-value></strong><button data-step="5">+</button></div></div></div>
+            </div>
+          </div>
+
+          <div class="training-row" data-row="gradual">
+            <div class="training-row-head"><div class="training-row-icon">◒</div><div class="training-row-copy"><strong>Gradual Mute</strong><span>시간이 지날수록 랜덤 음소거를 늘립니다</span></div><button class="switch" data-toggle="gradualEnabled"><i></i></button></div>
+            <div class="training-row-body hidden" data-body="gradualEnabled">
+              <div class="range-wrap"><input id="gradualTarget" type="range" min="10" max="100" step="5"><output id="gradualTargetOut"></output></div>
+              <div class="chip-row" id="gradualSeconds"><button data-sec="30">30초</button><button data-sec="60">1분</button><button data-sec="120">2분</button><button data-sec="300">5분</button></div>
+            </div>
+          </div>
+
+          <div class="training-row" data-row="timer">
+            <div class="training-row-head"><div class="training-row-icon">◴</div><div class="training-row-copy"><strong>Practice Timer</strong><span>시간이 끝나면 자동 정지합니다</span></div><button class="switch" data-toggle="timerEnabled"><i></i></button></div>
+            <div class="training-row-body hidden" data-body="timerEnabled"><div class="chip-row" id="timerMinutes"><button data-min="5">5분</button><button data-min="10">10분</button><button data-min="15">15분</button><button data-min="20">20분</button><button data-min="30">30분</button><button data-min="45">45분</button><button data-min="60">60분</button></div></div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section id="tabSound" class="tab-page">
+      <div class="page-title"><div><span class="eyebrow">SOUND</span><h2>클릭 사운드</h2></div><span class="page-symbol">♪</span></div>
+      <div class="sound-grid" id="soundGrid"></div>
+      <div class="card volume-card"><div class="section-heading inline"><div class="training-icon">◖</div><div><span class="eyebrow">VOLUME</span><h2>클릭 음량</h2></div></div><div class="range-wrap"><input id="volume" type="range" min="10" max="100" step="5"><output id="volumeOut"></output></div></div>
+    </section>
+
+    <section id="tabPresets" class="tab-page">
+      <div class="page-title"><div><span class="eyebrow">PRESETS</span><h2>내 연습 설정</h2></div><span class="page-symbol">☆</span></div>
+      <div class="save-preset card"><input id="presetName" placeholder="예: 기타 크로매틱 80→140"><button class="primary-small" id="savePreset">현재 설정 저장</button></div>
+      <div class="preset-list" id="presetList"></div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav"><button class="active" data-tab="metronome"><span>◉</span><small>메트로놈</small></button><button data-tab="sound"><span>♪</span><small>사운드</small></button><button data-tab="presets"><span>☆</span><small>프리셋</small></button></nav>
+
+  <div class="modal-backdrop hidden" id="settingsModal"><div class="settings-sheet"><div class="sheet-handle"></div><div class="page-title"><div><span class="eyebrow">SETTINGS</span><h2>앱 설정</h2></div><button class="icon-button" id="closeSettings">×</button></div><div class="settings-item"><span class="settings-icon">⌂</span><div><strong>PWA 홈 화면 설치</strong><span>브라우저 메뉴에서 ‘홈 화면에 추가’를 선택하면 앱처럼 사용할 수 있습니다.</span></div></div><div class="settings-item"><span class="settings-icon">☀</span><div><strong>화면 자동 꺼짐 방지</strong><span>재생 중 지원되는 기기에서 Screen Wake Lock을 자동 사용합니다.</span></div></div><div class="settings-item"><span class="settings-icon">↺</span><div><strong>현재 설정 초기화</strong><span>프리셋은 유지하고 메트로놈/훈련 설정만 기본값으로 되돌립니다.</span></div><button class="outline-small" id="resetSettings">초기화</button></div><div class="version-note">Beatronome v0.1<br>오프라인 PWA · 로컬 프리셋 저장<br>2차: Supabase 동기화 · 연습 기록 · Bluetooth 시각 보정</div></div></div>
+  <div class="toast hidden" id="toast"></div>
+</div>
+<script src="./app.js"></script>
+<script>if ('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));</script>
+</body>
+</html>
