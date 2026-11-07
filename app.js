@@ -19,10 +19,11 @@
   };
 
   const makePattern = (beats) => Array.from({ length: beats }, (_, i) => i === 0 ? 'accent' : 'normal');
-  const makeMeter = (beats = 4, denominator = 4, pattern) => ({
+  const makeMeter = (beats = 4, denominator = 4, pattern, repeatBars = 1) => ({
     id: (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`),
     beats,
     denominator,
+    repeatBars: clamp(Number(repeatBars) || 1, 1, 32),
     pattern: Array.isArray(pattern) ? pattern.slice(0, beats) : makePattern(beats)
   });
 
@@ -81,6 +82,7 @@
       id: m?.id || (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`),
       beats,
       denominator,
+      repeatBars: clamp(Number(m?.repeatBars) || 1, 1, 32),
       pattern: normalizePattern(m?.pattern, beats)
     };
   }
@@ -112,7 +114,9 @@
   let trainingExpanded = true;
   let selectedChainIndex = 0;
   let playbackChainIndex = 0;
+  let playbackChainBarCount = 0;
   let visualChainIndex = -1;
+  let visualChainBarCount = 0;
 
   let audioCtx = null;
   let master = null;
@@ -253,7 +257,7 @@
 
   function chainSummary() {
     if (!state.meterChainEnabled || !state.meterChain.length) return '';
-    const visible = state.meterChain.slice(0, 5).map(m => `${m.beats}/${m.denominator}`).join(' → ');
+    const visible = state.meterChain.slice(0, 5).map(m => `${m.beats}/${m.denominator}${m.repeatBars > 1 ? `×${m.repeatBars}` : ''}`).join(' → ');
     return `${visible}${state.meterChain.length > 5 ? ' → …' : ''}`;
   }
 
@@ -331,7 +335,8 @@
       const accents = meter.pattern.filter(x => x === 'accent').length;
       const mutes = meter.pattern.filter(x => x === 'mute').length;
       btn.className = `meter-chain-chip${i === selectedChainIndex ? ' selected' : ''}${playing && i === visualChainIndex ? ' playing-meter' : ''}`;
-      btn.innerHTML = `<span class="chain-number">${i + 1}</span><strong>${meter.beats}/${meter.denominator}</strong><small>${accents}A${mutes ? ` · ${mutes}M` : ''}</small>`;
+      const repeatProgress = playing && i === visualChainIndex && meter.repeatBars > 1 ? ` · ${Math.min(visualChainBarCount + 1, meter.repeatBars)}/${meter.repeatBars}` : '';
+      btn.innerHTML = `<span class="chain-number">${i + 1}</span><strong>${meter.beats}/${meter.denominator}</strong><em>×${meter.repeatBars}마디${repeatProgress}</em><small>${accents}A${mutes ? ` · ${mutes}M` : ''}</small>`;
       btn.onclick = () => {
         if (playing) stop();
         selectedChainIndex = i;
@@ -344,6 +349,9 @@
     $('chainMoveLeft').disabled = selectedChainIndex <= 0;
     $('chainMoveRight').disabled = selectedChainIndex >= state.meterChain.length - 1;
     $('chainDelete').disabled = state.meterChain.length <= 1;
+    $('chainRepeatValue').textContent = `${state.meterChain[selectedChainIndex].repeatBars}마디`;
+    $('chainRepeatMinus').disabled = state.meterChain[selectedChainIndex].repeatBars <= 1;
+    $('chainRepeatPlus').disabled = state.meterChain[selectedChainIndex].repeatBars >= 32;
   }
 
   function addMeter(beats, denominator) {
@@ -361,7 +369,7 @@
     if (playing) stop();
     ensureChain();
     const source = state.meterChain[selectedChainIndex];
-    const copy = makeMeter(source.beats, source.denominator, source.pattern);
+    const copy = makeMeter(source.beats, source.denominator, source.pattern, source.repeatBars);
     state.meterChain.splice(selectedChainIndex + 1, 0, copy);
     selectedChainIndex += 1;
     persist();
@@ -389,6 +397,15 @@
     }
     state.meterChain.splice(selectedChainIndex, 1);
     selectedChainIndex = clamp(selectedChainIndex, 0, state.meterChain.length - 1);
+    persist();
+    renderCore();
+  }
+
+  function changeSelectedRepeat(delta) {
+    if (playing) stop();
+    ensureChain();
+    const meter = state.meterChain[selectedChainIndex];
+    meter.repeatBars = clamp((Number(meter.repeatBars) || 1) + delta, 1, 32);
     persist();
     renderCore();
   }
@@ -479,7 +496,7 @@
       const a = document.createElement('article');
       a.className = 'preset-card card';
       const detail = normalized.meterChainEnabled && normalized.meterChain.length
-        ? normalized.meterChain.slice(0, 4).map(m => `${m.beats}/${m.denominator}`).join(' → ') + (normalized.meterChain.length > 4 ? ' → …' : '')
+        ? normalized.meterChain.slice(0, 4).map(m => `${m.beats}/${m.denominator}${m.repeatBars > 1 ? `×${m.repeatBars}` : ''}`).join(' → ') + (normalized.meterChain.length > 4 ? ' → …' : '')
         : `${normalized.beatsPerBar}/${normalized.denominator}`;
       a.innerHTML = `<button class="preset-main"><div class="preset-bpm">${normalized.bpm}<small>BPM</small></div><div class="preset-copy"><strong>${escapeHtml(p.name)}</strong><span>${detail} · ${SOUND_LABELS[normalized.sound] || normalized.sound}</span></div></button><button class="danger-icon">×</button>`;
       a.querySelector('.preset-main').onclick = () => loadPreset(p);
@@ -588,6 +605,7 @@
     const t = state.training;
     const meter = getPlaybackMeter();
     const chainIndexForStep = state.meterChainEnabled ? playbackChainIndex : -1;
+    const chainBarForStep = state.meterChainEnabled ? playbackChainBarCount : 0;
     const step = stepIndex;
     const beat = Math.floor(step / state.subdivision);
     const sub = step % state.subdivision;
@@ -617,7 +635,7 @@
       synthClick(time, state.sound, isMain && pat === 'accent', isMain ? state.volume : state.volume * .47);
     }
 
-    visualQueue.push({ time, beat, chainIndex: chainIndexForStep });
+    visualQueue.push({ time, beat, chainIndex: chainIndexForStep, chainBar: chainBarForStep });
 
     stepIndex += 1;
     const perBar = meter.beats * state.subdivision;
@@ -627,7 +645,12 @@
       barIndex += 1;
 
       if (state.meterChainEnabled && state.meterChain.length) {
-        playbackChainIndex = (playbackChainIndex + 1) % state.meterChain.length;
+        playbackChainBarCount += 1;
+        const repeatBars = Math.max(1, Number(meter.repeatBars) || 1);
+        if (playbackChainBarCount >= repeatBars) {
+          playbackChainBarCount = 0;
+          playbackChainIndex = (playbackChainIndex + 1) % state.meterChain.length;
+        }
       }
 
       if (t.autoTempoEnabled && barIndex % Math.max(1, t.everyBars) === 0) {
@@ -661,7 +684,9 @@
     stepIndex = 0;
     barIndex = 0;
     playbackChainIndex = 0;
+    playbackChainBarCount = 0;
     visualChainIndex = state.meterChainEnabled ? 0 : -1;
+    visualChainBarCount = 0;
     selectedChainIndex = state.meterChainEnabled ? 0 : selectedChainIndex;
     sessionBaseBpm = state.bpm;
     tempoDir = state.training.tempoMode === 'down' ? -1 : 1;
@@ -696,7 +721,9 @@
     stepIndex = 0;
     barIndex = 0;
     playbackChainIndex = 0;
+    playbackChainBarCount = 0;
     visualChainIndex = -1;
+    visualChainBarCount = 0;
     visualQueue = [];
     currentBeat = -1;
     elapsed = 0;
@@ -717,10 +744,17 @@
         const event = visualQueue.shift();
         currentBeat = event.beat;
         beatChanged = true;
-        if (state.meterChainEnabled && event.chainIndex !== visualChainIndex) {
+        if (state.meterChainEnabled) {
+          const meterChanged = event.chainIndex !== visualChainIndex;
+          const repeatChanged = event.chainBar !== visualChainBarCount;
           visualChainIndex = event.chainIndex;
-          selectedChainIndex = clamp(event.chainIndex, 0, state.meterChain.length - 1);
-          chainChanged = true;
+          visualChainBarCount = event.chainBar || 0;
+          if (meterChanged) {
+            selectedChainIndex = clamp(event.chainIndex, 0, state.meterChain.length - 1);
+            chainChanged = true;
+          } else if (repeatChanged) {
+            renderMeterChain();
+          }
         }
       }
 
@@ -851,6 +885,8 @@
   $('chainMoveRight').onclick = () => moveSelectedMeter(1);
   $('chainDuplicate').onclick = duplicateSelectedMeter;
   $('chainDelete').onclick = deleteSelectedMeter;
+  $('chainRepeatMinus').onclick = () => changeSelectedRepeat(-1);
+  $('chainRepeatPlus').onclick = () => changeSelectedRepeat(1);
 
   $('playButton').onclick = () => playing ? stop() : start();
 
