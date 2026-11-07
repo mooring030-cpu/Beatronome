@@ -4,10 +4,10 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0a0a0c",
-  "theme_color": "#0a0a0c",
+  "background_color": "#081019",
+  "theme_color": "#0b1118",
   "orientation": "portrait-primary",
-  "description": "Beatronome rhythm trainer with precision metronome and internal-clock practice modes",
+  "description": "Beatronome jazz rhythm trainer with meter chains, precision metronome and internal-clock practice modes",
   "icons": [
     {
       "src": "./icon-192.png",

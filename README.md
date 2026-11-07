@@ -1,45 +1,37 @@
-# Beatronome v0.1
+# Beatronome v0.2
 
-SBL Groove Trainer의 빠른 조작성, Time Guru의 내부박 훈련, Tempo 스타일의 BPM 조작을 참고해 새로 설계한 설치형 웹앱(PWA) 프로토타입입니다.
+웹에서 바로 실행하고 휴대폰 홈 화면에 설치할 수 있는 PWA 리듬 트레이너입니다.
 
-## 포함 기능
+## v0.2 추가 기능
+- Meter Chain: 2/4, 3/4, 4/4, 5/4, 6/8, 7/8, 9/8, 12/8 등을 원하는 순서로 연결
+- 각 Meter마다 Accent / Normal / Mute 패턴을 독립적으로 설정
+- Meter 순서 이동, 복제, 삭제
+- Chain 전체를 1마디씩 순환 반복 재생
+- 분모가 다른 박자에서도 BPM 기준 음가를 반영하도록 재생 엔진 개선
+- 딥 네이비 + 버건디 + 브라스 골드 기반 Jazz Club UI
+
+## 기존 기능
 - BPM 30~300
-- BPM 숫자 드래그(좌우/상하), 마우스 휠, 원형 다이얼
-- +/- 짧게 누르기 및 길게 눌러 연속 조절
-- Tap Tempo
-- 1~16박 / 2, 4, 8, 16 분모
-- 1/2/3/4 subdivision
-- 박마다 Accent / Normal / Mute 순환
-- 7개 합성 클릭 사운드: Classic, Wood, Digital, Clave, Cowbell, Rim, Beep
+- +/- 길게 누르기, 숫자 드래그, 원형 다이얼, Tap Tempo
+- 1~16박, 2/4/8/16 분모, 4분/8분/3연음/16분 subdivision
+- Beat Accent / Normal / Mute
+- 7종 합성 메트로놈 사운드
 - Random Mute
-- Internal Clock: 소리 N마디 / 무음 N마디
-- Auto Tempo: 증가 / 감소 / 왕복
+- Internal Clock
+- Auto Tempo
 - Gradual Mute
 - Practice Timer
-- Preset 저장/불러오기/삭제 (LocalStorage)
-- 재생 중 Screen Wake Lock 지원
-- 오프라인 PWA 캐시
+- Preset 로컬 저장
+- 화면 꺼짐 방지
+- 오프라인 PWA
 
-## 실행
-별도 빌드가 필요 없습니다. 파일 전체를 정적 웹호스팅에 올리면 됩니다.
+## GitHub Pages 업데이트
+기존 Beatronome 저장소를 사용 중이라면 압축을 풀어 나온 파일을 저장소 폴더에 덮어쓴 뒤:
 
-로컬 테스트:
-```bash
-python3 -m http.server 8080
-```
-브라우저에서 http://localhost:8080 을 엽니다.
+1. GitHub Desktop 실행
+2. Summary에 `Beatronome v0.2` 입력
+3. **Commit to main**
+4. **Push origin**
+5. 기존 GitHub Pages 주소 새로고침
 
-## GitHub Pages
-이 폴더의 파일을 저장소 최상위에 업로드한 뒤 Settings > Pages에서 배포합니다. 모든 경로는 상대경로로 작성되어 프로젝트 페이지에서도 동작하도록 구성했습니다.
-
-## 모바일 설치
-HTTPS로 배포한 사이트를 Chrome/Safari로 연 뒤 ‘홈 화면에 추가’를 사용합니다.
-
-## 다음 버전 권장
-1. Supabase 로그인 및 프리셋 기기간 동기화
-2. 연습 이력/누적시간/최고 BPM 기록
-3. Bluetooth 시각 보정
-4. 프리셋 공유/내보내기
-5. 백그라운드/화면 잠금 환경별 오디오 안정성 테스트
-
-> 기존 앱의 UI, 음원, 소스코드를 복사하지 않고 기능 개념을 바탕으로 독립 구현했습니다. 클릭음도 Web Audio API로 합성합니다.
+GitHub Pages 설정은 다시 할 필요가 없습니다.

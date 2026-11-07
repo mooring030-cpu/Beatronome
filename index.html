@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#0a0a0c" />
+  <meta name="theme-color" content="#0b1118" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Beatronome" />
@@ -42,6 +42,38 @@
       <section class="beat-section card">
         <div class="section-heading"><div><span class="eyebrow">BEAT PATTERN</span><h2 id="meterTitle">4/4</h2></div><span class="muted">강박 → 일반 → 무음</span></div>
         <div class="beat-grid" id="beatGrid"></div>
+
+        <div class="meter-chain-block">
+          <div class="meter-chain-head">
+            <div>
+              <strong>Meter Chain</strong>
+              <span>여러 박자를 이어서 반복 재생</span>
+            </div>
+            <button class="switch" id="meterChainToggle" aria-label="Meter Chain 켜기"><i></i></button>
+          </div>
+          <div class="meter-chain-body hidden" id="meterChainBody">
+            <div class="meter-chain-list" id="meterChainList"></div>
+            <div class="meter-chain-toolbar">
+              <button id="chainMoveLeft" title="앞으로 이동">←</button>
+              <button id="chainMoveRight" title="뒤로 이동">→</button>
+              <button id="chainDuplicate">복제</button>
+              <button id="chainDelete" class="danger-soft">삭제</button>
+            </div>
+            <div class="common-meter-label">빠른 추가</div>
+            <div class="common-meter-row" id="commonMeterRow">
+              <button data-meter="2/4">+ 2/4</button>
+              <button data-meter="3/4">+ 3/4</button>
+              <button data-meter="4/4">+ 4/4</button>
+              <button data-meter="5/4">+ 5/4</button>
+              <button data-meter="6/8">+ 6/8</button>
+              <button data-meter="7/8">+ 7/8</button>
+              <button data-meter="9/8">+ 9/8</button>
+              <button data-meter="12/8">+ 12/8</button>
+            </div>
+            <div class="meter-chain-note">각 항목은 1마디씩 재생됩니다. 선택한 항목의 박자·분모·강박 패턴은 아래에서 편집할 수 있습니다.</div>
+          </div>
+        </div>
+
         <div class="quick-options">
           <label>박자<select id="beatsPerBar"></select></label>
           <label>분모<select id="denominator"><option>2</option><option selected>4</option><option>8</option><option>16</option></select></label>
@@ -109,7 +141,7 @@
 
   <nav class="bottom-nav"><button class="active" data-tab="metronome"><span>◉</span><small>메트로놈</small></button><button data-tab="sound"><span>♪</span><small>사운드</small></button><button data-tab="presets"><span>☆</span><small>프리셋</small></button></nav>
 
-  <div class="modal-backdrop hidden" id="settingsModal"><div class="settings-sheet"><div class="sheet-handle"></div><div class="page-title"><div><span class="eyebrow">SETTINGS</span><h2>앱 설정</h2></div><button class="icon-button" id="closeSettings">×</button></div><div class="settings-item"><span class="settings-icon">⌂</span><div><strong>PWA 홈 화면 설치</strong><span>브라우저 메뉴에서 ‘홈 화면에 추가’를 선택하면 앱처럼 사용할 수 있습니다.</span></div></div><div class="settings-item"><span class="settings-icon">☀</span><div><strong>화면 자동 꺼짐 방지</strong><span>재생 중 지원되는 기기에서 Screen Wake Lock을 자동 사용합니다.</span></div></div><div class="settings-item"><span class="settings-icon">↺</span><div><strong>현재 설정 초기화</strong><span>프리셋은 유지하고 메트로놈/훈련 설정만 기본값으로 되돌립니다.</span></div><button class="outline-small" id="resetSettings">초기화</button></div><div class="version-note">Beatronome v0.1<br>오프라인 PWA · 로컬 프리셋 저장<br>2차: Supabase 동기화 · 연습 기록 · Bluetooth 시각 보정</div></div></div>
+  <div class="modal-backdrop hidden" id="settingsModal"><div class="settings-sheet"><div class="sheet-handle"></div><div class="page-title"><div><span class="eyebrow">SETTINGS</span><h2>앱 설정</h2></div><button class="icon-button" id="closeSettings">×</button></div><div class="settings-item"><span class="settings-icon">⌂</span><div><strong>PWA 홈 화면 설치</strong><span>브라우저 메뉴에서 ‘홈 화면에 추가’를 선택하면 앱처럼 사용할 수 있습니다.</span></div></div><div class="settings-item"><span class="settings-icon">☀</span><div><strong>화면 자동 꺼짐 방지</strong><span>재생 중 지원되는 기기에서 Screen Wake Lock을 자동 사용합니다.</span></div></div><div class="settings-item"><span class="settings-icon">↺</span><div><strong>현재 설정 초기화</strong><span>프리셋은 유지하고 메트로놈/훈련 설정만 기본값으로 되돌립니다.</span></div><button class="outline-small" id="resetSettings">초기화</button></div><div class="version-note">Beatronome v0.2<br>로컬 프리셋 저장 · Meter Chain · Jazz UI<br>2차: Supabase 동기화 · 연습 기록 · Bluetooth 시각 보정</div></div></div>
   <div class="toast hidden" id="toast"></div>
 </div>
 <script src="./app.js"></script>
