@@ -9,8 +9,44 @@
   const OLD_PRESETS_KEYS = ['beatronome-presets-v2', 'beatronome-presets-v1'];
 
   const SOUND_LABELS = {
-    classic: 'Classic Click', wood: 'Wood Block', digital: 'Digital', clave: 'Clave',
+    basic: 'Basic · Sample', classic: 'Classic Click', wood: 'Wood Block', digital: 'Digital', clave: 'Clave',
     cowbell: 'Cowbell', rim: 'Rim', beep: 'Beep'
+  };
+
+  const SUBDIVISIONS = {
+    1:{count:1,mask:[1],bank:1,label:'Quarter'},
+    2:{count:2,mask:[1,1],bank:2,label:'8th'},
+    3:{count:3,mask:[1,1,1],bank:3,label:'Triplet'},
+    5:{count:3,mask:[1,0,1],bank:4,label:'Triplet 1·3'},
+    4:{count:4,mask:[1,1,1,1],bank:5,label:'16th'},
+    6:{count:4,mask:[1,0,0,1],bank:6,label:'16th 1·4'}
+  };
+
+  const TUNER_INSTRUMENTS = {
+    electric:'일렉기타 · 6현', acoustic:'어쿠스틱기타 · 6현', bass4:'베이스 · 4현',
+    bass5:'베이스 · 5현', bass6:'베이스 · 6현', chromatic:'Chromatic'
+  };
+  const TUNINGS = {
+    electric:[
+      ['standard','Standard',[40,45,50,55,59,64]],['half','½ Step Down',[39,44,49,54,58,63]],['whole','Whole Step Down',[38,43,48,53,57,62]],
+      ['dropd','Drop D',[38,45,50,55,59,64]],['dropcs','Drop C#',[37,44,49,54,58,63]],['dropc','Drop C',[36,43,48,53,57,62]],['dropb','Drop B',[35,42,47,52,56,61]],
+      ['dstd','D Standard',[38,43,48,53,57,62]],['csstd','C# Standard',[37,42,47,52,56,61]],['cstd','C Standard',[36,41,46,51,55,60]],
+      ['openg','Open G',[38,43,50,55,59,62]],['opend','Open D',[38,45,50,54,57,62]],['opene','Open E',[40,47,52,56,59,64]],['dadgad','DADGAD',[38,45,50,55,57,62]]
+    ],
+    acoustic:[
+      ['standard','Standard',[40,45,50,55,59,64]],['half','½ Step Down',[39,44,49,54,58,63]],['whole','Whole Step Down',[38,43,48,53,57,62]],
+      ['dropd','Drop D',[38,45,50,55,59,64]],['dropc','Drop C',[36,43,48,53,57,62]],['dstd','D Standard',[38,43,48,53,57,62]],
+      ['openg','Open G',[38,43,50,55,59,62]],['opend','Open D',[38,45,50,54,57,62]],['opene','Open E',[40,47,52,56,59,64]],['openc','Open C',[36,43,48,55,60,64]],['dadgad','DADGAD',[38,45,50,55,57,62]]
+    ],
+    bass4:[
+      ['standard','Standard',[28,33,38,43]],['half','½ Step Down',[27,32,37,42]],['dstd','D Standard',[26,31,36,41]],['dropd','Drop D',[26,33,38,43]],['dropc','Drop C',[24,31,36,41]],['bead','BEAD',[23,28,33,38]]
+    ],
+    bass5:[
+      ['standard','Standard B-E-A-D-G',[23,28,33,38,43]],['highc','High C E-A-D-G-C',[28,33,38,43,48]],['half','½ Step Down',[22,27,32,37,42]],['dropa','Drop A',[21,28,33,38,43]]
+    ],
+    bass6:[
+      ['standard','Standard B-E-A-D-G-C',[23,28,33,38,43,48]],['half','½ Step Down',[22,27,32,37,42,47]],['dropa','Drop A',[21,28,33,38,43,48]],['lowfs','Low F# F#-B-E-A-D-G',[18,23,28,33,38,43]]
+    ]
   };
 
   const DRUM_INSTRUMENTS = [
@@ -95,6 +131,7 @@
       genre:'Rock', selectedName:'Basic Rock', kit:'studio', volume:.82, swing:0, humanize:0, dropout:0,
       instruments: makeDefaultDrums()
     },
+    tuner:{instrument:'electric',tuning:'standard',referenceA:440,custom:{}},
     training:{
       randomMuteEnabled:false, randomMute:25, internalEnabled:false, soundBars:4, muteBars:2,
       autoTempoEnabled:false, tempoStep:5, everyBars:4, targetBpm:160, tempoMode:'up',
@@ -118,7 +155,7 @@
     };
   }
   function deepMerge(base,obj){
-    const merged={...base,...(obj||{}),training:{...base.training,...(obj?.training||{})},groove:{...base.groove,...(obj?.groove||{})}};
+    const merged={...base,...(obj||{}),training:{...base.training,...(obj?.training||{})},groove:{...base.groove,...(obj?.groove||{})},tuner:{...base.tuner,...(obj?.tuner||{}),custom:{...base.tuner.custom,...(obj?.tuner?.custom||{})}}};
     merged.beatsPerBar=clamp(Number(merged.beatsPerBar)||4,1,16);
     merged.denominator=[2,4,8,16].includes(Number(merged.denominator))?Number(merged.denominator):4;
     merged.pattern=normalizePattern(obj?.pattern||base.pattern,merged.beatsPerBar);
@@ -131,6 +168,9 @@
     merged.groove.humanize=clamp(Number(merged.groove.humanize)||0,0,100);
     merged.groove.dropout=clamp(Number(merged.groove.dropout)||0,0,80);
     merged.groove.kit=DRUM_KITS[merged.groove.kit]?merged.groove.kit:'studio';
+    merged.subdivision=SUBDIVISIONS[Number(merged.subdivision)]?Number(merged.subdivision):1;
+    merged.tuner.instrument=TUNER_INSTRUMENTS[merged.tuner.instrument]?merged.tuner.instrument:'electric';
+    merged.tuner.referenceA=clamp(Number(merged.tuner.referenceA)||440,430,450);
     const fallback=makeDefaultDrums();
     const source=merged.groove.instruments||{};
     merged.groove.instruments={};
@@ -151,6 +191,8 @@
   let audioCtx=null,master=null,noiseCache=null,scheduler=null,nextNoteTime=0,stepIndex=0,barIndex=0,startTime=0,sessionBaseBpm=state.bpm,tempoDir=1;
   let wakeLock=null,visualQueue=[],drumVisualQueue=[],rafId=null,tapTimes=[],toastTimer=null,drag=null,dialDragging=false,repeatDelay=null,repeatTimer=null;
   let selectedGenre=state.groove.genre||'Rock';
+  let basicBuffers={},basicLoading=null,miniMuted=false;
+  let tunerStream=null,tunerSource=null,tunerAnalyser=null,tunerRaf=null,tunerActiveString=-1;
 
   function persist(){localStorage.setItem(SETTINGS_KEY,JSON.stringify(state));}
   function persistPresets(){localStorage.setItem(PRESETS_KEY,JSON.stringify(presets));}
@@ -174,7 +216,7 @@
   function setBpm(v){state.bpm=clamp(Math.round(v),BPM_MIN,BPM_MAX);persist();renderCore();}
   function setTraining(key,value){state.training[key]=value;persist();renderTraining();renderCore();}
 
-  function updateSessionStatus(){const remain=Math.max(0,state.training.timerMinutes*60-elapsed);$('sessionStatus').textContent=playing?(state.training.timerEnabled?`남은 ${fmtTime(remain)}`:`연습 ${fmtTime(elapsed)}`):'READY';}
+  function updateSessionStatus(){const remain=Math.max(0,state.training.timerMinutes*60-elapsed),txt=playing?(state.training.timerEnabled?`남은 ${fmtTime(remain)}`:`연습 ${fmtTime(elapsed)}`):'READY';$('sessionStatus').textContent=txt;if($('miniTimer'))$('miniTimer').textContent=txt;}
   function updateActiveBeat(){document.querySelectorAll('.beat-dot').forEach((el,i)=>el.classList.toggle('active',playing&&currentBeat===i));}
   function syncMeterControls(){const m=getSelectedMeter();$('beatsPerBar').value=m.beats;$('denominator').value=m.denominator;}
 
@@ -183,10 +225,12 @@
     const meter=getSelectedMeter();const chainPos=state.meterChainEnabled?` · ${selectedChainIndex+1}/${state.meterChain.length}`:'';
     $('bpmValue').textContent=state.bpm;$('tempoName').textContent=tempoName(state.bpm);$('meterTop').textContent=`${meter.beats}/${meter.denominator}${chainPos}`;$('meterTitle').textContent=`${meter.beats}/${meter.denominator}`;
     $('subdivision').value=state.subdivision;syncMeterControls();
-    const sub=state.subdivision===1?'Quarter':state.subdivision===2?'8th':state.subdivision===3?'Triplet':'16th';
+    const subInfo=SUBDIVISIONS[state.subdivision]||SUBDIVISIONS[1],sub=subInfo.label;
     const mode=state.playbackMode==='metro'?'Metro':state.playbackMode==='drum'?'Drum':`Metro + ${state.groove.selectedName||'Drum'}`;
     $('soundSummary').textContent=state.meterChainEnabled?`${mode} · ${sub} · Chain ${state.meterChain.length}`:`${mode} · ${sub}`;
-    $('playButton').classList.toggle('playing',playing);$('playIcon').textContent=playing?'Ⅱ':'▶';$('playLabel').textContent=playing?'STOP':'START';updateSessionStatus();
+    $('playButton').classList.toggle('playing',playing);$('playIcon').textContent=playing?'Ⅱ':'▶';$('playLabel').textContent=playing?'STOP':'START';
+    if($('miniBpm')){$('miniBpm').textContent=state.bpm;$('miniMeter').textContent=`${meter.beats}/${meter.denominator}`;$('miniPlay').classList.toggle('playing',playing);$('miniPlayIcon').textContent=playing?'Ⅱ':'▶';$('miniPlayLabel').textContent=playing?'STOP':'START';$('miniModeText').textContent=state.playbackMode==='metro'?'METRO':state.playbackMode==='drum'?'DRUM':`METRO + ${state.groove.selectedName||'DRUM'}`;$('miniMute').classList.toggle('on',miniMuted);}
+    updateSessionStatus();
     const angle=-135+(state.bpm-BPM_MIN)/(BPM_MAX-BPM_MIN)*270;$('tempoDial').style.setProperty('--angle',`${angle}deg`);
     renderBeats();renderMeterChain();
   }
@@ -215,7 +259,7 @@
     const count=['randomMuteEnabled','internalEnabled','autoTempoEnabled','timerEnabled','gradualEnabled'].filter(k=>t[k]).length;$('trainingCount').textContent=count;$('trainingCount').classList.toggle('hidden',count===0);$('trainingList').classList.toggle('hidden',!trainingExpanded);$('trainingChevron').textContent=trainingExpanded?'⌃':'⌄';
   }
   function renderSound(){
-    const g=$('soundGrid');g.innerHTML='';Object.entries(SOUND_LABELS).forEach(([key,label])=>{const b=document.createElement('button');b.className=`sound-card card ${state.sound===key?'selected':''}`;b.innerHTML=`<span class="sound-symbol">♪</span><strong>${label}</strong><span>${state.sound===key?'✓ 사용 중':'미리듣기'}</span>`;b.onclick=async()=>{state.sound=key;persist();renderSound();renderCore();await ensureAudio();synthClick(audioCtx.currentTime+.02,key,true,state.volume);};g.appendChild(b);});$('volume').value=Math.round(state.volume*100);$('volumeOut').textContent=`${Math.round(state.volume*100)}%`;setRangeStyle($('volume'),10,100,Math.round(state.volume*100));
+    const g=$('soundGrid');g.innerHTML='';Object.entries(SOUND_LABELS).forEach(([key,label])=>{const b=document.createElement('button');b.dataset.sound=key;b.className=`sound-card card ${state.sound===key?'selected':''}`;b.innerHTML=`<span class="sound-symbol">${key==='basic'?'◉':'♪'}</span><strong>${label}</strong><span>${state.sound===key?'✓ 사용 중':key==='basic'?'녹음 샘플 · 강/약/일반':'미리듣기'}</span>`;b.onclick=async()=>{state.sound=key;persist();renderSound();renderCore();await ensureAudio();if(key==='basic')await loadBasicSamples();synthClick(audioCtx.currentTime+.03,key,true,state.volume,'strong',SUBDIVISIONS[state.subdivision]?.bank||1);};g.appendChild(b);});$('volume').value=Math.round(state.volume*100);$('volumeOut').textContent=`${Math.round(state.volume*100)}%`;setRangeStyle($('volume'),10,100,Math.round(state.volume*100));
   }
 
   function applyGroovePreset(preset){
@@ -239,16 +283,80 @@
   }
   function updateDrumStepVisual(){document.querySelectorAll('.seq-step').forEach(el=>el.classList.toggle('current',playing&&Number(el.dataset.step)===currentDrumStep));}
 
+  const NOTE_NAMES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  function noteName(midi){midi=Math.round(midi);return `${NOTE_NAMES[(midi%12+12)%12]}${Math.floor(midi/12)-1}`;}
+  function midiFreq(midi,a4=440){return a4*Math.pow(2,(midi-69)/12);}
+  function getInstrumentTunings(inst=state.tuner.instrument){return TUNINGS[inst]||[];}
+  function ensureTunerSelection(){
+    const inst=state.tuner.instrument;if(inst==='chromatic')return;
+    const list=getInstrumentTunings(inst),valid=list.some(x=>x[0]===state.tuner.tuning)||state.tuner.tuning==='custom';
+    if(!valid)state.tuner.tuning=list[0]?.[0]||'standard';
+    if(!state.tuner.custom[inst])state.tuner.custom[inst]=(list[0]?.[2]||[]).slice();
+  }
+  function currentTuningNotes(){
+    ensureTunerSelection();if(state.tuner.instrument==='chromatic')return[];
+    if(state.tuner.tuning==='custom')return state.tuner.custom[state.tuner.instrument]||[];
+    return (getInstrumentTunings().find(x=>x[0]===state.tuner.tuning)?.[2]||[]).slice();
+  }
+  function currentTuningName(){if(state.tuner.instrument==='chromatic')return'Chromatic';if(state.tuner.tuning==='custom')return'Custom';return getInstrumentTunings().find(x=>x[0]===state.tuner.tuning)?.[1]||'Standard';}
+  function renderTuner(){
+    if(!$('tunerInstrument'))return;ensureTunerSelection();$('tunerInstrument').value=state.tuner.instrument;$('tunerAValue').textContent=`${state.tuner.referenceA} Hz`;
+    const wrap=$('tuningSelectWrap'),sel=$('tunerTuning');wrap.classList.toggle('hidden',state.tuner.instrument==='chromatic');sel.innerHTML='';
+    if(state.tuner.instrument!=='chromatic'){
+      getInstrumentTunings().forEach(([id,name])=>{const o=document.createElement('option');o.value=id;o.textContent=name;sel.appendChild(o);});const c=document.createElement('option');c.value='custom';c.textContent='Custom';sel.appendChild(c);sel.value=state.tuner.tuning;
+    }
+    $('tuningTitle').textContent=currentTuningName();const notes=currentTuningNotes(),grid=$('tunerStrings');grid.innerHTML='';
+    if(state.tuner.instrument==='chromatic'){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1;padding:28px 18px"><strong>Chromatic Mode</strong><span>특정 줄에 제한하지 않고 가장 가까운 반음으로 튜닝합니다.</span></div>';}else{
+      const total=notes.length;notes.forEach((m,i)=>{const b=document.createElement('button');b.className=`tuner-string${i===tunerActiveString?' active':''}`;b.innerHTML=`<em>${total-i}현</em><strong>${noteName(m)}</strong><span>${midiFreq(m,state.tuner.referenceA).toFixed(1)} Hz</span>`;b.onclick=()=>playReferenceTone(m,i);grid.appendChild(b);});
+    }
+    $('customTuningCard').classList.toggle('hidden',state.tuner.instrument==='chromatic'||state.tuner.tuning!=='custom');const custom=$('customTuningList');custom.innerHTML='';
+    if(state.tuner.instrument!=='chromatic'&&state.tuner.tuning==='custom')notes.forEach((m,i)=>{const row=document.createElement('div');row.className='custom-tune-row';row.innerHTML=`<span>${notes.length-i}현</span><div class="custom-tune-step"><button data-d="-1">−</button><strong>${noteName(m)}</strong><button data-d="1">＋</button></div>`;row.querySelectorAll('button').forEach(b=>b.onclick=()=>{state.tuner.custom[state.tuner.instrument][i]=clamp(m+Number(b.dataset.d),12,84);persist();renderTuner();});custom.appendChild(row);});
+  }
+  async function playReferenceTone(midi,index=-1){await ensureAudio();const when=audioCtx.currentTime+.02,o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sine';o.frequency.value=midiFreq(midi,state.tuner.referenceA);g.gain.setValueAtTime(.0001,when);g.gain.exponentialRampToValueAtTime(.28,when+.02);g.gain.exponentialRampToValueAtTime(.0001,when+1.25);o.connect(g).connect(master);o.start(when);o.stop(when+1.3);tunerActiveString=index;renderTuner();setTimeout(()=>{if(!tunerStream){tunerActiveString=-1;renderTuner();}},850);}
+  function detectPitch(buffer,sampleRate){
+    let rms=0;for(let i=0;i<buffer.length;i++)rms+=buffer[i]*buffer[i];rms=Math.sqrt(rms/buffer.length);if(rms<.008)return null;
+    const ds=2,n=Math.floor(buffer.length/ds),x=new Float32Array(n);for(let i=0;i<n;i++)x[i]=buffer[i*ds];const sr=sampleRate/ds;
+    const minLag=Math.max(2,Math.floor(sr/1200)),maxLag=Math.min(n-2,Math.floor(sr/20)),limit=Math.min(n-maxLag,1800);if(limit<128)return null;
+    const diff=new Float32Array(maxLag+1),cmnd=new Float32Array(maxLag+1);let running=0,best=-1;
+    for(let tau=1;tau<=maxLag;tau++){let d=0;for(let i=0;i<limit;i++){const v=x[i]-x[i+tau];d+=v*v;}diff[tau]=d;running+=d;cmnd[tau]=running?d*tau/running:1;}
+    const threshold=.16;for(let tau=minLag;tau<maxLag-1;tau++){if(cmnd[tau]<threshold){while(tau+1<maxLag&&cmnd[tau+1]<cmnd[tau])tau++;best=tau;break;}}
+    if(best<0){let min=1;for(let tau=minLag;tau<=maxLag;tau++)if(cmnd[tau]<min){min=cmnd[tau];best=tau;}if(min>.28)return null;}
+    const a=cmnd[Math.max(1,best-1)],b=cmnd[best],c=cmnd[Math.min(maxLag,best+1)],den=(a-2*b+c);const shift=Math.abs(den)>1e-6?.5*(a-c)/den:0;const lag=best+clamp(shift,-1,1),freq=sr/lag;return freq>=20&&freq<=1200?freq:null;
+  }
+  function nearestTunerTarget(freq){
+    const ref=state.tuner.referenceA;if(state.tuner.instrument==='chromatic'){const midi=Math.round(69+12*Math.log2(freq/ref));return{midi,index:-1,freq:midiFreq(midi,ref)};}
+    const notes=currentTuningNotes();let best={midi:notes[0],index:0,d:Infinity,freq:midiFreq(notes[0],ref)};notes.forEach((m,i)=>{const f=midiFreq(m,ref),d=Math.abs(1200*Math.log2(freq/f));if(d<best.d)best={midi:m,index:i,d,freq:f};});return best;
+  }
+  function updateTunerDisplay(freq){
+    if(!freq){$('tunerFreq').textContent='0.0';$('tunerTargetText').textContent='소리를 기다리는 중';return;}const target=nearestTunerTarget(freq),cents=clamp(1200*Math.log2(freq/target.freq),-99,99),display=noteName(target.midi);tunerActiveString=target.index;
+    $('tunerNote').textContent=display;$('tunerFreq').textContent=freq.toFixed(1);$('tunerCents').textContent=`${cents>=0?'+':''}${cents.toFixed(1)} cents`;$('tunerNeedle').style.left=`${clamp(50+cents,0,100)}%`;$('tunerNeedle').classList.toggle('in-tune',Math.abs(cents)<=5);$('tunerTargetText').textContent=state.tuner.instrument==='chromatic'?`가장 가까운 음 ${display}`:`${TUNER_INSTRUMENTS[state.tuner.instrument]} · ${currentTuningName()}`;renderTunerStringsOnly();
+  }
+  function renderTunerStringsOnly(){if(state.tuner.instrument==='chromatic')return;$$('#tunerStrings .tuner-string').forEach((b,i)=>b.classList.toggle('active',i===tunerActiveString));}
+  async function startTunerMic(){
+    if(tunerStream)return;if(playing)stop();if(!navigator.mediaDevices?.getUserMedia){notify('이 브라우저는 마이크 튜너를 지원하지 않습니다.');return;}try{await ensureAudio();tunerStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});tunerSource=audioCtx.createMediaStreamSource(tunerStream);tunerAnalyser=audioCtx.createAnalyser();tunerAnalyser.fftSize=8192;tunerAnalyser.smoothingTimeConstant=.1;tunerSource.connect(tunerAnalyser);$('tunerMicState').textContent='MIC ON';$('tunerMicState').classList.add('on');$('toggleTunerMic').textContent='튜너 정지';$('toggleTunerMic').classList.add('on');const buf=new Float32Array(tunerAnalyser.fftSize);let last=0;const loop=ts=>{if(!tunerStream)return;if(ts-last>85){tunerAnalyser.getFloatTimeDomainData(buf);updateTunerDisplay(detectPitch(buf,audioCtx.sampleRate));last=ts;}tunerRaf=requestAnimationFrame(loop);};tunerRaf=requestAnimationFrame(loop);}catch(e){console.warn(e);notify('마이크 권한을 허용해주세요.');stopTunerMic();}
+  }
+  function stopTunerMic(){if(tunerRaf)cancelAnimationFrame(tunerRaf);tunerRaf=null;try{tunerSource?.disconnect();}catch{}tunerSource=null;tunerAnalyser=null;if(tunerStream)tunerStream.getTracks().forEach(t=>t.stop());tunerStream=null;tunerActiveString=-1;if($('tunerMicState')){$('tunerMicState').textContent='MIC OFF';$('tunerMicState').classList.remove('on');$('toggleTunerMic').textContent='마이크로 튜닝 시작';$('toggleTunerMic').classList.remove('on');$('tunerTargetText').textContent='목표음을 선택하거나 마이크를 시작하세요';$('tunerNeedle').style.left='50%';$('tunerNeedle').classList.remove('in-tune');$('tunerCents').textContent='0 cents';renderTunerStringsOnly();}}
+
+  function setMiniMode(on){document.body.classList.toggle('mini-mode',!!on);$('settingsModal')?.classList.add('hidden');renderCore();}
+  function toggleMiniMute(){miniMuted=!miniMuted;if(master)master.gain.setTargetAtTime(miniMuted?0:.94,audioCtx.currentTime,.015);renderCore();}
+
   function renderPresets(){
     const list=$('presetList');list.innerHTML='';if(!presets.length){list.innerHTML='<div class="empty-state"><div class="big">☆</div><strong>아직 저장된 프리셋이 없습니다.</strong><span>Meter Chain · Training · Groove 패턴까지 함께 저장됩니다.</span></div>';return;}
     presets.forEach(p=>{const n=deepMerge(defaults,p),a=document.createElement('article');a.className='preset-card card';const detail=n.meterChainEnabled&&n.meterChain.length?n.meterChain.slice(0,4).map(m=>`${m.beats}/${m.denominator}${m.repeatBars>1?`×${m.repeatBars}`:''}`).join(' → ')+(n.meterChain.length>4?' → …':''):`${n.beatsPerBar}/${n.denominator}`;a.innerHTML=`<button class="preset-main"><div class="preset-bpm">${n.bpm}<small>BPM</small></div><div class="preset-copy"><strong>${escapeHtml(p.name)}</strong><span>${detail} · ${n.groove.genre}/${n.groove.selectedName||'Custom'} · ${n.playbackMode.toUpperCase()}</span></div></button><button class="danger-icon">×</button>`;a.querySelector('.preset-main').onclick=()=>loadPreset(p);a.querySelector('.danger-icon').onclick=()=>{presets=presets.filter(x=>x.id!==p.id);persistPresets();renderPresets();};list.appendChild(a);});
   }
-  function renderAll(){renderCore();renderTraining();renderSound();renderGroove();renderPresets();}
+  function renderAll(){renderCore();renderTraining();renderSound();renderGroove();renderTuner();renderPresets();}
 
-  async function ensureAudio(){if(!audioCtx){const Ctx=window.AudioContext||window.webkitAudioContext;audioCtx=new Ctx({latencyHint:'interactive'});master=audioCtx.createGain();master.gain.value=.94;master.connect(audioCtx.destination);}if(audioCtx.state==='suspended')await audioCtx.resume();}
+  async function ensureAudio(){if(!audioCtx){const Ctx=window.AudioContext||window.webkitAudioContext;audioCtx=new Ctx({latencyHint:'interactive'});master=audioCtx.createGain();master.gain.value=miniMuted?0:.94;master.connect(audioCtx.destination);}if(audioCtx.state==='suspended')await audioCtx.resume();if(state.sound==='basic')await loadBasicSamples();}
+  async function loadBasicSamples(){
+    if(Object.keys(basicBuffers).length>=18)return basicBuffers;if(basicLoading)return basicLoading;
+    basicLoading=(async()=>{const roles=['strong','weak','normal'];for(let bank=1;bank<=6;bank++){for(const role of roles){const key=`${bank}:${role}`;if(basicBuffers[key])continue;const res=await fetch(`./audio/basic/bank${bank}_${role}.wav`,{cache:'force-cache'});if(!res.ok)throw new Error(`Basic sample ${key} load failed`);basicBuffers[key]=await audioCtx.decodeAudioData(await res.arrayBuffer());}}return basicBuffers;})().catch(err=>{console.warn(err);notify('Basic 샘플을 불러오지 못했습니다.');return basicBuffers;}).finally(()=>{basicLoading=null;});
+    return basicLoading;
+  }
   function noiseBuffer(){if(noiseCache)return noiseCache;const len=Math.max(1,Math.floor(audioCtx.sampleRate*.5)),buf=audioCtx.createBuffer(1,len,audioCtx.sampleRate),data=buf.getChannelData(0);for(let i=0;i<len;i++)data[i]=Math.random()*2-1;noiseCache=buf;return noiseCache;}
-  function synthClick(when,sound,accent=false,volume=.8){
-    if(!audioCtx||!master)return;const out=audioCtx.createGain();out.gain.setValueAtTime(.0001,when);out.gain.exponentialRampToValueAtTime(Math.max(.0002,volume),when+.002);out.gain.exponentialRampToValueAtTime(.0001,when+(sound==='cowbell'?.13:.07));out.connect(master);
+  function synthClick(when,sound,accent=false,volume=.8,role=null,bank=1){
+    if(!audioCtx||!master)return;
+    if(sound==='basic'){const r=role||(accent?'strong':'normal'),buf=basicBuffers[`${bank}:${r}`]||basicBuffers[`1:${r}`];if(buf){const src=audioCtx.createBufferSource(),g=audioCtx.createGain();src.buffer=buf;g.gain.value=Math.max(.001,volume);src.connect(g).connect(master);src.start(when);return;}}
+    const out=audioCtx.createGain();out.gain.setValueAtTime(.0001,when);out.gain.exponentialRampToValueAtTime(Math.max(.0002,volume),when+.002);out.gain.exponentialRampToValueAtTime(.0001,when+(sound==='cowbell'?.13:.07));out.connect(master);
     const osc=(type,f0,f1,end,gain=1)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=type;o.frequency.setValueAtTime(f0,when);if(f1)o.frequency.exponentialRampToValueAtTime(f1,when+end);g.gain.setValueAtTime(gain,when);g.gain.exponentialRampToValueAtTime(.0001,when+end);o.connect(g).connect(out);o.start(when);o.stop(when+end+.02);};
     const noise=(end,gain=.25,hp=1200)=>{const src=audioCtx.createBufferSource(),f=audioCtx.createBiquadFilter(),g=audioCtx.createGain();src.buffer=noiseBuffer(end);f.type='highpass';f.frequency.value=hp;g.gain.setValueAtTime(gain,when);g.gain.exponentialRampToValueAtTime(.0001,when+end);src.connect(f).connect(g).connect(out);src.start(when);};
     const hi=accent?1.22:1;switch(sound){case'wood':osc('sine',880*hi,360*hi,.06,.95);osc('sine',1320*hi,550*hi,.045,.35);break;case'digital':osc('square',1700*hi,1000*hi,.035,.45);noise(.025,.14,2800);break;case'clave':osc('sine',2200*hi,1700*hi,.04,.8);osc('sine',3300*hi,2500*hi,.025,.25);break;case'cowbell':osc('square',560*hi,null,.12,.35);osc('square',845*hi,null,.10,.25);break;case'rim':noise(.035,.45,1800);osc('triangle',1250*hi,800*hi,.035,.4);break;case'beep':osc('sine',accent?1320:880,null,.055,.85);break;default:osc('triangle',1900*hi,800*hi,.045,.75);noise(.025,.18,2200);}
@@ -279,13 +387,13 @@
   }
 
   function scheduleStep(time){
-    const t=state.training,meter=getPlaybackMeter(),chainIndex=state.meterChainEnabled?playbackChainIndex:-1,chainBar=state.meterChainEnabled?playbackChainBarCount:0,step=stepIndex,beat=Math.floor(step/state.subdivision),sub=step%state.subdivision,isMain=sub===0,pat=meter.pattern[beat]||'normal';
+    const t=state.training,meter=getPlaybackMeter(),subInfo=SUBDIVISIONS[state.subdivision]||SUBDIVISIONS[1],count=subInfo.count,chainIndex=state.meterChainEnabled?playbackChainIndex:-1,chainBar=state.meterChainEnabled?playbackChainBarCount:0,step=stepIndex,beat=Math.floor(step/count),sub=step%count,isMain=sub===0,pat=meter.pattern[beat]||'normal',subAudible=!!subInfo.mask[sub];
     const beatDuration=(60/state.bpm)*(4/meter.denominator);
     if(step===0)scheduleDrumBar(time,beatDuration*meter.beats);
-    let audible=pat!=='mute',trainingMuted=false;if(t.internalEnabled){const cycle=Math.max(1,t.soundBars+t.muteBars),phase=barIndex%cycle;if(phase>=t.soundBars)trainingMuted=true;}
-    let mutePct=t.randomMuteEnabled?t.randomMute:0;if(t.gradualEnabled){const sec=Math.max(0,audioCtx.currentTime-startTime),ratio=clamp(sec/Math.max(1,t.gradualSeconds),0,1);mutePct=Math.max(mutePct,t.gradualTarget*ratio);}if(!trainingMuted&&mutePct>0&&Math.random()*100<mutePct)trainingMuted=true;audible=audible&&!trainingMuted;
-    if(audible&&['metro','both'].includes(state.playbackMode))synthClick(time,state.sound,isMain&&pat==='accent',isMain?state.volume:state.volume*.47);
-    visualQueue.push({time,beat,chainIndex,chainBar});stepIndex++;const perBar=meter.beats*state.subdivision;
+    let audible=pat!=='mute'&&subAudible,trainingMuted=false;if(t.internalEnabled){const cycle=Math.max(1,t.soundBars+t.muteBars),phase=barIndex%cycle;if(phase>=t.soundBars)trainingMuted=true;}
+    let mutePct=t.randomMuteEnabled?t.randomMute:0;if(t.gradualEnabled){const sec=Math.max(0,audioCtx.currentTime-startTime),ratio=clamp(sec/Math.max(1,t.gradualSeconds),0,1);mutePct=Math.max(mutePct,t.gradualTarget*ratio);}if(audible&&!trainingMuted&&mutePct>0&&Math.random()*100<mutePct)trainingMuted=true;audible=audible&&!trainingMuted;
+    if(audible&&['metro','both'].includes(state.playbackMode)){const role=isMain?(pat==='accent'?'strong':'normal'):'weak';synthClick(time,state.sound,isMain&&pat==='accent',isMain?state.volume:state.volume*.52,role,subInfo.bank);}
+    if(isMain)visualQueue.push({time,beat,chainIndex,chainBar});stepIndex++;const perBar=meter.beats*count;
     if(stepIndex>=perBar){stepIndex=0;barIndex++;
       if(state.meterChainEnabled&&state.meterChain.length){playbackChainBarCount++;const repeat=Math.max(1,Number(meter.repeatBars)||1);if(playbackChainBarCount>=repeat){playbackChainBarCount=0;playbackChainIndex=(playbackChainIndex+1)%state.meterChain.length;}}
       if(t.autoTempoEnabled&&barIndex%Math.max(1,t.everyBars)===0){let next=state.bpm;if(t.tempoMode==='down')next=Math.max(t.targetBpm,state.bpm-Math.abs(t.tempoStep));else if(t.tempoMode==='pyramid'){next=state.bpm+t.tempoStep*tempoDir;if(tempoDir>0&&next>=t.targetBpm){next=t.targetBpm;tempoDir=-1;}else if(tempoDir<0&&next<=sessionBaseBpm){next=sessionBaseBpm;tempoDir=1;}}else next=Math.min(t.targetBpm,state.bpm+Math.abs(t.tempoStep));setBpm(next);}
@@ -294,8 +402,8 @@
   }
 
   async function start(){
-    await ensureAudio();ensureNormalPattern();if(state.meterChainEnabled)ensureChain();stepIndex=0;barIndex=0;playbackChainIndex=0;playbackChainBarCount=0;visualChainIndex=state.meterChainEnabled?0:-1;visualChainBarCount=0;selectedChainIndex=state.meterChainEnabled?0:selectedChainIndex;sessionBaseBpm=state.bpm;tempoDir=state.training.tempoMode==='down'?-1:1;nextNoteTime=audioCtx.currentTime+.06;startTime=audioCtx.currentTime;visualQueue=[];drumVisualQueue=[];elapsed=0;playing=true;currentBeat=-1;currentDrumStep=-1;requestWakeLock();
-    const tick=()=>{const ahead=.11;while(nextNoteTime<audioCtx.currentTime+ahead){const m=scheduleStep(nextNoteTime),beatDuration=(60/state.bpm)*(4/m.denominator);nextNoteTime+=beatDuration/state.subdivision;}};tick();scheduler=setInterval(tick,25);renderCore();startVisualLoop();
+    if(tunerStream)stopTunerMic();await ensureAudio();ensureNormalPattern();if(state.meterChainEnabled)ensureChain();stepIndex=0;barIndex=0;playbackChainIndex=0;playbackChainBarCount=0;visualChainIndex=state.meterChainEnabled?0:-1;visualChainBarCount=0;selectedChainIndex=state.meterChainEnabled?0:selectedChainIndex;sessionBaseBpm=state.bpm;tempoDir=state.training.tempoMode==='down'?-1:1;nextNoteTime=audioCtx.currentTime+.06;startTime=audioCtx.currentTime;visualQueue=[];drumVisualQueue=[];elapsed=0;playing=true;currentBeat=-1;currentDrumStep=-1;requestWakeLock();
+    const tick=()=>{const ahead=.11;while(nextNoteTime<audioCtx.currentTime+ahead){const m=scheduleStep(nextNoteTime),beatDuration=(60/state.bpm)*(4/m.denominator),subInfo=SUBDIVISIONS[state.subdivision]||SUBDIVISIONS[1];nextNoteTime+=beatDuration/subInfo.count;}};tick();scheduler=setInterval(tick,25);renderCore();startVisualLoop();
   }
   function stop(){playing=false;if(scheduler)clearInterval(scheduler);scheduler=null;cancelAnimationFrame(rafId);stepIndex=0;barIndex=0;playbackChainIndex=0;playbackChainBarCount=0;visualChainIndex=-1;visualChainBarCount=0;visualQueue=[];drumVisualQueue=[];currentBeat=-1;currentDrumStep=-1;elapsed=0;releaseWakeLock();renderCore();updateDrumStepVisual();}
   function startVisualLoop(){
@@ -311,8 +419,8 @@
 
   function savePreset(){const name=$('presetName').value.trim()||`Preset ${presets.length+1}`;presets.unshift({id:uid(),name,...JSON.parse(JSON.stringify(state))});persistPresets();$('presetName').value='';renderPresets();notify('프리셋을 저장했습니다.');}
   function loadPreset(p){if(playing)stop();state=deepMerge(defaults,p);selectedChainIndex=0;selectedGenre=state.groove.genre||'Rock';ensureNormalPattern();if(state.meterChainEnabled)ensureChain();persist();renderAll();switchTab('metronome');notify(`${p.name} 불러오기 완료`);}
-  function switchTab(name){$$('.tab-page').forEach(x=>x.classList.remove('active'));$(`tab${name[0].toUpperCase()+name.slice(1)}`).classList.add('active');$$('.bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));if(name==='sound')renderSound();if(name==='groove')renderGroove();if(name==='presets')renderPresets();}
-  function resetSettings(){if(playing)stop();state=deepMerge(defaults,{});selectedChainIndex=0;selectedGenre='Rock';persist();renderAll();notify('기본값으로 초기화했습니다.');}
+  function switchTab(name){if(name!=='tuner'&&tunerStream)stopTunerMic();$$('.tab-page').forEach(x=>x.classList.remove('active'));$(`tab${name[0].toUpperCase()+name.slice(1)}`).classList.add('active');$$('.bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));if(name==='sound')renderSound();if(name==='groove')renderGroove();if(name==='tuner')renderTuner();if(name==='presets')renderPresets();}
+  function resetSettings(){if(playing)stop();if(tunerStream)stopTunerMic();state=deepMerge(defaults,{});selectedChainIndex=0;selectedGenre='Rock';persist();renderAll();notify('기본값으로 초기화했습니다.');}
 
   for(let i=1;i<=16;i++){const o=document.createElement('option');o.value=o.textContent=i;$('beatsPerBar').appendChild(o);}
   $('beatsPerBar').onchange=e=>{if(playing)stop();setSelectedMeterField('beats',Number(e.target.value));renderCore();};
@@ -340,8 +448,15 @@
   $('drumDropout').oninput=e=>{state.groove.dropout=Number(e.target.value);persist();renderGroove();};
   $('clearDrums').onclick=()=>{DRUM_INSTRUMENTS.forEach(([k])=>state.groove.instruments[k].pattern=empty16());state.groove.selectedName='Custom';persist();renderGroove();notify('드럼 패턴을 비웠습니다.');};
 
+  $('tunerInstrument').onchange=e=>{state.tuner.instrument=e.target.value;state.tuner.tuning=state.tuner.instrument==='chromatic'?'standard':(getInstrumentTunings(state.tuner.instrument)[0]?.[0]||'standard');tunerActiveString=-1;persist();renderTuner();};
+  $('tunerTuning').onchange=e=>{state.tuner.tuning=e.target.value;if(state.tuner.tuning==='custom'&&!state.tuner.custom[state.tuner.instrument])state.tuner.custom[state.tuner.instrument]=(getInstrumentTunings()[0]?.[2]||[]).slice();tunerActiveString=-1;persist();renderTuner();};
+  $('tunerAminus').onclick=()=>{state.tuner.referenceA=clamp(state.tuner.referenceA-1,430,450);persist();renderTuner();};$('tunerAplus').onclick=()=>{state.tuner.referenceA=clamp(state.tuner.referenceA+1,430,450);persist();renderTuner();};
+  $('toggleTunerMic').onclick=()=>tunerStream?stopTunerMic():startTunerMic();
+
+  $('openMiniMode').onclick=()=>setMiniMode(true);$('settingsMiniMode').onclick=()=>setMiniMode(true);$('closeMiniMode').onclick=()=>setMiniMode(false);$('miniPlay').onclick=()=>playing?stop():start();$('miniTap').onclick=()=>$('tapTempo').click();$('miniMinus').onpointerdown=()=>startRepeat(-1);$('miniPlus').onpointerdown=()=>startRepeat(1);['pointerup','pointercancel','pointerleave'].forEach(ev=>{$('miniMinus').addEventListener(ev,stopRepeat);$('miniPlus').addEventListener(ev,stopRepeat);});$('miniMute').onclick=toggleMiniMute;
+
   $$('.bottom-nav button').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));$('savePreset').onclick=savePreset;$('openSettings').onclick=()=>$('settingsModal').classList.remove('hidden');$('closeSettings').onclick=()=>$('settingsModal').classList.add('hidden');$('settingsModal').onclick=e=>{if(e.target===$('settingsModal'))$('settingsModal').classList.add('hidden');};$('resetSettings').onclick=resetSettings;
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&playing)requestWakeLock();});window.addEventListener('beforeunload',()=>{if(scheduler)clearInterval(scheduler);if(audioCtx)audioCtx.close();});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&playing)requestWakeLock();});window.addEventListener('beforeunload',()=>{if(scheduler)clearInterval(scheduler);if(tunerStream)stopTunerMic();if(audioCtx)audioCtx.close();});
 
   ensureNormalPattern();if(state.meterChainEnabled)ensureChain();renderAll();
 })();
