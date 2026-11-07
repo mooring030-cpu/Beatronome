@@ -351,3 +351,11 @@ body.mini-mode{background:#071019;overflow:hidden}body.mini-mode #app{max-width:
 .boost-presets button{border:1px solid var(--line);background:#151922;color:#8e9aa5;border-radius:10px;padding:9px 5px;font-size:9px;font-weight:800;white-space:nowrap}
 .boost-presets button.selected{border-color:rgba(222,185,105,.62);background:rgba(222,185,105,.12);color:#e7ca86}
 @media(max-width:390px){.boost-presets{grid-template-columns:repeat(2,1fr)}}
+
+
+/* Beatronome v0.7.2 - Pure Metronome option */
+.genre-scroll .genre-none{min-width:128px}
+.genre-off-card{grid-column:1/-1;min-height:116px;padding:20px;border:1px dashed rgba(201,154,72,.28);border-radius:16px;background:linear-gradient(145deg,rgba(201,154,72,.055),rgba(8,16,25,.72));display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px;text-align:center}
+.genre-off-card strong{font-size:12px;letter-spacing:.12em;color:#edcf8c}
+.genre-off-card span{max-width:420px;color:#81909d;font-size:10px;line-height:1.6}
+.groove-mode button:disabled{opacity:.32;cursor:not-allowed}

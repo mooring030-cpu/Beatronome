@@ -128,7 +128,7 @@
     pattern:makePattern(4), meterChainEnabled:false, meterChain:[],
     playbackMode:'both',
     groove:{
-      genre:'Rock', selectedName:'Basic Rock', kit:'studio', volume:.82, swing:0, humanize:0, dropout:0,
+      genre:'Rock', genreEnabled:true, selectedName:'Basic Rock', kit:'studio', volume:.82, swing:0, humanize:0, dropout:0,
       instruments: makeDefaultDrums()
     },
     tuner:{instrument:'electric',tuning:'standard',referenceA:440,custom:{}},
@@ -164,6 +164,8 @@
     if(merged.meterChainEnabled&&!merged.meterChain.length) merged.meterChain=[normalizeMeter({beats:merged.beatsPerBar,denominator:merged.denominator,pattern:merged.pattern})];
     merged.playbackMode=['metro','drum','both'].includes(merged.playbackMode)?merged.playbackMode:'both';
     merged.outputBoost=clamp(Number(merged.outputBoost ?? 1),.5,4);
+    merged.groove.genreEnabled=merged.groove.genreEnabled!==false;
+    if(!merged.groove.genreEnabled) merged.playbackMode='metro';
     merged.groove.volume=clamp(Number(merged.groove.volume ?? .82),0,1);
     merged.groove.swing=clamp(Number(merged.groove.swing)||0,0,75);
     merged.groove.humanize=clamp(Number(merged.groove.humanize)||0,0,100);
@@ -227,10 +229,10 @@
     $('bpmValue').textContent=state.bpm;$('tempoName').textContent=tempoName(state.bpm);$('meterTop').textContent=`${meter.beats}/${meter.denominator}${chainPos}`;$('meterTitle').textContent=`${meter.beats}/${meter.denominator}`;
     $('subdivision').value=state.subdivision;syncMeterControls();
     const subInfo=SUBDIVISIONS[state.subdivision]||SUBDIVISIONS[1],sub=subInfo.label;
-    const mode=state.playbackMode==='metro'?'Metro':state.playbackMode==='drum'?'Drum':`Metro + ${state.groove.selectedName||'Drum'}`;
+    const mode=!state.groove.genreEnabled?'Metronome Only':state.playbackMode==='metro'?'Metro':state.playbackMode==='drum'?'Drum':`Metro + ${state.groove.selectedName||'Drum'}`;
     $('soundSummary').textContent=state.meterChainEnabled?`${mode} · ${sub} · Chain ${state.meterChain.length}`:`${mode} · ${sub}`;
     $('playButton').classList.toggle('playing',playing);$('playIcon').textContent=playing?'Ⅱ':'▶';$('playLabel').textContent=playing?'STOP':'START';
-    if($('miniBpm')){$('miniBpm').textContent=state.bpm;$('miniMeter').textContent=`${meter.beats}/${meter.denominator}`;$('miniPlay').classList.toggle('playing',playing);$('miniPlayIcon').textContent=playing?'Ⅱ':'▶';$('miniPlayLabel').textContent=playing?'STOP':'START';$('miniModeText').textContent=state.playbackMode==='metro'?'METRO':state.playbackMode==='drum'?'DRUM':`METRO + ${state.groove.selectedName||'DRUM'}`;$('miniMute').classList.toggle('on',miniMuted);}
+    if($('miniBpm')){$('miniBpm').textContent=state.bpm;$('miniMeter').textContent=`${meter.beats}/${meter.denominator}`;$('miniPlay').classList.toggle('playing',playing);$('miniPlayIcon').textContent=playing?'Ⅱ':'▶';$('miniPlayLabel').textContent=playing?'STOP':'START';$('miniModeText').textContent=!state.groove.genreEnabled?'METRONOME ONLY':state.playbackMode==='metro'?'METRO':state.playbackMode==='drum'?'DRUM':`METRO + ${state.groove.selectedName||'DRUM'}`;$('miniMute').classList.toggle('on',miniMuted);}
     updateSessionStatus();
     const angle=-135+(state.bpm-BPM_MIN)/(BPM_MAX-BPM_MIN)*270;$('tempoDial').style.setProperty('--angle',`${angle}deg`);
     renderBeats();renderMeterChain();
@@ -264,17 +266,24 @@
   }
 
   function applyGroovePreset(preset){
-    state.bpm=preset.bpm;state.groove.genre=preset.genre;selectedGenre=preset.genre;state.groove.selectedName=preset.name;state.groove.kit=preset.kit;state.groove.swing=preset.swing;
+    state.groove.genreEnabled=true;state.playbackMode='both';state.bpm=preset.bpm;state.groove.genre=preset.genre;selectedGenre=preset.genre;state.groove.selectedName=preset.name;state.groove.kit=preset.kit;state.groove.swing=preset.swing;
     const base=makeDefaultDrums();DRUM_INSTRUMENTS.forEach(([key])=>{base[key].pattern=steps(...(preset.p[key]||[]));base[key].muted=false;});state.groove.instruments=base;
     persist();renderAll();notify(`${preset.genre} · ${preset.name} 적용`);
   }
   function renderGroove(){
-    const genres=[...new Set(GROOVE_PRESETS.map(p=>p.genre))];const chips=$('genreChips');chips.innerHTML='';genres.forEach(g=>{const b=document.createElement('button');b.textContent=g;b.className=g===selectedGenre?'selected':'';b.onclick=()=>{selectedGenre=g;state.groove.genre=g;persist();renderGroove();};chips.appendChild(b);});
-    const grid=$('groovePresetGrid');grid.innerHTML='';GROOVE_PRESETS.filter(p=>p.genre===selectedGenre).forEach(p=>{const b=document.createElement('button');b.className=`groove-preset-card${state.groove.selectedName===p.name&&state.groove.genre===p.genre?' selected':''}`;b.innerHTML=`<strong>${p.name}</strong><span>${p.bpm} BPM · ${DRUM_KITS[p.kit]}${p.swing?` · Swing ${p.swing}`:''}</span>`;b.onclick=()=>applyGroovePreset(p);grid.appendChild(b);});
-    $$('#playbackMode button').forEach(b=>b.classList.toggle('selected',b.dataset.playback===state.playbackMode));$('grooveStatusBadge').textContent=state.playbackMode.toUpperCase();$('selectedGrooveName').textContent=`${state.groove.genre} · ${state.groove.selectedName||'Custom'}`;
+    const enabled=state.groove.genreEnabled!==false;
+    const genres=[...new Set(GROOVE_PRESETS.map(p=>p.genre))],chips=$('genreChips');chips.innerHTML='';
+    const none=document.createElement('button');none.textContent='없음 · 메트로놈만';none.className=!enabled?'selected genre-none':'';none.onclick=()=>{if(playing)stop();state.groove.genreEnabled=false;state.playbackMode='metro';persist();renderGroove();renderCore();notify('장르 없이 메트로놈만 재생합니다.');};chips.appendChild(none);
+    genres.forEach(g=>{const b=document.createElement('button');b.textContent=g;b.className=enabled&&g===selectedGenre?'selected':'';b.onclick=()=>{state.groove.genreEnabled=true;selectedGenre=g;state.groove.genre=g;persist();renderGroove();renderCore();};chips.appendChild(b);});
+    const grid=$('groovePresetGrid');grid.innerHTML='';
+    if(!enabled){grid.innerHTML='<div class="genre-off-card"><strong>PURE METRONOME</strong><span>장르·드럼 패턴을 사용하지 않고 클릭 메트로놈만 재생합니다.<br>기존 Groove 설정은 그대로 보관됩니다.</span></div>';}
+    else GROOVE_PRESETS.filter(p=>p.genre===selectedGenre).forEach(p=>{const b=document.createElement('button');b.className=`groove-preset-card${state.groove.selectedName===p.name&&state.groove.genre===p.genre?' selected':''}`;b.innerHTML=`<strong>${p.name}</strong><span>${p.bpm} BPM · ${DRUM_KITS[p.kit]}${p.swing?` · Swing ${p.swing}`:''}</span>`;b.onclick=()=>applyGroovePreset(p);grid.appendChild(b);});
+    $$('#playbackMode button').forEach(b=>{const isMetro=b.dataset.playback==='metro';b.disabled=!enabled&&!isMetro;b.classList.toggle('selected',b.dataset.playback===state.playbackMode);});
+    $('grooveStatusBadge').textContent=!enabled?'METRO ONLY':state.playbackMode.toUpperCase();$('selectedGrooveName').textContent=!enabled?'장르 없음 · 메트로놈만':`${state.groove.genre} · ${state.groove.selectedName||'Custom'}`;
+    $('grooveControlsCard')?.classList.toggle('hidden',!enabled);$('sequencerCard')?.classList.toggle('hidden',!enabled);
     const kit=$('drumKit');if(!kit.options.length)Object.entries(DRUM_KITS).forEach(([k,v])=>{const o=document.createElement('option');o.value=k;o.textContent=v;kit.appendChild(o);});kit.value=state.groove.kit;
     const controls=[['drumVolume',0,100,Math.round(state.groove.volume*100),'drumVolumeOut','%'],['swingAmount',0,75,state.groove.swing,'swingAmountOut','%'],['humanizeAmount',0,100,state.groove.humanize,'humanizeAmountOut','%'],['drumDropout',0,80,state.groove.dropout,'drumDropoutOut','%']];controls.forEach(([id,min,max,val,out,sfx])=>{$(id).value=val;$(out).textContent=`${val}${sfx}`;setRangeStyle($(id),min,max,val);});
-    renderSequencer();
+    if(enabled)renderSequencer();
   }
   function renderSequencer(){
     const wrap=$('sequencer');wrap.innerHTML='';
@@ -343,7 +352,7 @@
 
   function renderPresets(){
     const list=$('presetList');list.innerHTML='';if(!presets.length){list.innerHTML='<div class="empty-state"><div class="big">☆</div><strong>아직 저장된 프리셋이 없습니다.</strong><span>Meter Chain · Training · Groove 패턴까지 함께 저장됩니다.</span></div>';return;}
-    presets.forEach(p=>{const n=deepMerge(defaults,p),a=document.createElement('article');a.className='preset-card card';const detail=n.meterChainEnabled&&n.meterChain.length?n.meterChain.slice(0,4).map(m=>`${m.beats}/${m.denominator}${m.repeatBars>1?`×${m.repeatBars}`:''}`).join(' → ')+(n.meterChain.length>4?' → …':''):`${n.beatsPerBar}/${n.denominator}`;a.innerHTML=`<button class="preset-main"><div class="preset-bpm">${n.bpm}<small>BPM</small></div><div class="preset-copy"><strong>${escapeHtml(p.name)}</strong><span>${detail} · ${n.groove.genre}/${n.groove.selectedName||'Custom'} · ${n.playbackMode.toUpperCase()}</span></div></button><button class="danger-icon">×</button>`;a.querySelector('.preset-main').onclick=()=>loadPreset(p);a.querySelector('.danger-icon').onclick=()=>{presets=presets.filter(x=>x.id!==p.id);persistPresets();renderPresets();};list.appendChild(a);});
+    presets.forEach(p=>{const n=deepMerge(defaults,p),a=document.createElement('article');a.className='preset-card card';const detail=n.meterChainEnabled&&n.meterChain.length?n.meterChain.slice(0,4).map(m=>`${m.beats}/${m.denominator}${m.repeatBars>1?`×${m.repeatBars}`:''}`).join(' → ')+(n.meterChain.length>4?' → …':''):`${n.beatsPerBar}/${n.denominator}`;const grooveText=n.groove.genreEnabled===false?'Metronome Only':`${n.groove.genre}/${n.groove.selectedName||'Custom'} · ${n.playbackMode.toUpperCase()}`;a.innerHTML=`<button class="preset-main"><div class="preset-bpm">${n.bpm}<small>BPM</small></div><div class="preset-copy"><strong>${escapeHtml(p.name)}</strong><span>${detail} · ${grooveText}</span></div></button><button class="danger-icon">×</button>`;a.querySelector('.preset-main').onclick=()=>loadPreset(p);a.querySelector('.danger-icon').onclick=()=>{presets=presets.filter(x=>x.id!==p.id);persistPresets();renderPresets();};list.appendChild(a);});
   }
   function renderAll(){renderCore();renderTraining();renderSound();renderGroove();renderTuner();renderPresets();}
 
@@ -445,7 +454,7 @@
   function savePreset(){const name=$('presetName').value.trim()||`Preset ${presets.length+1}`;presets.unshift({id:uid(),name,...JSON.parse(JSON.stringify(state))});persistPresets();$('presetName').value='';renderPresets();notify('프리셋을 저장했습니다.');}
   function loadPreset(p){if(playing)stop();state=deepMerge(defaults,p);selectedChainIndex=0;selectedGenre=state.groove.genre||'Rock';ensureNormalPattern();if(state.meterChainEnabled)ensureChain();persist();renderAll();switchTab('metronome');notify(`${p.name} 불러오기 완료`);}
   function switchTab(name){if(name!=='tuner'&&tunerStream)stopTunerMic();$$('.tab-page').forEach(x=>x.classList.remove('active'));$(`tab${name[0].toUpperCase()+name.slice(1)}`).classList.add('active');$$('.bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));if(name==='sound')renderSound();if(name==='groove')renderGroove();if(name==='tuner')renderTuner();if(name==='presets')renderPresets();}
-  const APP_VERSION='0.7.1';
+  const APP_VERSION='0.7.2';
   let swRegistration=null;
   let offlinePreparing=false;
   function networkLabel(){return navigator.onLine?'인터넷 연결됨 · 저장본 우선 실행':'현재 오프라인 · 저장된 앱으로 실행 중';}
@@ -505,7 +514,7 @@
   $$('.stepper').forEach(s=>s.querySelectorAll('[data-step]').forEach(btn=>btn.onclick=()=>{const k=s.dataset.stepper,delta=Number(btn.dataset.step),bounds={soundBars:[1,16],muteBars:[1,16],tempoStep:[1,20],everyBars:[1,16],targetBpm:[30,300]}[k];setTraining(k,clamp(state.training[k]+delta,bounds[0],bounds[1]));}));
   $$('#tempoMode button').forEach(b=>b.onclick=()=>setTraining('tempoMode',b.dataset.mode));$$('#gradualSeconds button').forEach(b=>b.onclick=()=>setTraining('gradualSeconds',Number(b.dataset.sec)));$$('#timerMinutes button').forEach(b=>b.onclick=()=>setTraining('timerMinutes',Number(b.dataset.min)));
 
-  $$('#playbackMode button').forEach(b=>b.onclick=()=>{state.playbackMode=b.dataset.playback;persist();renderGroove();renderCore();});
+  $$('#playbackMode button').forEach(b=>b.onclick=()=>{if(state.groove.genreEnabled===false&&b.dataset.playback!=='metro')return;state.playbackMode=b.dataset.playback;persist();renderGroove();renderCore();});
   $('drumKit').onchange=e=>{state.groove.kit=e.target.value;state.groove.selectedName='Custom';persist();renderGroove();};
   $('drumVolume').oninput=e=>{state.groove.volume=Number(e.target.value)/100;persist();renderGroove();};
   $('swingAmount').oninput=e=>{state.groove.swing=Number(e.target.value);state.groove.selectedName='Custom';persist();renderGroove();};
