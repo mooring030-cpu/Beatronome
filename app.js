@@ -163,7 +163,7 @@
     merged.meterChainEnabled=!!obj?.meterChainEnabled;
     if(merged.meterChainEnabled&&!merged.meterChain.length) merged.meterChain=[normalizeMeter({beats:merged.beatsPerBar,denominator:merged.denominator,pattern:merged.pattern})];
     merged.playbackMode=['metro','drum','both'].includes(merged.playbackMode)?merged.playbackMode:'both';
-    merged.outputBoost=clamp(Number(merged.outputBoost ?? 1),.5,2.5);
+    merged.outputBoost=clamp(Number(merged.outputBoost ?? 1),.5,4);
     merged.groove.volume=clamp(Number(merged.groove.volume ?? .82),0,1);
     merged.groove.swing=clamp(Number(merged.groove.swing)||0,0,75);
     merged.groove.humanize=clamp(Number(merged.groove.humanize)||0,0,100);
@@ -260,7 +260,7 @@
     const count=['randomMuteEnabled','internalEnabled','autoTempoEnabled','timerEnabled','gradualEnabled'].filter(k=>t[k]).length;$('trainingCount').textContent=count;$('trainingCount').classList.toggle('hidden',count===0);$('trainingList').classList.toggle('hidden',!trainingExpanded);$('trainingChevron').textContent=trainingExpanded?'⌃':'⌄';
   }
   function renderSound(){
-    const g=$('soundGrid');g.innerHTML='';Object.entries(SOUND_LABELS).forEach(([key,label])=>{const b=document.createElement('button');b.dataset.sound=key;b.className=`sound-card card ${state.sound===key?'selected':''}`;b.innerHTML=`<span class="sound-symbol">${key==='basic'?'◉':'♪'}</span><strong>${label}</strong><span>${state.sound===key?'✓ 사용 중':key==='basic'?'녹음 샘플 · 강/약/일반':'미리듣기'}</span>`;b.onclick=async()=>{state.sound=key;persist();renderSound();renderCore();await ensureAudio();if(key==='basic')await loadBasicSamples();synthClick(audioCtx.currentTime+.03,key,true,state.volume,'strong',SUBDIVISIONS[state.subdivision]?.bank||1);};g.appendChild(b);});$('volume').value=Math.round(state.volume*100);$('volumeOut').textContent=`${Math.round(state.volume*100)}%`;setRangeStyle($('volume'),10,100,Math.round(state.volume*100));if($('outputBoost')){$('outputBoost').value=Math.round(state.outputBoost*100);$('outputBoostOut').textContent=`${Math.round(state.outputBoost*100)}%`;setRangeStyle($('outputBoost'),50,250,Math.round(state.outputBoost*100));}
+    const g=$('soundGrid');g.innerHTML='';Object.entries(SOUND_LABELS).forEach(([key,label])=>{const b=document.createElement('button');b.dataset.sound=key;b.className=`sound-card card ${state.sound===key?'selected':''}`;b.innerHTML=`<span class="sound-symbol">${key==='basic'?'◉':'♪'}</span><strong>${label}</strong><span>${state.sound===key?'✓ 사용 중':key==='basic'?'녹음 샘플 · 강/약/일반':'미리듣기'}</span>`;b.onclick=async()=>{state.sound=key;persist();renderSound();renderCore();await ensureAudio();if(key==='basic')await loadBasicSamples();synthClick(audioCtx.currentTime+.03,key,true,state.volume,'strong',SUBDIVISIONS[state.subdivision]?.bank||1);};g.appendChild(b);});$('volume').value=Math.round(state.volume*100);$('volumeOut').textContent=`${Math.round(state.volume*100)}%`;setRangeStyle($('volume'),10,100,Math.round(state.volume*100));if($('outputBoost')){$('outputBoost').value=Math.round(state.outputBoost*100);$('outputBoostOut').textContent=`${Math.round(state.outputBoost*100)}%`;setRangeStyle($('outputBoost'),50,400,Math.round(state.outputBoost*100));$$('#boostPresets [data-boost]').forEach(b=>b.classList.toggle('selected',Number(b.dataset.boost)===state.outputBoost));}
   }
 
   function applyGroovePreset(preset){
@@ -364,7 +364,7 @@
       const Ctx=window.AudioContext||window.webkitAudioContext;audioCtx=new Ctx({latencyHint:'interactive'});
       master=audioCtx.createGain();master.gain.value=miniMuted?0:state.outputBoost;
       limiter=audioCtx.createDynamicsCompressor();
-      limiter.threshold.value=-3;limiter.knee.value=9;limiter.ratio.value=12;limiter.attack.value=.002;limiter.release.value=.12;
+      limiter.threshold.value=-1;limiter.knee.value=3;limiter.ratio.value=8;limiter.attack.value=.001;limiter.release.value=.08;
       master.connect(limiter).connect(audioCtx.destination);
     }
     if(audioCtx.state==='suspended')await audioCtx.resume();
@@ -445,6 +445,46 @@
   function savePreset(){const name=$('presetName').value.trim()||`Preset ${presets.length+1}`;presets.unshift({id:uid(),name,...JSON.parse(JSON.stringify(state))});persistPresets();$('presetName').value='';renderPresets();notify('프리셋을 저장했습니다.');}
   function loadPreset(p){if(playing)stop();state=deepMerge(defaults,p);selectedChainIndex=0;selectedGenre=state.groove.genre||'Rock';ensureNormalPattern();if(state.meterChainEnabled)ensureChain();persist();renderAll();switchTab('metronome');notify(`${p.name} 불러오기 완료`);}
   function switchTab(name){if(name!=='tuner'&&tunerStream)stopTunerMic();$$('.tab-page').forEach(x=>x.classList.remove('active'));$(`tab${name[0].toUpperCase()+name.slice(1)}`).classList.add('active');$$('.bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));if(name==='sound')renderSound();if(name==='groove')renderGroove();if(name==='tuner')renderTuner();if(name==='presets')renderPresets();}
+  const APP_VERSION='0.7.1';
+  let swRegistration=null;
+  let offlinePreparing=false;
+  function networkLabel(){return navigator.onLine?'인터넷 연결됨 · 저장본 우선 실행':'현재 오프라인 · 저장된 앱으로 실행 중';}
+  function setOfflineUi(status){
+    const title=$('offlineReadyTitle'),text=$('offlineStatusText'),bar=$('offlineProgressBar'),conn=$('offlineConnectionText'),btn=$('prepareOffline');
+    if(!title||!text||!bar||!conn||!btn)return;
+    conn.textContent=networkLabel();
+    if(!('serviceWorker' in navigator)){
+      title.textContent='오프라인 사용 미지원';title.className='offline';text.textContent='이 브라우저에서는 Service Worker를 사용할 수 없습니다.';bar.style.width='0%';btn.disabled=true;return;
+    }
+    if(!status){title.textContent='오프라인 사용 준비';title.className='partial';text.textContent='오프라인 데이터 상태를 확인하는 중입니다.';bar.style.width='0%';return;}
+    const pct=status.total?Math.round(status.cached/status.total*100):0;bar.style.width=`${pct}%`;
+    if(status.ready){title.textContent='OFFLINE READY ✓';title.className='ready';text.textContent=`앱·아이콘·Basic 음원 ${status.cached}/${status.total}개 저장 완료 · 비행기 모드 사용 가능`;btn.textContent='다시 확인';btn.disabled=false;}
+    else{title.textContent=navigator.onLine?'오프라인 준비 필요':'오프라인 데이터 불완전';title.className=navigator.onLine?'partial':'offline';text.textContent=`${status.cached}/${status.total}개 저장됨 · ${status.total-status.cached}개 남음`;btn.textContent=navigator.onLine?'준비하기':'연결 후 준비';btn.disabled=!navigator.onLine;}
+  }
+  async function swRequest(type){
+    if(!('serviceWorker' in navigator))return null;
+    try{
+      const reg=swRegistration||await navigator.serviceWorker.ready;const target=navigator.serviceWorker.controller||reg.active||reg.waiting;
+      if(!target)return null;
+      return await new Promise((resolve,reject)=>{const channel=new MessageChannel();const timer=setTimeout(()=>reject(new Error('service worker timeout')),15000);channel.port1.onmessage=e=>{clearTimeout(timer);resolve(e.data||null);};target.postMessage({type},[channel.port2]);});
+    }catch(e){console.warn('Beatronome SW request failed',e);return null;}
+  }
+  async function refreshOfflineStatus(){setOfflineUi(null);const status=await swRequest('GET_OFFLINE_STATUS');setOfflineUi(status);return status;}
+  async function prepareOffline(userTriggered=true){
+    if(offlinePreparing)return;if(!navigator.onLine){notify('인터넷 연결 후 오프라인 데이터를 준비해주세요.');setOfflineUi(await swRequest('GET_OFFLINE_STATUS'));return;}
+    offlinePreparing=true;const btn=$('prepareOffline');if(btn){btn.disabled=true;btn.textContent='저장 중…';}
+    if(userTriggered&&navigator.storage?.persist){try{await navigator.storage.persist();}catch{}}
+    const status=await swRequest('PREPARE_OFFLINE');offlinePreparing=false;setOfflineUi(status);
+    if(userTriggered)notify(status?.ready?'오프라인 사용 준비가 완료되었습니다.':'일부 파일을 받지 못했습니다. 연결 상태를 확인해주세요.');
+  }
+  async function registerOfflineWorker(){
+    if(!('serviceWorker' in navigator)){setOfflineUi(null);return;}
+    try{
+      swRegistration=await navigator.serviceWorker.register(`./sw.js?v=${APP_VERSION}`,{updateViaCache:'none'});await swRegistration.update();await navigator.serviceWorker.ready;
+      let status=await refreshOfflineStatus();
+      if(status&&!status.ready&&navigator.onLine){await prepareOffline(false);status=await refreshOfflineStatus();}
+    }catch(e){console.warn('Beatronome service worker registration failed',e);setOfflineUi(null);}
+  }
   function resetSettings(){if(playing)stop();if(tunerStream)stopTunerMic();state=deepMerge(defaults,{});selectedChainIndex=0;selectedGenre='Rock';persist();renderAll();notify('기본값으로 초기화했습니다.');}
 
   for(let i=1;i<=16;i++){const o=document.createElement('option');o.value=o.textContent=i;$('beatsPerBar').appendChild(o);}
@@ -461,7 +501,7 @@
   $('bpmDrag').onpointerdown=e=>{drag={x:e.clientX,y:e.clientY,bpm:state.bpm};$('bpmDrag').setPointerCapture?.(e.pointerId);};$('bpmDrag').onpointermove=e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=drag.y-e.clientY;setBpm(drag.bpm+Math.round((dx+dy*.65)/6));};$('bpmDrag').onpointerup=$('bpmDrag').onpointercancel=()=>drag=null;$('bpmDrag').onwheel=e=>{e.preventDefault();setBpm(state.bpm+(e.deltaY<0?1:-1));};
   function dialToBpm(e){const r=$('tempoDial').getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let deg=Math.atan2(e.clientY-cy,e.clientX-cx)*180/Math.PI+90;if(deg>180)deg-=360;deg=clamp(deg,-135,135);setBpm(BPM_MIN+(deg+135)/270*(BPM_MAX-BPM_MIN));}
   $('tempoDial').onpointerdown=e=>{dialDragging=true;$('tempoDial').setPointerCapture?.(e.pointerId);dialToBpm(e);};$('tempoDial').onpointermove=e=>{if(dialDragging)dialToBpm(e);};$('tempoDial').onpointerup=$('tempoDial').onpointercancel=()=>dialDragging=false;
-  $('trainingToggle').onclick=()=>{trainingExpanded=!trainingExpanded;renderTraining();};$$('[data-toggle]').forEach(btn=>btn.onclick=()=>setTraining(btn.dataset.toggle,!state.training[btn.dataset.toggle]));$('randomMute').oninput=e=>setTraining('randomMute',Number(e.target.value));$('gradualTarget').oninput=e=>setTraining('gradualTarget',Number(e.target.value));$('volume').oninput=e=>{state.volume=Number(e.target.value)/100;persist();renderSound();};$('outputBoost').oninput=e=>{state.outputBoost=Number(e.target.value)/100;persist();applyOutputBoost();renderSound();};
+  $('trainingToggle').onclick=()=>{trainingExpanded=!trainingExpanded;renderTraining();};$$('[data-toggle]').forEach(btn=>btn.onclick=()=>setTraining(btn.dataset.toggle,!state.training[btn.dataset.toggle]));$('randomMute').oninput=e=>setTraining('randomMute',Number(e.target.value));$('gradualTarget').oninput=e=>setTraining('gradualTarget',Number(e.target.value));$('volume').oninput=e=>{state.volume=Number(e.target.value)/100;persist();renderSound();};$('outputBoost').oninput=e=>{state.outputBoost=Number(e.target.value)/100;persist();applyOutputBoost();renderSound();};$$('#boostPresets [data-boost]').forEach(btn=>btn.onclick=()=>{state.outputBoost=clamp(Number(btn.dataset.boost),.5,4);persist();applyOutputBoost();renderSound();notify(`전체 출력 ${Math.round(state.outputBoost*100)}%`);});
   $$('.stepper').forEach(s=>s.querySelectorAll('[data-step]').forEach(btn=>btn.onclick=()=>{const k=s.dataset.stepper,delta=Number(btn.dataset.step),bounds={soundBars:[1,16],muteBars:[1,16],tempoStep:[1,20],everyBars:[1,16],targetBpm:[30,300]}[k];setTraining(k,clamp(state.training[k]+delta,bounds[0],bounds[1]));}));
   $$('#tempoMode button').forEach(b=>b.onclick=()=>setTraining('tempoMode',b.dataset.mode));$$('#gradualSeconds button').forEach(b=>b.onclick=()=>setTraining('gradualSeconds',Number(b.dataset.sec)));$$('#timerMinutes button').forEach(b=>b.onclick=()=>setTraining('timerMinutes',Number(b.dataset.min)));
 
@@ -480,8 +520,8 @@
 
   $('openMiniMode').onclick=()=>setMiniMode(true);$('settingsMiniMode').onclick=()=>setMiniMode(true);$('closeMiniMode').onclick=()=>setMiniMode(false);$('miniPlay').onclick=()=>playing?stop():start();$('miniTap').onclick=()=>$('tapTempo').click();$('miniMinus').onpointerdown=()=>startRepeat(-1);$('miniPlus').onpointerdown=()=>startRepeat(1);['pointerup','pointercancel','pointerleave'].forEach(ev=>{$('miniMinus').addEventListener(ev,stopRepeat);$('miniPlus').addEventListener(ev,stopRepeat);});$('miniMute').onclick=toggleMiniMute;
 
-  $$('.bottom-nav button').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));$('savePreset').onclick=savePreset;$('openSettings').onclick=()=>$('settingsModal').classList.remove('hidden');$('closeSettings').onclick=()=>$('settingsModal').classList.add('hidden');$('settingsModal').onclick=e=>{if(e.target===$('settingsModal'))$('settingsModal').classList.add('hidden');};$('resetSettings').onclick=resetSettings;
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){configureIOSAudioSession('playback',true);if(playing)requestWakeLock();}});window.addEventListener('pageshow',()=>configureIOSAudioSession('playback',true));window.addEventListener('beforeunload',()=>{if(scheduler)clearInterval(scheduler);if(tunerStream)stopTunerMic();if(audioCtx)audioCtx.close();});
+  $$('.bottom-nav button').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));$('savePreset').onclick=savePreset;$('openSettings').onclick=()=>{$('settingsModal').classList.remove('hidden');refreshOfflineStatus();};$('closeSettings').onclick=()=>$('settingsModal').classList.add('hidden');$('settingsModal').onclick=e=>{if(e.target===$('settingsModal'))$('settingsModal').classList.add('hidden');};$('resetSettings').onclick=resetSettings;$('prepareOffline').onclick=()=>{if(offlinePreparing)return;if($('prepareOffline').textContent==='다시 확인')refreshOfflineStatus();else prepareOffline(true);};
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){configureIOSAudioSession('playback',true);if(playing)requestWakeLock();refreshOfflineStatus();}});window.addEventListener('pageshow',()=>{configureIOSAudioSession('playback',true);refreshOfflineStatus();});window.addEventListener('online',()=>{refreshOfflineStatus().then(st=>{if(st&&!st.ready)prepareOffline(false);});});window.addEventListener('offline',()=>refreshOfflineStatus());window.addEventListener('beforeunload',()=>{if(scheduler)clearInterval(scheduler);if(tunerStream)stopTunerMic();if(audioCtx)audioCtx.close();});
 
-  ensureNormalPattern();if(state.meterChainEnabled)ensureChain();renderAll();
+  ensureNormalPattern();if(state.meterChainEnabled)ensureChain();renderAll();setOfflineUi(null);registerOfflineWorker();
 })();
