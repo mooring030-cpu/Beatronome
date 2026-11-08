@@ -1,4 +1,4 @@
-const VERSION = '0.7.2';
+const VERSION = '0.8.0';
 const CACHE = `beatronome-offline-v${VERSION}`;
 
 const BASIC = [];
@@ -12,6 +12,7 @@ const OFFLINE_ASSETS = [
   './',
   './index.html',
   `./styles.css?v=${VERSION}`,
+  `./cloud-config.js?v=${VERSION}`,
   `./app.js?v=${VERSION}`,
   `./manifest.webmanifest?v=${VERSION}`,
   './favicon.png',

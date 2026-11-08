@@ -7,7 +7,7 @@
   "background_color": "#081019",
   "theme_color": "#081019",
   "orientation": "any",
-  "description": "Offline-first rhythm trainer with metronome, sampled click, grooves, guitar/bass tuner and practice mini-mode.",
+  "description": "Offline-first rhythm trainer with cloud-synced presets, metronome, sampled click, grooves, guitar/bass tuner and practice mini-mode.",
   "icons": [
     {
       "src": "./icon-192.png",

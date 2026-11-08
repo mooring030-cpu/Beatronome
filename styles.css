@@ -353,9 +353,13 @@ body.mini-mode{background:#071019;overflow:hidden}body.mini-mode #app{max-width:
 @media(max-width:390px){.boost-presets{grid-template-columns:repeat(2,1fr)}}
 
 
-/* Beatronome v0.7.2 - Pure Metronome option */
+/* Beatronome v0.8.0 - Pure Metronome option */
 .genre-scroll .genre-none{min-width:128px}
 .genre-off-card{grid-column:1/-1;min-height:116px;padding:20px;border:1px dashed rgba(201,154,72,.28);border-radius:16px;background:linear-gradient(145deg,rgba(201,154,72,.055),rgba(8,16,25,.72));display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px;text-align:center}
 .genre-off-card strong{font-size:12px;letter-spacing:.12em;color:#edcf8c}
 .genre-off-card span{max-width:420px;color:#81909d;font-size:10px;line-height:1.6}
 .groove-mode button:disabled{opacity:.32;cursor:not-allowed}
+
+
+/* v0.8 Cloud Sync */
+.cloud-settings-item{align-items:flex-start}.cloud-settings-copy{min-width:0;flex:1}.cloud-settings-copy>span,.cloud-settings-copy>small{display:block}.cloud-auth-panel,.cloud-account-panel{margin-top:12px;display:grid;gap:9px}.cloud-auth-panel input{width:100%;border:1px solid rgba(213,178,103,.22);background:#0c151f;color:#f4ead7;border-radius:12px;padding:11px 12px;font:inherit;outline:none}.cloud-auth-panel input:focus{border-color:rgba(213,178,103,.65);box-shadow:0 0 0 3px rgba(213,178,103,.08)}.cloud-auth-actions{display:flex;gap:8px;flex-wrap:wrap}.cloud-auth-actions button{flex:1;min-width:110px}.cloud-account-line{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 10px;border-radius:11px;background:rgba(255,255,255,.035)}.cloud-account-line b{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cloud-account-line span{font-size:10px;font-weight:800;letter-spacing:.08em;color:#8fd7c4;border:1px solid rgba(143,215,196,.26);padding:4px 7px;border-radius:999px;white-space:nowrap}.cloud-account-line span.syncing{color:#e2bd73;border-color:rgba(226,189,115,.3)}.cloud-account-line span.dirty{color:#e6a39d;border-color:rgba(230,163,157,.3)}.cloud-auto-row{display:flex;align-items:center;justify-content:space-between;gap:14px;font-size:13px;color:#c6bda9;padding:3px 2px}.cloud-auto-row input{width:18px;height:18px;accent-color:#c59a4a}.cloud-setup-hint{margin-top:10px;padding:9px 10px;border:1px solid rgba(225,163,116,.25);background:rgba(117,55,43,.18);border-radius:11px;color:#e6c0a4;font-size:11px;line-height:1.5}.preset-cloud{display:inline-flex;margin-left:6px;font-size:11px;color:#8fd7c4;vertical-align:1px}
