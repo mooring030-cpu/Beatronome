@@ -8,15 +8,15 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Beatronome" />
   <title>Beatronome</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=0.10.0" />
+  <link rel="manifest" href="./manifest.webmanifest?v=0.10.1" />
   <link rel="icon" href="./favicon.png" type="image/png" />
   <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
-  <link rel="stylesheet" href="./styles.css?v=0.10.0" />
+  <link rel="stylesheet" href="./styles.css?v=0.10.1" />
 </head>
 <body>
 <div id="app">
   <header class="topbar">
-    <div><div class="eyebrow">RHYTHM TRAINER</div><div class="brand-line"><h1>Beatronome</h1><span class="version-badge">v0.10.0</span></div></div>
+    <div><div class="eyebrow">RHYTHM TRAINER</div><div class="brand-line"><h1>Beatronome</h1><span class="version-badge">v0.10.1</span></div></div>
     <div class="topbar-actions"><button class="cloud-top" id="cloudTopBadge" aria-label="클라우드 상태" title="Cloud Sync">☁</button><button class="icon-button quick-save-top" id="quickSaveTop" aria-label="현재 설정 저장" title="현재 설정 저장">☆</button><button class="icon-button mini-launch" id="openMiniMode" aria-label="미니 모드" title="악보 연습용 미니 모드">▣</button><button class="icon-button" id="openSettings" aria-label="설정">☰</button></div>
   </header>
   <div class="core-mode-bar" id="coreModeBar"><button class="selected" data-core-tab="metronome">METRONOME</button><button data-core-tab="groove">GROOVE</button><button data-core-tab="tuner">TUNER</button></div>
@@ -24,7 +24,7 @@
 
   <main>
     <section id="tabMetronome" class="tab-page active">
-      <section class="quick-preset-strip card"><div><span class="eyebrow">QUICK PRESETS</span><strong>최근 프리셋</strong></div><div class="quick-preset-list" id="quickPresetList"></div><button class="outline-small" id="quickSavePreset">＋ 저장</button></section>
+      <section class="quick-preset-strip card"><div><span class="eyebrow">QUICK PRESETS</span><strong>최근 프리셋</strong></div><div class="quick-preset-list" id="quickPresetList"></div><button class="outline-small ui-redundant" id="quickSavePreset">＋ 저장</button></section>
       <section class="bpm-card">
         <div class="bpm-topline"><span id="meterTop">4/4</span><span id="sessionStatus">READY</span></div>
         <div class="bpm-drag" id="bpmDrag" title="좌우/위아래 드래그 또는 마우스 휠">
@@ -101,7 +101,7 @@
 
       <section class="transport-card card">
         <button class="play-button" id="playButton" aria-label="재생"><span id="playIcon">▶</span></button>
-        <div class="transport-copy"><strong id="playLabel">START</strong><span id="soundSummary">Classic Click · Quarter</span></div><div class="transport-side"><button class="outline-small" id="transportSave">☆ SAVE</button><button class="outline-small" id="transportFocus">FOCUS</button></div>
+        <div class="transport-copy"><strong id="playLabel">START</strong><span id="soundSummary">Classic Click · Quarter</span></div><div class="transport-side"><button class="outline-small ui-redundant" id="transportSave">☆ SAVE</button><button class="outline-small ui-redundant" id="transportFocus">FOCUS</button></div>
       </section>
 
       <section class="training-panel card advanced-only">
@@ -365,11 +365,11 @@
     <div class="mini-help">갤럭시: 최근 앱 → Beatronome 아이콘 → 팝업 화면으로 보기</div>
   </section>
 
-  <div class="modal-backdrop hidden" id="settingsModal"><div class="settings-sheet"><div class="sheet-handle"></div><div class="page-title"><div><span class="eyebrow">SETTINGS</span><h2>앱 설정</h2></div><button class="icon-button" id="closeSettings">×</button></div><div class="settings-item"><span class="settings-icon">⌂</span><div><strong>PWA 홈 화면 설치</strong><span>브라우저 메뉴에서 ‘홈 화면에 추가’를 선택하면 앱처럼 사용할 수 있습니다.</span></div></div><div class="settings-item"><span class="settings-icon">☀</span><div><strong>화면 자동 꺼짐 방지</strong><span>재생 중 지원되는 기기에서 Screen Wake Lock을 자동 사용합니다.</span></div></div><div class="settings-item offline-settings"><span class="settings-icon">⇩</span><div><strong id="offlineReadyTitle">오프라인 사용 준비</strong><span id="offlineStatusText">상태를 확인하는 중입니다.</span><div class="offline-progress"><i id="offlineProgressBar"></i></div><small id="offlineConnectionText">네트워크 상태 확인 중</small></div><button class="outline-small" id="prepareOffline">준비하기</button></div><div class="settings-item"><span class="settings-icon">▣</span><div><strong>악보 연습 Mini Mode</strong><span>Beatronome을 작은 컨트롤 화면으로 바꿉니다. 갤럭시에서는 최근 앱 → Beatronome 아이콘 → ‘팝업 화면으로 보기’를 함께 사용하면 PDF 악보 위에 작은 창으로 둘 수 있습니다.</span></div><button class="outline-small" id="settingsMiniMode">열기</button></div><div class="settings-item cloud-settings-item"><span class="settings-icon">☁</span><div class="cloud-settings-copy"><strong>Cloud Sync</strong><span id="cloudStatusText">로그인하면 폰·Mac·태블릿에서 설정과 프리셋을 동기화합니다.</span><small id="cloudLastSync">로컬 저장만 사용 중</small><div id="cloudSignedOut" class="cloud-auth-panel"><input id="cloudEmail" type="email" inputmode="email" autocomplete="email" placeholder="이메일"><input id="cloudPassword" type="password" autocomplete="current-password" placeholder="비밀번호 (6자 이상)"><div class="cloud-auth-actions"><button class="outline-small" id="cloudLogin">로그인</button><button class="outline-small" id="cloudSignup">회원가입</button></div></div><div id="cloudSignedIn" class="cloud-account-panel hidden"><div class="cloud-account-line"><b id="cloudUserEmail">—</b><span id="cloudStateBadge">SYNCED</span></div><label class="cloud-auto-row"><span>자동 동기화</span><input id="cloudAutoSync" type="checkbox" checked></label><div class="cloud-auth-actions"><button class="outline-small" id="cloudSyncNow">지금 동기화</button><button class="outline-small" id="cloudLogout">로그아웃</button></div></div><div id="cloudSetupHint" class="cloud-setup-hint hidden">Supabase에 Beatronome 테이블이 아직 없습니다. ZIP의 <b>supabase_setup.sql</b>을 SQL Editor에서 한 번 실행하세요.</div></div></div><div class="settings-item"><span class="settings-icon">?</span><div><strong>사용 매뉴얼</strong><span>각 기능의 사용법과 추천 연습 방법을 확인합니다.</span></div><button class="outline-small" id="settingsManual">열기</button></div><div class="settings-item"><span class="settings-icon">↺</span><div><strong>현재 설정 초기화</strong><span>프리셋은 유지하고 메트로놈/훈련 설정만 기본값으로 되돌립니다.</span></div><button class="outline-small" id="resetSettings">초기화</button></div><div class="version-note">Beatronome v0.10.0 Knowledge Edition<br>Pure Metronome Mode · Offline-first PWA · 400% Output Boost · Mac Quick Boost · iPhone Playback<br>Basic Sample Click · Guitar/Bass Tuner · Mini Mode<br>Groove Engine · Meter Chain · Training · Jazz UI</div></div></div>
+  <div class="modal-backdrop hidden" id="settingsModal"><div class="settings-sheet"><div class="sheet-handle"></div><div class="page-title"><div><span class="eyebrow">SETTINGS</span><h2>앱 설정</h2></div><button class="icon-button" id="closeSettings">×</button></div><div class="settings-item"><span class="settings-icon">⌂</span><div><strong>PWA 홈 화면 설치</strong><span>브라우저 메뉴에서 ‘홈 화면에 추가’를 선택하면 앱처럼 사용할 수 있습니다.</span></div></div><div class="settings-item"><span class="settings-icon">☀</span><div><strong>화면 자동 꺼짐 방지</strong><span>재생 중 지원되는 기기에서 Screen Wake Lock을 자동 사용합니다.</span></div></div><div class="settings-item offline-settings"><span class="settings-icon">⇩</span><div><strong id="offlineReadyTitle">오프라인 사용 준비</strong><span id="offlineStatusText">상태를 확인하는 중입니다.</span><div class="offline-progress"><i id="offlineProgressBar"></i></div><small id="offlineConnectionText">네트워크 상태 확인 중</small></div><button class="outline-small" id="prepareOffline">준비하기</button></div><div class="settings-item"><span class="settings-icon">▣</span><div><strong>악보 연습 Mini Mode</strong><span>Beatronome을 작은 컨트롤 화면으로 바꿉니다. 갤럭시에서는 최근 앱 → Beatronome 아이콘 → ‘팝업 화면으로 보기’를 함께 사용하면 PDF 악보 위에 작은 창으로 둘 수 있습니다.</span></div><button class="outline-small" id="settingsMiniMode">열기</button></div><div class="settings-item cloud-settings-item"><span class="settings-icon">☁</span><div class="cloud-settings-copy"><strong>Cloud Sync</strong><span id="cloudStatusText">로그인하면 폰·Mac·태블릿에서 설정과 프리셋을 동기화합니다.</span><small id="cloudLastSync">로컬 저장만 사용 중</small><div id="cloudSignedOut" class="cloud-auth-panel"><input id="cloudEmail" type="email" inputmode="email" autocomplete="email" placeholder="이메일"><input id="cloudPassword" type="password" autocomplete="current-password" placeholder="비밀번호 (6자 이상)"><div class="cloud-auth-actions"><button class="outline-small" id="cloudLogin">로그인</button><button class="outline-small" id="cloudSignup">회원가입</button></div></div><div id="cloudSignedIn" class="cloud-account-panel hidden"><div class="cloud-account-line"><b id="cloudUserEmail">—</b><span id="cloudStateBadge">SYNCED</span></div><label class="cloud-auto-row"><span>자동 동기화</span><input id="cloudAutoSync" type="checkbox" checked></label><div class="cloud-auth-actions"><button class="outline-small" id="cloudSyncNow">지금 동기화</button><button class="outline-small" id="cloudLogout">로그아웃</button></div></div><div id="cloudSetupHint" class="cloud-setup-hint hidden">Supabase에 Beatronome 테이블이 아직 없습니다. ZIP의 <b>supabase_setup.sql</b>을 SQL Editor에서 한 번 실행하세요.</div></div></div><div class="settings-item ui-redundant"><span class="settings-icon">?</span><div><strong>사용 매뉴얼</strong><span>각 기능의 사용법과 추천 연습 방법을 확인합니다.</span></div><button class="outline-small" id="settingsManual">열기</button></div><div class="settings-item"><span class="settings-icon">↺</span><div><strong>현재 설정 초기화</strong><span>프리셋은 유지하고 메트로놈/훈련 설정만 기본값으로 되돌립니다.</span></div><button class="outline-small" id="resetSettings">초기화</button></div><div class="version-note">Beatronome v0.10.1 UI Refinement Edition<br>Pure Metronome Mode · Offline-first PWA · 400% Output Boost · Mac Quick Boost · iPhone Playback<br>Basic Sample Click · Guitar/Bass Tuner · Mini Mode<br>Groove Engine · Meter Chain · Training · Jazz UI</div></div></div>
   <div class="toast hidden" id="toast"></div>
 </div>
-<script src="./cloud-config.js?v=0.10.0"></script>
-<script src="./app.js?v=0.10.0"></script>
-<script src="./knowledge.js?v=0.10.0"></script>
+<script src="./cloud-config.js?v=0.10.1"></script>
+<script src="./app.js?v=0.10.1"></script>
+<script src="./knowledge.js?v=0.10.1"></script>
 </body>
 </html>

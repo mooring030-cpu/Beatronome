@@ -1,4 +1,4 @@
-# Beatronome v0.10.0 — Knowledge Edition
+# Beatronome v0.10.1 — UI Refinement Edition
 
 이번 버전은 기능 추가보다 실제 연습 흐름과 조작성 개선에 초점을 둔 UX/Practice 업데이트입니다.
 
@@ -62,14 +62,14 @@ Settings → 오프라인 사용 준비 완료 후 앱 본체와 Basic 샘플을
 ## GitHub Pages 업데이트
 1. ZIP 압축 해제
 2. GitHub Desktop에서 사용 중인 `Beatronome` 저장소 폴더에 전체 파일 덮어쓰기
-3. Commit: `Beatronome v0.10.0`
+3. Commit: `Beatronome v0.10.1`
 4. Push origin
-5. 사이트에서 상단 버전이 `v0.10.0`인지 확인
+5. 사이트에서 상단 버전이 `v0.10.1`인지 확인
 
 기존 Supabase Cloud Sync를 사용 중이라면 `beatronome_sync` 테이블을 그대로 사용합니다. v0.9의 루틴/세트리스트는 settings JSON 안에 포함되어 별도의 DB 테이블 추가가 필요하지 않습니다.
 
 
-## v0.10.0 Knowledge Edition
+## v0.10.1 UI Refinement + Knowledge
 
 더보기 → **뮤직 지식**에서 오프라인 레퍼런스를 사용할 수 있습니다.
 
@@ -84,3 +84,16 @@ Settings → 오프라인 사용 준비 완료 후 앱 본체와 Basic 샘플을
 - 모든 지식 데이터와 코드 계산은 오프라인에서 동작
 
 새 `knowledge.js`가 추가되었으므로 GitHub 업데이트 시 반드시 함께 업로드하세요.
+
+## v0.10.1 UI Refinement
+
+- 전체 글자 크기 및 버튼/입력 터치 영역 확대
+- Knowledge/Manual의 작은 본문, 표, 카드 가독성 개선
+- 중복 상단 Core Mode 바 제거: 하단/PC 내비게이션으로 통합
+- 저장은 상단 ☆ 버튼으로 통합하고 중복 Save 버튼 정리
+- Focus 진입 버튼 중복 정리
+- Settings 안의 중복 Manual 진입점 정리
+- PC/Mac 창 크기에 따라 1열/2열/3열 자동 재배치
+- 넓은 PC 화면에서는 하단 내비게이션을 상단 가로 내비게이션으로 전환
+- Metronome, Groove, Tuner, Practice, Knowledge, Manual, Presets 데스크톱 레이아웃 최적화
+- 모바일 입력 요소 16px 적용으로 iOS 입력 시 불필요한 자동 확대 감소

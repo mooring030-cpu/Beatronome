@@ -513,7 +513,7 @@
   function setFocusMode(on){focusMode=!!on;$('focusOverlay')?.classList.toggle('hidden',!focusMode);renderUiExtras();if(on){try{$('focusOverlay').requestFullscreen?.();}catch{}}else{try{if(document.fullscreenElement)document.exitFullscreen?.();}catch{}}}
   function handleTapTempo(){const now=performance.now();tapTimes=tapTimes.filter(t=>now-t<2600);tapTimes.push(now);tapTimes=tapTimes.slice(-8);if($('tapHint'))$('tapHint').textContent=`${tapTimes.length}회 탭`;if(tapTimes.length>=2){const ints=tapTimes.slice(1).map((t,i)=>t-tapTimes[i]);const sorted=[...ints].sort((a,b)=>a-b),median=sorted[Math.floor(sorted.length/2)];const good=ints.filter(x=>Math.abs(x-median)/median<.22);const use=good.length?good:ints;let total=0,weight=0;use.forEach((x,i)=>{const w=i+1;total+=x*w;weight+=w;});setBpm(60000/(total/weight));}clearTimeout(handleTapTempo._t);handleTapTempo._t=setTimeout(()=>{tapTimes=[];if($('tapHint'))$('tapHint').textContent='4회 정도 탭';},2600);}
 
-  const APP_VERSION='0.10.0';
+  const APP_VERSION='0.10.1';
   let swRegistration=null;
   let offlinePreparing=false;
   function networkLabel(){return navigator.onLine?'인터넷 연결됨 · 저장본 우선 실행':'현재 오프라인 · 저장된 앱으로 실행 중';}

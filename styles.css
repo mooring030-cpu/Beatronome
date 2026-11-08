@@ -388,3 +388,224 @@ body.beat-flash:after{content:"";position:fixed;inset:0;z-index:120;pointer-even
 .knowledge-launch{background:linear-gradient(145deg,rgba(74,112,128,.18),rgba(13,24,34,.96));border-color:rgba(111,167,176,.16)}
 .knowledge-page{padding-bottom:112px}.knowledge-hero{padding:18px;margin-bottom:12px;background:radial-gradient(circle at 88% 15%,rgba(213,170,86,.15),transparent 34%),linear-gradient(145deg,#101b26,#0c151f)}.knowledge-hero h3{margin:4px 0 6px;font-family:Georgia,"Times New Roman",serif;font-size:19px;color:#edd8aa}.knowledge-hero p{margin:0;color:#8d9ba8;font-size:10px;line-height:1.6}.knowledge-search-wrap{display:flex;gap:6px;margin-top:14px}.knowledge-search-wrap input{flex:1;min-width:0;padding:11px 12px;border-radius:12px;border:1px solid rgba(222,185,105,.14);background:#09131c;color:#eee3d0;outline:none}.knowledge-search-wrap button{width:39px;border-radius:11px;border:1px solid rgba(222,185,105,.14);background:#111e29;color:#c8aa6c;font-size:18px}.knowledge-nav{position:sticky;top:120px;z-index:14;display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:0 0 12px;padding:6px;border:1px solid rgba(222,185,105,.10);border-radius:14px;background:rgba(9,17,25,.93);backdrop-filter:blur(14px)}.knowledge-nav button{height:37px;border:0;border-radius:10px;background:transparent;color:#738291;font-size:8px;font-weight:900;letter-spacing:.65px}.knowledge-nav button.selected{background:linear-gradient(145deg,rgba(213,170,86,.22),rgba(91,58,65,.24));color:#e9c77d}.knowledge-panel{display:none}.knowledge-panel.active{display:grid;gap:12px}.knowledge-panel.search-show{display:grid!important;gap:12px}.knowledge-hidden{display:none!important}.knowledge-tool,.reference-card{padding:16px}.theory-picker{display:grid;grid-template-columns:1fr 1.4fr;gap:8px;margin:13px 0}.theory-picker label{display:flex;flex-direction:column;gap:5px;color:#7b8996;font-size:8px;font-weight:900;letter-spacing:.8px}.theory-picker select{width:100%;height:42px;border:1px solid rgba(222,185,105,.15);border-radius:11px;background:#0b151f;color:#eee4d4;padding:0 10px;outline:none}.theory-result{border:1px solid rgba(222,185,105,.11);border-radius:15px;padding:14px;background:#0b151f}.theory-name{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.theory-name strong{font-family:Georgia,"Times New Roman",serif;font-size:24px;color:#efd79d}.theory-name span{color:#7e8d99;font-size:9px}.formula-badge{display:inline-block;margin:8px 0 12px;padding:6px 9px;border-radius:9px;background:rgba(100,151,156,.11);color:#82b8b1;font-size:9px;font-weight:900}.note-pill-row{display:flex;flex-wrap:wrap;gap:7px}.note-pill{min-width:43px;height:43px;border-radius:12px;border:1px solid rgba(222,185,105,.18);background:linear-gradient(145deg,#142331,#0e1924);color:#f0d89f;font-size:14px;font-weight:950}.note-pill:active{transform:translateY(1px);background:#203447}.play-theory{margin-top:10px;height:34px;border-radius:10px;border:1px solid rgba(222,185,105,.14);background:#111d29;color:#cdb16f;font-size:9px;font-weight:900}.theory-result p,.theory-footnote{margin:10px 0 0;color:#748491;font-size:9px;line-height:1.55}.diatonic-result{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.diatonic-chord{min-width:0;padding:11px;border-radius:12px;background:#0b151f;border:1px solid rgba(222,185,105,.10);display:flex;flex-direction:column;gap:3px}.diatonic-chord span{font-size:8px;color:#71a99f;font-weight:900}.diatonic-chord strong{font-size:13px;color:#ead6aa}.diatonic-chord small{font-size:7px;color:#71808d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ref-head{display:flex;gap:11px;align-items:center;margin-bottom:14px}.ref-head>span{width:31px;height:31px;border-radius:10px;display:grid;place-items:center;background:rgba(207,164,79,.12);color:#d8b86f;font-size:8px;font-weight:900}.ref-head h3{margin:0;font-family:Georgia,"Times New Roman",serif;color:#e8d3a5;font-size:17px}.ref-head p{margin:2px 0 0;color:#6f7f8c;font-size:8px}.note-value-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.note-value-grid>div{padding:10px 5px;border-radius:11px;background:#0d1721;border:1px solid rgba(222,185,105,.09);display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center}.note-value-grid b{font-size:25px;line-height:1;color:#e4c777}.note-value-grid strong{font-size:8px}.note-value-grid span{font-size:8px;color:#71808c}.ref-lines{display:grid;gap:7px}.ref-lines p{margin:0;padding:9px 10px;border-left:2px solid rgba(111,167,158,.38);background:#0c1620;border-radius:0 10px 10px 0;color:#8d9aa5;font-size:9px;line-height:1.6}.ref-lines b{color:#d8c18d}.signature-order{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px}.signature-order>div{padding:11px;border-radius:12px;background:#0b151f;border:1px solid rgba(222,185,105,.1)}.signature-order span{display:block;color:#748391;font-size:8px}.signature-order strong{display:block;margin-top:5px;color:#e5c77e;font-size:11px}.signature-table{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.signature-row{display:grid;grid-template-columns:auto auto 1fr;align-items:center;gap:5px;padding:8px;border-radius:9px;background:#0e1923}.signature-row b{font-size:10px;color:#e5d3ae}.signature-row span{font-size:8px;color:#77a89d}.signature-row small{font-size:7px;color:#6b7a87;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.interval-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.interval-grid>div{padding:10px;border-radius:11px;background:#0d1721;border:1px solid rgba(222,185,105,.08);display:flex;flex-direction:column;gap:2px}.interval-grid b{color:#dcbf78;font-size:11px}.interval-grid strong{font-size:9px}.interval-grid span{font-size:7px;color:#6f7d89}.formula-list{display:grid;gap:5px}.formula-list>div{display:grid;grid-template-columns:78px 1.2fr 1fr;align-items:center;gap:8px;padding:9px 10px;border-radius:10px;background:#0d1721}.formula-list b{color:#e2c274;font-size:10px}.formula-list span{font-size:9px;color:#d7c8aa}.formula-list small{font-size:7px;color:#6f7e89}.mode-table{display:grid;gap:5px}.mode-table>div{display:grid;grid-template-columns:24px 82px 1fr 1.15fr;gap:7px;align-items:center;padding:9px;border-radius:10px;background:#0d1721}.mode-table>div>span{width:22px;height:22px;border-radius:7px;background:rgba(207,164,79,.12);display:grid;place-items:center;color:#cfad62;font-size:7px}.mode-table b{font-size:9px;color:#ead2a1}.mode-table strong{font-size:8px;color:#aeb7b5}.mode-table small{font-size:7px;color:#6c7b87}.ii-v-i{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:6px;align-items:center}.ii-v-i>div{padding:12px 8px;border-radius:12px;background:#0d1721;display:flex;flex-direction:column;gap:4px}.ii-v-i b{font-size:13px;color:#e3c579}.ii-v-i span{font-size:8px;color:#92a29f}.ii-v-i small{font-size:7px;color:#687987;line-height:1.4}.ii-v-i>i{color:#596975;font-style:normal}.tension-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.tension-grid>div{padding:12px;border-radius:12px;background:#0d1721;display:flex;flex-direction:column;gap:4px}.tension-grid b{color:#e0c176}.tension-grid span{font-size:8px;color:#82919c;line-height:1.45}.jazz-timeline{display:grid;gap:0}.timeline-row{display:grid;grid-template-columns:96px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid rgba(222,185,105,.08)}.timeline-row:last-child{border-bottom:0}.timeline-row>span{color:#d4b46d;font-size:9px;font-weight:900}.timeline-row b{color:#e4d6bc;font-size:10px}.timeline-row p{margin:4px 0 0;color:#7c8b96;font-size:8px;line-height:1.55}.musician-filters{display:flex;gap:5px;overflow-x:auto;margin-bottom:10px;scrollbar-width:none}.musician-filters button{flex:0 0 auto;height:31px;padding:0 9px;border-radius:9px;border:1px solid rgba(222,185,105,.1);background:#0e1923;color:#70808d;font-size:7px;font-weight:900}.musician-filters button.selected{color:#e2c379;background:rgba(207,164,79,.12);border-color:rgba(207,164,79,.25)}.musician-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.musician-card{padding:12px;border-radius:12px;background:#0d1721;border:1px solid rgba(222,185,105,.08)}.musician-card>span{font-size:7px;color:#70a59c;font-weight:900}.musician-card h4{margin:4px 0 2px;font-family:Georgia,"Times New Roman",serif;color:#ead4a5;font-size:14px}.musician-card b{font-size:8px;color:#8998a3}.musician-card p{margin:7px 0;color:#7b8994;font-size:8px;line-height:1.5}.musician-card small{color:#655f55;font-size:7px}.knowledge-source{padding:14px}.knowledge-source strong{color:#75a79e;font-size:8px}.knowledge-source p{margin:6px 0 0;color:#6d7c88;font-size:8px;line-height:1.55}.knowledge-empty{padding:45px 20px;text-align:center;color:#70808c;font-size:10px}
 @media(max-width:560px){.knowledge-nav{top:112px}.theory-picker{grid-template-columns:1fr}.note-value-grid{grid-template-columns:repeat(3,1fr)}.signature-order{grid-template-columns:1fr}.signature-table{grid-template-columns:repeat(2,1fr)}.interval-grid{grid-template-columns:repeat(2,1fr)}.formula-list>div{grid-template-columns:65px 1fr}.formula-list small{grid-column:2}.mode-table>div{grid-template-columns:22px 72px 1fr}.mode-table small{grid-column:2/-1}.ii-v-i{grid-template-columns:1fr}.ii-v-i>i{transform:rotate(90deg);text-align:center}.musician-grid{grid-template-columns:1fr}.timeline-row{grid-template-columns:76px 1fr}}
+
+/* Beatronome v0.10.1 - Readability & Responsive UI Refinement */
+.ui-redundant{display:none!important}
+.core-mode-bar{display:none!important}
+
+/* Larger, easier-to-read defaults */
+body{font-size:16px;line-height:1.5}
+#app{max-width:1440px}
+main{padding:18px}
+.topbar{padding-left:20px;padding-right:20px}
+.topbar h1{font-size:24px}
+.version-badge{font-size:11px}
+.eyebrow{font-size:11px;letter-spacing:1.45px}
+.page-title h2{font-size:clamp(26px,3vw,34px)}
+.page-symbol{font-size:32px}
+.section-heading h2{font-size:21px}
+.muted{font-size:13px}
+.primary-small,.outline-small{font-size:13px;min-height:42px;padding:10px 14px}
+select,input{font-size:15px;min-height:44px}
+.quick-options label,.theory-picker label,.groove-control-grid label{font-size:12px}
+.quick-options select{font-size:14px}
+
+/* Metronome readability */
+.bpm-topline{font-size:13px}
+.bpm-drag strong{font-size:clamp(90px,13vw,140px)}
+.bpm-unit{font-size:15px}
+.tempo-name{font-size:16px}
+.bpm-hint{font-size:13px}
+.dial-center{font-size:10px}
+.tap-button{font-size:14px;min-width:132px}
+.tap-button small{font-size:10px}
+.beat-dot span{font-size:13px}.beat-dot i{font-size:19px}
+.visual-beat-head strong{font-size:22px}
+.visual-actions button{font-size:12px}
+.visual-options label{font-size:12px;min-height:50px}
+.visual-options select{font-size:13px;max-width:120px}
+.visual-lamp{width:22px;height:22px}
+.transport-copy strong{font-size:24px}.transport-copy span{font-size:14px}
+.training-row-copy strong{font-size:16px}.training-row-copy span{font-size:13px}
+.training-row{padding:18px 20px}.training-row-body{margin-top:17px}
+.range-wrap output{font-size:14px;min-width:66px}
+.stepper>span{font-size:11px}.stepper strong{font-size:14px}
+.stepper button{width:34px;height:34px;font-size:15px}.stepper>div{grid-template-columns:34px 1fr 34px}
+.segmented button,.chip-row button{font-size:12px;min-height:38px}
+.meter-chain-head strong,.chain-repeat-editor strong{font-size:15px}
+.meter-chain-head span,.chain-repeat-editor span,.meter-chain-note,.common-meter-label{font-size:12px}
+
+/* Quick presets - launch only, save is now the single top-star action */
+.quick-preset-strip{grid-template-columns:auto 1fr;padding:14px 16px}
+.quick-preset-strip strong{font-size:13px}
+.quick-preset-list button{font-size:12px;height:40px;max-width:170px}
+.quick-preset-empty{font-size:12px}
+
+/* Sound */
+.sound-card strong{font-size:15px}.sound-card span,.groove-tip{font-size:12px;line-height:1.6}
+.volume-card{padding:18px}
+.boost-presets button{font-size:12px;min-height:40px}
+
+/* Groove */
+.groove-hero,.groove-library,.groove-controls,.sequencer-card{padding:18px}
+.groove-hero h3{font-size:20px}
+.groove-status-badge{font-size:12px}
+.genre-scroll button,.groove-preset-grid button{font-size:12px}
+.groove-control-grid label{font-size:12px}
+.sequencer-help{font-size:11px}
+
+/* Tuner */
+.tuner-hero,.tuner-display,.tuner-strings-card,.custom-tuning-card{padding:18px}
+.tuner-select-grid label{font-size:12px}
+.tuner-calibration{font-size:13px}
+.tuner-status-row{font-size:12px}
+.tuner-note{font-size:clamp(70px,11vw,120px)}
+.tuner-frequency strong{font-size:30px}.tuner-frequency span{font-size:13px}
+.tuner-cents{font-size:15px}.tuner-tip{font-size:12px;line-height:1.55}
+.tuner-mic-button{font-size:14px;min-height:48px}
+
+/* Practice */
+.practice-builder,.saved-practice{padding:18px}
+.practice-add-row input,.practice-add-row select,.manual-search input{font-size:15px}
+.draft-item strong,.practice-item strong{font-size:14px}
+.draft-item span,.practice-item span{font-size:12px}
+.draft-item button,.practice-item button,.session-actions button{font-size:11px;min-height:34px}
+.active-session-card strong{font-size:15px}.active-session-card span{font-size:11px}
+.global-practice-bar strong{font-size:13px}.global-practice-bar span{font-size:11px}.global-practice-bar button{font-size:11px;min-height:34px}
+
+/* More / Manual */
+.more-launch{min-height:150px;padding:20px}.more-launch>span{font-size:30px}.more-launch strong{font-size:16px}.more-launch small{font-size:12px;line-height:1.5}
+.manual-card{padding:20px}.manual-card h3{font-size:20px}.manual-card p{font-size:14px;line-height:1.7}.manual-card b{font-size:12px}.manual-card span{font-size:13px;line-height:1.6}
+
+/* Knowledge: remove the tiny-text feeling */
+.knowledge-hero{padding:22px}.knowledge-hero h3{font-size:24px}.knowledge-hero p{font-size:14px;line-height:1.7}
+.knowledge-search-wrap input{font-size:15px;min-height:48px}.knowledge-search-wrap button{font-size:20px}
+.knowledge-nav button{font-size:11px;min-height:44px}
+.knowledge-tool,.reference-card{padding:20px}
+.theory-picker label{font-size:11px}.theory-picker select{font-size:14px;height:46px}
+.theory-name strong{font-size:30px}.theory-name span{font-size:12px}.formula-badge{font-size:12px}
+.note-pill{min-width:50px;height:50px;font-size:17px}.play-theory{font-size:12px;min-height:40px}
+.theory-result p,.theory-footnote{font-size:12px;line-height:1.65}
+.diatonic-chord span{font-size:11px}.diatonic-chord strong{font-size:16px}.diatonic-chord small{font-size:10px}
+.ref-head>span{width:36px;height:36px;font-size:10px}.ref-head h3{font-size:21px}.ref-head p{font-size:11px}
+.note-value-grid strong,.note-value-grid span{font-size:11px}.note-value-grid b{font-size:30px}
+.ref-lines p{font-size:13px;line-height:1.7;padding:11px 12px}
+.signature-order span{font-size:11px}.signature-order strong{font-size:14px}
+.signature-row b{font-size:13px}.signature-row span{font-size:11px}.signature-row small{font-size:10px}
+.interval-grid b{font-size:14px}.interval-grid strong{font-size:12px}.interval-grid span{font-size:10px}
+.formula-list b{font-size:13px}.formula-list span{font-size:12px}.formula-list small{font-size:10px}
+.mode-table>div>span{font-size:10px}.mode-table b{font-size:12px}.mode-table strong{font-size:11px}.mode-table small{font-size:10px}
+.ii-v-i b{font-size:16px}.ii-v-i span{font-size:12px}.ii-v-i small{font-size:10px;line-height:1.55}
+.tension-grid b{font-size:14px}.tension-grid span{font-size:12px;line-height:1.55}
+.timeline-row>span{font-size:12px}.timeline-row b{font-size:14px}.timeline-row p{font-size:12px;line-height:1.65}
+.musician-filters button{font-size:10px;min-height:36px}.musician-card>span{font-size:10px}.musician-card h4{font-size:18px}.musician-card b{font-size:11px}.musician-card p{font-size:12px;line-height:1.6}.musician-card small{font-size:10px}
+.knowledge-source strong{font-size:11px}.knowledge-source p{font-size:12px;line-height:1.65}.knowledge-empty{font-size:13px}
+
+/* Presets / settings */
+.preset-main{padding:16px}.preset-title strong{font-size:15px}.preset-title span{font-size:12px}
+.backup-tools strong{font-size:15px}.backup-tools span{font-size:12px}
+.settings-sheet{max-width:820px}
+.settings-item strong{font-size:15px}.settings-item span,.settings-item small{font-size:12px;line-height:1.55}
+.version-note{font-size:11px;line-height:1.6}
+
+/* Bottom nav: five clear items on mobile */
+.bottom-nav{grid-template-columns:repeat(5,1fr);width:min(860px,100%);padding-top:9px}
+.bottom-nav button{font-size:11px;min-height:54px}.bottom-nav button>span{font-size:23px}.bottom-nav button small{font-size:10px}
+
+/* Compact phones */
+@media(max-width:560px){
+  main{padding:14px}
+  .topbar{padding-left:14px;padding-right:14px}.topbar h1{font-size:22px}
+  .topbar-actions{gap:5px}.icon-button{width:40px;height:40px}
+  .page-title{margin-bottom:14px}.page-title h2{font-size:27px}
+  .card{border-radius:20px}
+  .bpm-card{padding:16px 14px 20px}.bpm-drag strong{font-size:88px}.bpm-drag{min-height:118px}
+  .quick-options-four{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .visual-actions{width:100%;justify-content:flex-start;margin-top:6px}.visual-beat-head{align-items:flex-start;flex-wrap:wrap}
+  .visual-options{grid-template-columns:1fr}.visual-options label{font-size:13px}
+  .beat-section,.training-row,.knowledge-tool,.reference-card,.manual-card{padding-left:16px;padding-right:16px}
+  .bottom-nav button{min-height:58px;padding:5px 1px}.bottom-nav button>span{font-size:22px}.bottom-nav button small{font-size:10px}
+  input,select{font-size:16px}
+  .more-grid{grid-template-columns:1fr 1fr;gap:9px}.more-launch{min-height:132px;padding:16px}.more-launch strong{font-size:15px}.more-launch small{font-size:11px}
+  .knowledge-nav{top:76px;overflow-x:auto;grid-template-columns:repeat(4,minmax(90px,1fr))}.knowledge-nav button{font-size:10px}
+  .note-value-grid{grid-template-columns:repeat(2,1fr)}
+  .signature-table,.interval-grid{grid-template-columns:1fr}
+  .formula-list>div{grid-template-columns:80px 1fr}.formula-list small{grid-column:2}
+  .mode-table>div{grid-template-columns:28px 90px 1fr}.mode-table small{grid-column:2/-1}
+  .timeline-row{grid-template-columns:86px 1fr}
+  .manual-list{grid-template-columns:1fr}
+}
+
+/* Tablet / narrow desktop: fluid two-column behavior */
+@media(min-width:760px){
+  main{padding:22px 28px}
+  .more-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .manual-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .preset-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .musician-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+/* Full desktop / resizable Mac & PC windows */
+@media(min-width:980px){
+  #app{padding-bottom:36px}
+  .topbar{padding-left:30px;padding-right:30px}
+  main{padding:92px 30px 34px}
+  .bottom-nav{position:fixed;top:76px;bottom:auto;left:50%;transform:translateX(-50%);width:min(980px,calc(100vw - 60px));padding:7px;border:1px solid rgba(222,185,105,.12);border-radius:16px;background:rgba(9,17,25,.92);box-shadow:0 14px 32px rgba(0,0,0,.2)}
+  .bottom-nav button{min-height:46px;flex-direction:row;justify-content:center;gap:8px;border-radius:11px}.bottom-nav button>span{font-size:18px}.bottom-nav button small{font-size:12px}
+  .bottom-nav button.active{background:rgba(213,170,86,.12)}
+  .global-practice-bar{bottom:24px;width:min(900px,calc(100% - 60px))}
+
+  #tabMetronome.active{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(390px,.92fr);grid-template-areas:"quick quick" "bpm visual" "bpm beat" "transport beat" "training training";gap:18px;align-items:start}
+  #tabMetronome>.quick-preset-strip{grid-area:quick;margin:0}
+  #tabMetronome>.bpm-card{grid-area:bpm;height:100%;min-height:510px;display:flex;flex-direction:column;justify-content:center}
+  #tabMetronome>.visual-beat-card{grid-area:visual;margin:0}
+  #tabMetronome>.beat-section{grid-area:beat;margin:0}
+  #tabMetronome>.transport-card{grid-area:transport;margin:0}
+  #tabMetronome>.training-panel{grid-area:training;margin:0}
+
+  #tabSound.active{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+  #tabSound>.page-title,#tabSound>.sound-grid{grid-column:1/-1}
+  #tabSound>.volume-card{margin:0;height:100%}
+
+  #tabGroove.active{display:grid;grid-template-columns:minmax(340px,.72fr) minmax(0,1.28fr);grid-template-areas:"title title" "hero library" "controls library" "sequencer sequencer";gap:18px;align-items:start}
+  #tabGroove>.page-title{grid-area:title;margin:0 0 2px}
+  #tabGroove>.groove-hero{grid-area:hero;margin:0}
+  #tabGroove>.groove-library{grid-area:library;margin:0;height:100%}
+  #tabGroove>.groove-controls{grid-area:controls;margin:0}
+  #tabGroove>.sequencer-card{grid-area:sequencer;margin:0}
+
+  #tabTuner.active{display:grid;grid-template-columns:minmax(330px,.78fr) minmax(0,1.22fr);grid-template-areas:"title title" "hero display" "strings display" "custom custom";gap:18px;align-items:start}
+  #tabTuner>.page-title{grid-area:title;margin:0 0 2px}
+  #tabTuner>.tuner-hero{grid-area:hero;margin:0}
+  #tabTuner>.tuner-display{grid-area:display;margin:0;height:100%}
+  #tabTuner>.tuner-strings-card{grid-area:strings;margin:0}
+  #tabTuner>.custom-tuning-card{grid-area:custom;margin:0}
+
+  #tabPractice.active{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+  #tabPractice>.page-title,#tabPractice>.active-session-card{grid-column:1/-1}
+  #tabPractice>.page-title{margin:0 0 2px}
+  #tabPractice>.practice-builder,#tabPractice>.saved-practice{margin:0;height:100%}
+
+  #tabMore.active .more-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+  #tabPresets.active .preset-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  #tabManual.active .manual-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  .knowledge-panel.active[data-knowledge-content="lab"],.knowledge-panel.search-show[data-knowledge-content="lab"]{grid-template-columns:repeat(3,minmax(0,1fr));align-items:start}
+  .knowledge-panel.active[data-knowledge-content="basics"],.knowledge-panel.active[data-knowledge-content="harmony"],.knowledge-panel.active[data-knowledge-content="jazz"],.knowledge-panel.search-show[data-knowledge-content="basics"],.knowledge-panel.search-show[data-knowledge-content="harmony"],.knowledge-panel.search-show[data-knowledge-content="jazz"]{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+  .knowledge-nav{top:145px}
+}
+
+/* Very wide desktop */
+@media(min-width:1280px){
+  main{padding-left:40px;padding-right:40px}
+  #tabMore.active .more-grid{gap:16px}
+  .manual-list{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #tabPresets.active .preset-list{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .musician-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+
+/* When a desktop window is squeezed back down, return naturally to the mobile navigation/layout. */
+@media(min-width:980px) and (max-width:1090px){
+  #tabMetronome.active{grid-template-columns:minmax(0,1fr) minmax(340px,.9fr)}
+  #tabGroove.active,#tabTuner.active{grid-template-columns:minmax(300px,.8fr) minmax(0,1.2fr)}
+}
+.transport-side{display:none!important}
