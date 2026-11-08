@@ -1,4 +1,4 @@
-# Beatronome v0.9.0 — UX + Practice + Manual
+# Beatronome v0.10.0 — Knowledge Edition
 
 이번 버전은 기능 추가보다 실제 연습 흐름과 조작성 개선에 초점을 둔 UX/Practice 업데이트입니다.
 
@@ -62,8 +62,25 @@ Settings → 오프라인 사용 준비 완료 후 앱 본체와 Basic 샘플을
 ## GitHub Pages 업데이트
 1. ZIP 압축 해제
 2. GitHub Desktop에서 사용 중인 `Beatronome` 저장소 폴더에 전체 파일 덮어쓰기
-3. Commit: `Beatronome v0.9.0`
+3. Commit: `Beatronome v0.10.0`
 4. Push origin
-5. 사이트에서 상단 버전이 `v0.9.0`인지 확인
+5. 사이트에서 상단 버전이 `v0.10.0`인지 확인
 
 기존 Supabase Cloud Sync를 사용 중이라면 `beatronome_sync` 테이블을 그대로 사용합니다. v0.9의 루틴/세트리스트는 settings JSON 안에 포함되어 별도의 DB 테이블 추가가 필요하지 않습니다.
+
+
+## v0.10.0 Knowledge Edition
+
+더보기 → **뮤직 지식**에서 오프라인 레퍼런스를 사용할 수 있습니다.
+
+- Root + Chord 선택 → 코드톤/공식 자동 계산 및 구성음 재생
+- Root + Scale 선택 → Major/Minor/Modes/Pentatonic/Blues/Altered/Diminished 등 구성음 자동 계산
+- Major/Natural Minor 다이아토닉 7th chord 자동 표시
+- 음표 길이, 점음표, 타이, 셋잇단음표, 오선/음자리표/임시표
+- 조표: # 순서 F-C-G-D-A-E-B / b 순서 B-E-A-D-G-C-F
+- 음정, 코드 기호, 7 Modes, ii-V-I, guide tones, chord-scale/tension 빠른 표
+- Jazz history timeline, 주요 뮤지션, 전공생용 listening routine
+- 지식 검색 및 뮤지션 악기별 필터
+- 모든 지식 데이터와 코드 계산은 오프라인에서 동작
+
+새 `knowledge.js`가 추가되었으므로 GitHub 업데이트 시 반드시 함께 업로드하세요.

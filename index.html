@@ -8,15 +8,15 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Beatronome" />
   <title>Beatronome</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=0.9.0" />
+  <link rel="manifest" href="./manifest.webmanifest?v=0.10.0" />
   <link rel="icon" href="./favicon.png" type="image/png" />
   <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
-  <link rel="stylesheet" href="./styles.css?v=0.9.0" />
+  <link rel="stylesheet" href="./styles.css?v=0.10.0" />
 </head>
 <body>
 <div id="app">
   <header class="topbar">
-    <div><div class="eyebrow">RHYTHM TRAINER</div><div class="brand-line"><h1>Beatronome</h1><span class="version-badge">v0.9.0</span></div></div>
+    <div><div class="eyebrow">RHYTHM TRAINER</div><div class="brand-line"><h1>Beatronome</h1><span class="version-badge">v0.10.0</span></div></div>
     <div class="topbar-actions"><button class="cloud-top" id="cloudTopBadge" aria-label="클라우드 상태" title="Cloud Sync">☁</button><button class="icon-button quick-save-top" id="quickSaveTop" aria-label="현재 설정 저장" title="현재 설정 저장">☆</button><button class="icon-button mini-launch" id="openMiniMode" aria-label="미니 모드" title="악보 연습용 미니 모드">▣</button><button class="icon-button" id="openSettings" aria-label="설정">☰</button></div>
   </header>
   <div class="core-mode-bar" id="coreModeBar"><button class="selected" data-core-tab="metronome">METRONOME</button><button data-core-tab="groove">GROOVE</button><button data-core-tab="tuner">TUNER</button></div>
@@ -254,9 +254,65 @@
       <div class="more-grid">
         <button class="more-launch card" data-open-tab="sound"><span>♪</span><strong>클릭 사운드</strong><small>Basic·Digital·볼륨·Boost</small></button>
         <button class="more-launch card" data-open-tab="presets"><span>☆</span><strong>프리셋</strong><small>저장·불러오기·백업</small></button>
+        <button class="more-launch card knowledge-launch" data-open-tab="knowledge"><span>♯</span><strong>뮤직 지식</strong><small>코드·스케일·다이아토닉·재즈 레퍼런스</small></button>
         <button class="more-launch card" data-open-tab="manual"><span>?</span><strong>매뉴얼</strong><small>기능별 사용법과 추천 연습</small></button>
         <button class="more-launch card" id="moreSettings"><span>☰</span><strong>앱 설정</strong><small>오프라인·Cloud Sync·Mini Mode</small></button>
       </div>
+    </section>
+
+    <section id="tabKnowledge" class="tab-page knowledge-page">
+      <div class="page-title"><div><span class="eyebrow">KNOWLEDGE</span><h2>뮤지션 레퍼런스</h2></div><span class="page-symbol">♯</span></div>
+      <section class="knowledge-hero card">
+        <div><span class="eyebrow">QUICK MUSIC THEORY</span><h3>연습 중 바로 꺼내 쓰는 음악 지식</h3><p>코드톤·스케일·다이아토닉부터 기보법, 재즈 화성, 역사와 주요 뮤지션까지 오프라인으로 확인합니다.</p></div>
+        <div class="knowledge-search-wrap"><input id="knowledgeSearch" placeholder="검색: 예) m7♭5, Dorian, # 순서, Coltrane"><button id="clearKnowledgeSearch" aria-label="검색 지우기">×</button></div>
+      </section>
+      <div class="knowledge-nav" id="knowledgeNav">
+        <button class="selected" data-knowledge-panel="lab">THEORY LAB</button><button data-knowledge-panel="basics">BASICS</button><button data-knowledge-panel="harmony">HARMONY</button><button data-knowledge-panel="jazz">JAZZ</button>
+      </div>
+
+      <div class="knowledge-panel active" data-knowledge-content="lab">
+        <section class="knowledge-tool card">
+          <div class="section-heading"><div><span class="eyebrow">CHORD TONES</span><h2>코드 구성음</h2></div><span class="muted">Root + Chord</span></div>
+          <div class="theory-picker"><label>ROOT<select id="chordRoot"></select></label><label>CHORD<select id="chordType"></select></label></div>
+          <div class="theory-result" id="chordResult"></div>
+        </section>
+        <section class="knowledge-tool card">
+          <div class="section-heading"><div><span class="eyebrow">SCALE TONES</span><h2>스케일 구성음</h2></div><span class="muted">Scale / Mode</span></div>
+          <div class="theory-picker"><label>ROOT<select id="scaleRoot"></select></label><label>SCALE<select id="scaleType"></select></label></div>
+          <div class="theory-result" id="scaleResult"></div>
+        </section>
+        <section class="knowledge-tool card">
+          <div class="section-heading"><div><span class="eyebrow">DIATONIC</span><h2>다이아토닉 코드</h2></div><span class="muted">Triads + 7th</span></div>
+          <div class="theory-picker"><label>KEY<select id="diatonicRoot"></select></label><label>SYSTEM<select id="diatonicMode"><option value="major">Major</option><option value="minor">Natural Minor</option></select></label></div>
+          <div class="diatonic-result" id="diatonicResult"></div>
+          <p class="theory-footnote">Minor의 V는 자연단음계에서는 minor이지만, 실제 tonal/jazz harmony에서는 harmonic minor의 leading tone을 사용해 V7로 만드는 경우가 매우 흔합니다.</p>
+        </section>
+      </div>
+
+      <div class="knowledge-panel" data-knowledge-content="basics">
+        <section class="reference-card card" data-knowledge-search="기보법 음표 쉼표 박자 점음표 타이 셋잇단음표"><div class="ref-head"><span>01</span><div><h3>음표와 리듬 기보</h3><p>4/4에서의 기본 길이</p></div></div><div class="note-value-grid"><div><b>𝅝</b><strong>온음표</strong><span>4박</span></div><div><b>𝅗𝅥</b><strong>2분음표</strong><span>2박</span></div><div><b>𝅘𝅥</b><strong>4분음표</strong><span>1박</span></div><div><b>𝅘𝅥𝅮</b><strong>8분음표</strong><span>1/2박</span></div><div><b>𝅘𝅥𝅯</b><strong>16분음표</strong><span>1/4박</span></div></div><div class="ref-lines"><p><b>점음표</b> 원래 길이의 1.5배. 예: 점4분음표 = 1.5박.</p><p><b>타이(Tie)</b> 같은 높이의 두 음 길이를 합쳐 연주.</p><p><b>셋잇단음표(Triplet)</b> 보통 둘이 들어갈 시간에 같은 길이의 세 음을 배치.</p><p><b>쉼표(Rest)</b> 음을 내지 않는 시간을 길이값으로 기보합니다.</p></div></section>
+        <section class="reference-card card" data-knowledge-search="오선 보표 음자리표 높은음자리 낮은음자리 scientific pitch middle c"><div class="ref-head"><span>02</span><div><h3>음높이 표기</h3><p>Staff · Clef · Octave</p></div></div><div class="ref-lines"><p><b>오선(Staff)</b> 5개의 선과 4개의 칸에 음높이를 표시합니다.</p><p><b>높은음자리표(Treble)</b> G clef. 기타, 피아노 오른손, 관악기 등에서 흔히 사용.</p><p><b>낮은음자리표(Bass)</b> F clef. 베이스, 피아노 왼손 등 저음역에 사용.</p><p><b>Scientific Pitch</b> 가운데 C를 C4로 표기하는 방식이 널리 쓰입니다. 베이스의 실제 울림은 악보 표기와 옥타브가 다를 수 있습니다.</p><p><b>임시표</b> ♯ = 반음 올림 · ♭ = 반음 내림 · ♮ = 원래 음으로 복귀.</p><p><b>Enharmonic</b> C♯=D♭, D♯=E♭처럼 실제 음높이는 같지만 화성적 기능과 악보 문맥에 따라 이름이 달라집니다.</p></div></section>
+        <section class="reference-card card" data-knowledge-search="sharp flat key signature order # 샵 플랫 조표 5도권"><div class="ref-head"><span>03</span><div><h3>조표 순서</h3><p>Circle of Fifths 핵심 암기</p></div></div><div class="signature-order"><div><span>♯ 붙는 순서</span><strong>F → C → G → D → A → E → B</strong></div><div><span>♭ 붙는 순서</span><strong>B → E → A → D → G → C → F</strong></div></div><div id="keySignatureTable" class="signature-table"></div></section>
+        <section class="reference-card card" data-knowledge-search="interval 음정 단2 장2 단3 장3 완4 트라이톤 완5 장6 단7 장7 옥타브"><div class="ref-head"><span>04</span><div><h3>음정 빠른 표</h3><p>반음 수로 확인</p></div></div><div id="intervalGrid" class="interval-grid"></div></section>
+      </div>
+
+      <div class="knowledge-panel" data-knowledge-content="harmony">
+        <section class="reference-card card" data-knowledge-search="코드 공식 triad seventh chord symbol maj7 dominant m7 dim aug sus add9"><div class="ref-head"><span>01</span><div><h3>코드 기호 & 공식</h3><p>프로 세션에서 자주 보는 표기</p></div></div><div id="chordFormulaTable" class="formula-list"></div></section>
+        <section class="reference-card card" data-knowledge-search="전위 inversion slash chord root position first second third inversion"><div class="ref-head"><span>02</span><div><h3>Chord Inversion</h3><p>같은 코드, 다른 bass note</p></div></div><div class="ref-lines"><p><b>Root Position</b> Root가 가장 낮은 음. Cmaj7 = C–E–G–B.</p><p><b>1st Inversion</b> 3rd가 bass. C/E처럼 slash chord로 자주 표기.</p><p><b>2nd Inversion</b> 5th가 bass. C/G.</p><p><b>3rd Inversion</b> 7th chord에서 7th가 bass. Cmaj7/B.</p><p><b>실전</b> 전위는 voice-leading을 부드럽게 하고 bass line을 설계하는 데 중요합니다.</p></div></section>
+        <section class="reference-card card" data-knowledge-search="functional harmony tonic predominant dominant 기능화성 tonic subdominant dominant"><div class="ref-head"><span>03</span><div><h3>Functional Harmony Map</h3><p>Major key의 기본 기능</p></div></div><div class="tension-grid"><div><b>TONIC</b><span>Imaj7 · iii7 · vi7 — 안정과 귀착</span></div><div><b>PRE-DOMINANT</b><span>ii7 · IVmaj7 — dominant로 진행하는 준비</span></div><div><b>DOMINANT</b><span>V7 · viiø/° — tonic으로 향하는 긴장</span></div><div><b>TURNAROUND</b><span>I–VI–ii–V 등 기능을 연결해 다음 구간으로 회귀</span></div></div></section>
+        <section class="reference-card card" data-knowledge-search="모드 ionian dorian phrygian lydian mixolydian aeolian locrian scale"><div class="ref-head"><span>04</span><div><h3>Major Scale의 7 Modes</h3><p>모드 공식과 대표 화성 성격</p></div></div><div id="modeTable" class="mode-table"></div></section>
+        <section class="reference-card card" data-knowledge-search="ii v i 251 jazz harmony guide tones 3 7 voice leading"><div class="ref-head"><span>05</span><div><h3>ii–V–I & Guide Tones</h3><p>재즈 화성의 핵심 연결</p></div></div><div class="ii-v-i"><div><b>ii7</b><span>Dorian이 흔한 출발점</span><small>3rd·7th를 다음 코드로 반음/온음 최소 이동</small></div><i>→</i><div><b>V7</b><span>Mixolydian / Altered 등</span><small>3rd와 ♭7이 dominant 성격을 결정</small></div><i>→</i><div><b>Imaj7</b><span>Ionian / Lydian</span><small>Guide tone voice-leading을 해결</small></div></div><p class="theory-footnote">Chord–Scale은 ‘정답 하나’가 아니라 문맥·멜로디·기능에 따라 선택하는 도구입니다. 아래 표는 자주 쓰는 출발점입니다.</p></section>
+        <section class="reference-card card" data-knowledge-search="chord scale 재즈 스케일 altered diminished lydian dominant locrian sharp2"><div class="ref-head"><span>06</span><div><h3>Chord–Scale 빠른 매칭</h3><p>자주 쓰는 선택지</p></div></div><div id="chordScaleTable" class="formula-list"></div></section>
+        <section class="reference-card card" data-knowledge-search="tension 텐션 9 11 13 altered b9 #9 #11 b13"><div class="ref-head"><span>07</span><div><h3>Tensions</h3><p>7th chord 위의 확장음</p></div></div><div class="tension-grid"><div><b>9</b><span>2도를 한 옥타브 올린 개념</span></div><div><b>11</b><span>4도를 한 옥타브 올린 개념</span></div><div><b>13</b><span>6도를 한 옥타브 올린 개념</span></div><div><b>Altered</b><span>♭9 · ♯9 · ♯11/♭5 · ♭13 등 dominant tension</span></div></div></section>
+      </div>
+
+      <div class="knowledge-panel" data-knowledge-content="jazz">
+        <section class="reference-card card" data-knowledge-search="재즈 역사 new orleans swing bebop cool hard bop modal free fusion contemporary"><div class="ref-head"><span>01</span><div><h3>Jazz History Timeline</h3><p>스타일 변화의 큰 흐름</p></div></div><div id="jazzTimeline" class="jazz-timeline"></div></section>
+        <section class="reference-card card" data-knowledge-search="뮤지션 louis armstrong duke ellington charlie parker dizzy monk miles coltrane mingus blakey bill evans ornette herbie wayne shorter chick corea jaco"><div class="ref-head"><span>02</span><div><h3>주요 뮤지션</h3><p>악기·시대·기여로 빠르게 보기</p></div></div><div class="musician-filters" id="musicianFilters"><button class="selected" data-inst="all">ALL</button><button data-inst="trumpet">TRUMPET</button><button data-inst="sax">SAX</button><button data-inst="piano">PIANO</button><button data-inst="bass">BASS</button><button data-inst="drums">DRUMS</button></div><div id="musicianGrid" class="musician-grid"></div></section>
+        <section class="reference-card card" data-knowledge-search="재즈 연습 listening guide 듣기 transcribe transcription standards"><div class="ref-head"><span>03</span><div><h3>전공생용 Listening Routine</h3><p>지식 → 귀 → 연주로 연결</p></div></div><div class="ref-lines"><p><b>1. Form</b> 먼저 12-bar blues, AABA, ABAC 등 곡의 큰 구조를 듣습니다.</p><p><b>2. Time Feel</b> Ride/Hi-hat, bass walking, comping의 위치와 subdivision을 분리해 듣습니다.</p><p><b>3. Harmony</b> ii–V–I, secondary dominant, turnaround, modal center를 표시합니다.</p><p><b>4. Transcribe</b> 한 코러스 전체보다 2~4마디를 정확한 rhythm·articulation까지 따라가는 연습부터 시작합니다.</p><p><b>5. Apply</b> 같은 아이디어를 12 keys와 다른 tempo에서 변형해 내 언어로 만듭니다.</p></div></section>
+        <div class="knowledge-source card"><strong>REFERENCE NOTE</strong><p>이 지식 탭은 표준 음악이론과 재즈 교육에서 널리 쓰이는 개념을 요약한 레퍼런스입니다. 역사 파트는 Smithsonian의 재즈 역사 자료, 이론 구조는 Berklee Online 및 Open Music Theory의 공개 교육 자료를 참고해 자체 문장으로 정리했습니다.</p></div>
+      </div>
+      <div class="knowledge-empty hidden" id="knowledgeEmpty">검색 결과가 없습니다. 다른 키워드로 검색해보세요.</div>
     </section>
 
     <section id="tabManual" class="tab-page">
@@ -276,6 +332,7 @@
         <article class="manual-card card" data-manual="focus fullscreen 전체화면"><h3>Focus Mode</h3><p>BPM, 박자, START/STOP만 크게 보여주는 연습 화면입니다. F 키 또는 FOCUS 버튼으로 켜고 끌 수 있습니다.</p></article>
         <article class="manual-card card" data-manual="mini pdf 악보 팝업"><h3>Mini Mode / PDF 악보</h3><p>▣ 버튼으로 작은 컨트롤 화면을 켭니다. 갤럭시의 ‘팝업 화면으로 보기’와 함께 사용하면 PDF 악보 위에 Beatronome을 둘 수 있습니다.</p></article>
         <article class="manual-card card" data-manual="offline 오프라인 비행기모드"><h3>오프라인</h3><p>설정의 ‘오프라인 사용 준비’를 완료하면 앱·Basic 음원을 기기에 저장하여 데이터나 Wi-Fi가 없어도 사용할 수 있습니다.</p></article>
+        <article class="manual-card card" data-manual="knowledge 지식 코드 스케일 다이아토닉 재즈 역사"><h3>뮤직 지식</h3><p>더보기 → 뮤직 지식에서 코드 구성음, 스케일, 다이아토닉, 조표 순서, 기보법, 재즈 화성과 역사·뮤지션을 확인합니다. Theory Lab의 구성음은 클릭해서 기준음을 들어볼 수도 있습니다.</p></article>
         <article class="manual-card card" data-manual="keyboard shortcut 키보드 단축키 mac"><h3>Mac/키보드 단축키</h3><p>Space 재생/정지 · ↑/↓ BPM ±1 · Shift+↑/↓ ±5 · T TAP · M Mute · F Focus · 숫자 1~9 프리셋 불러오기.</p></article>
       </div>
     </section>
@@ -308,10 +365,11 @@
     <div class="mini-help">갤럭시: 최근 앱 → Beatronome 아이콘 → 팝업 화면으로 보기</div>
   </section>
 
-  <div class="modal-backdrop hidden" id="settingsModal"><div class="settings-sheet"><div class="sheet-handle"></div><div class="page-title"><div><span class="eyebrow">SETTINGS</span><h2>앱 설정</h2></div><button class="icon-button" id="closeSettings">×</button></div><div class="settings-item"><span class="settings-icon">⌂</span><div><strong>PWA 홈 화면 설치</strong><span>브라우저 메뉴에서 ‘홈 화면에 추가’를 선택하면 앱처럼 사용할 수 있습니다.</span></div></div><div class="settings-item"><span class="settings-icon">☀</span><div><strong>화면 자동 꺼짐 방지</strong><span>재생 중 지원되는 기기에서 Screen Wake Lock을 자동 사용합니다.</span></div></div><div class="settings-item offline-settings"><span class="settings-icon">⇩</span><div><strong id="offlineReadyTitle">오프라인 사용 준비</strong><span id="offlineStatusText">상태를 확인하는 중입니다.</span><div class="offline-progress"><i id="offlineProgressBar"></i></div><small id="offlineConnectionText">네트워크 상태 확인 중</small></div><button class="outline-small" id="prepareOffline">준비하기</button></div><div class="settings-item"><span class="settings-icon">▣</span><div><strong>악보 연습 Mini Mode</strong><span>Beatronome을 작은 컨트롤 화면으로 바꿉니다. 갤럭시에서는 최근 앱 → Beatronome 아이콘 → ‘팝업 화면으로 보기’를 함께 사용하면 PDF 악보 위에 작은 창으로 둘 수 있습니다.</span></div><button class="outline-small" id="settingsMiniMode">열기</button></div><div class="settings-item cloud-settings-item"><span class="settings-icon">☁</span><div class="cloud-settings-copy"><strong>Cloud Sync</strong><span id="cloudStatusText">로그인하면 폰·Mac·태블릿에서 설정과 프리셋을 동기화합니다.</span><small id="cloudLastSync">로컬 저장만 사용 중</small><div id="cloudSignedOut" class="cloud-auth-panel"><input id="cloudEmail" type="email" inputmode="email" autocomplete="email" placeholder="이메일"><input id="cloudPassword" type="password" autocomplete="current-password" placeholder="비밀번호 (6자 이상)"><div class="cloud-auth-actions"><button class="outline-small" id="cloudLogin">로그인</button><button class="outline-small" id="cloudSignup">회원가입</button></div></div><div id="cloudSignedIn" class="cloud-account-panel hidden"><div class="cloud-account-line"><b id="cloudUserEmail">—</b><span id="cloudStateBadge">SYNCED</span></div><label class="cloud-auto-row"><span>자동 동기화</span><input id="cloudAutoSync" type="checkbox" checked></label><div class="cloud-auth-actions"><button class="outline-small" id="cloudSyncNow">지금 동기화</button><button class="outline-small" id="cloudLogout">로그아웃</button></div></div><div id="cloudSetupHint" class="cloud-setup-hint hidden">Supabase에 Beatronome 테이블이 아직 없습니다. ZIP의 <b>supabase_setup.sql</b>을 SQL Editor에서 한 번 실행하세요.</div></div></div><div class="settings-item"><span class="settings-icon">?</span><div><strong>사용 매뉴얼</strong><span>각 기능의 사용법과 추천 연습 방법을 확인합니다.</span></div><button class="outline-small" id="settingsManual">열기</button></div><div class="settings-item"><span class="settings-icon">↺</span><div><strong>현재 설정 초기화</strong><span>프리셋은 유지하고 메트로놈/훈련 설정만 기본값으로 되돌립니다.</span></div><button class="outline-small" id="resetSettings">초기화</button></div><div class="version-note">Beatronome v0.9.0 UX + Practice + Manual<br>Pure Metronome Mode · Offline-first PWA · 400% Output Boost · Mac Quick Boost · iPhone Playback<br>Basic Sample Click · Guitar/Bass Tuner · Mini Mode<br>Groove Engine · Meter Chain · Training · Jazz UI</div></div></div>
+  <div class="modal-backdrop hidden" id="settingsModal"><div class="settings-sheet"><div class="sheet-handle"></div><div class="page-title"><div><span class="eyebrow">SETTINGS</span><h2>앱 설정</h2></div><button class="icon-button" id="closeSettings">×</button></div><div class="settings-item"><span class="settings-icon">⌂</span><div><strong>PWA 홈 화면 설치</strong><span>브라우저 메뉴에서 ‘홈 화면에 추가’를 선택하면 앱처럼 사용할 수 있습니다.</span></div></div><div class="settings-item"><span class="settings-icon">☀</span><div><strong>화면 자동 꺼짐 방지</strong><span>재생 중 지원되는 기기에서 Screen Wake Lock을 자동 사용합니다.</span></div></div><div class="settings-item offline-settings"><span class="settings-icon">⇩</span><div><strong id="offlineReadyTitle">오프라인 사용 준비</strong><span id="offlineStatusText">상태를 확인하는 중입니다.</span><div class="offline-progress"><i id="offlineProgressBar"></i></div><small id="offlineConnectionText">네트워크 상태 확인 중</small></div><button class="outline-small" id="prepareOffline">준비하기</button></div><div class="settings-item"><span class="settings-icon">▣</span><div><strong>악보 연습 Mini Mode</strong><span>Beatronome을 작은 컨트롤 화면으로 바꿉니다. 갤럭시에서는 최근 앱 → Beatronome 아이콘 → ‘팝업 화면으로 보기’를 함께 사용하면 PDF 악보 위에 작은 창으로 둘 수 있습니다.</span></div><button class="outline-small" id="settingsMiniMode">열기</button></div><div class="settings-item cloud-settings-item"><span class="settings-icon">☁</span><div class="cloud-settings-copy"><strong>Cloud Sync</strong><span id="cloudStatusText">로그인하면 폰·Mac·태블릿에서 설정과 프리셋을 동기화합니다.</span><small id="cloudLastSync">로컬 저장만 사용 중</small><div id="cloudSignedOut" class="cloud-auth-panel"><input id="cloudEmail" type="email" inputmode="email" autocomplete="email" placeholder="이메일"><input id="cloudPassword" type="password" autocomplete="current-password" placeholder="비밀번호 (6자 이상)"><div class="cloud-auth-actions"><button class="outline-small" id="cloudLogin">로그인</button><button class="outline-small" id="cloudSignup">회원가입</button></div></div><div id="cloudSignedIn" class="cloud-account-panel hidden"><div class="cloud-account-line"><b id="cloudUserEmail">—</b><span id="cloudStateBadge">SYNCED</span></div><label class="cloud-auto-row"><span>자동 동기화</span><input id="cloudAutoSync" type="checkbox" checked></label><div class="cloud-auth-actions"><button class="outline-small" id="cloudSyncNow">지금 동기화</button><button class="outline-small" id="cloudLogout">로그아웃</button></div></div><div id="cloudSetupHint" class="cloud-setup-hint hidden">Supabase에 Beatronome 테이블이 아직 없습니다. ZIP의 <b>supabase_setup.sql</b>을 SQL Editor에서 한 번 실행하세요.</div></div></div><div class="settings-item"><span class="settings-icon">?</span><div><strong>사용 매뉴얼</strong><span>각 기능의 사용법과 추천 연습 방법을 확인합니다.</span></div><button class="outline-small" id="settingsManual">열기</button></div><div class="settings-item"><span class="settings-icon">↺</span><div><strong>현재 설정 초기화</strong><span>프리셋은 유지하고 메트로놈/훈련 설정만 기본값으로 되돌립니다.</span></div><button class="outline-small" id="resetSettings">초기화</button></div><div class="version-note">Beatronome v0.10.0 Knowledge Edition<br>Pure Metronome Mode · Offline-first PWA · 400% Output Boost · Mac Quick Boost · iPhone Playback<br>Basic Sample Click · Guitar/Bass Tuner · Mini Mode<br>Groove Engine · Meter Chain · Training · Jazz UI</div></div></div>
   <div class="toast hidden" id="toast"></div>
 </div>
-<script src="./cloud-config.js?v=0.9.0"></script>
-<script src="./app.js?v=0.9.0"></script>
+<script src="./cloud-config.js?v=0.10.0"></script>
+<script src="./app.js?v=0.10.0"></script>
+<script src="./knowledge.js?v=0.10.0"></script>
 </body>
 </html>
