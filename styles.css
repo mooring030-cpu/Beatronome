@@ -825,3 +825,85 @@ svg{max-width:100%}
   .round-control{width:44px;min-width:44px;height:44px}
   .tap-button{height:44px}
 }
+
+
+/* =========================================================
+   v0.11.2 Mobile Flow / Less Scrolling
+   ========================================================= */
+.mobile-scroll-dock{display:none}
+@media(max-width:700px){
+  /* Put the controls people use most before secondary settings. */
+  #tabMetronome.active{display:flex;flex-direction:column;gap:0}
+  #tabMetronome>.quick-preset-strip{order:0}
+  #tabMetronome>.bpm-card{order:1}
+  #tabMetronome>.transport-card{order:2}
+  #tabMetronome>.visual-beat-card{order:3}
+  #tabMetronome>.beat-section{order:4}
+  #tabMetronome>.training-panel{order:5}
+
+  /* Empty presets should not consume a whole card on a fresh install. */
+  .quick-preset-strip.empty{display:none}
+  .quick-preset-strip{margin-bottom:8px;padding:10px 12px;border-radius:16px}
+  .quick-preset-strip>div:first-child{display:none}
+  .quick-preset-list{grid-column:auto;grid-row:auto;gap:5px}
+  .quick-preset-list button{height:34px;max-width:145px}
+
+  /* Main tempo card: preserve every control while removing dead vertical space. */
+  .bpm-card{padding:12px 13px 13px;border-radius:24px}
+  .bpm-drag{min-height:84px}
+  .bpm-drag strong{font-size:clamp(70px,21vw,88px)}
+  .tempo-name{font-size:14px;margin-top:1px}
+  .bpm-hint{display:none}
+  .tempo-dial{width:64px;height:64px;margin:7px auto 2px}
+  .dial-face{box-shadow:inset 0 0 0 6px rgba(227,191,115,.04),0 6px 18px rgba(0,0,0,.18)}
+  .dial-marker{top:6px;height:18px;transform-origin:50% 26px}
+  .dial-center{font-size:8px}
+  .bpm-controls{margin-top:7px;grid-template-columns:44px minmax(0,1fr) 44px;gap:8px}
+  .round-control,.tap-button{height:44px}
+  .round-control{width:44px;min-width:44px}
+
+  /* START/STOP immediately follows BPM instead of living far below settings. */
+  .transport-card{margin-top:9px;padding:10px 12px;border-radius:18px;min-height:68px}
+  .play-button{flex-basis:52px;width:52px;height:52px;border-radius:16px;font-size:24px}
+  .transport-copy strong{font-size:19px}.transport-copy span{font-size:11px}
+
+  /* Visual beat stays useful, but simple mode only shows the essential count-in. */
+  .visual-beat-card{margin-top:9px;padding:11px 13px;border-radius:18px}
+  .visual-beat-lamps{margin:9px 0 8px;gap:6px}
+  .visual-lamp{width:19px;height:19px}
+  .visual-actions{margin-top:0}
+  .visual-actions button{min-height:38px;padding:8px 10px}
+  body.simple-ui .visual-options{grid-template-columns:1fr}
+  body.simple-ui .visual-options label:not(:first-child){display:none}
+  .visual-options label{min-height:42px;padding:6px 8px}
+
+  /* Meter/sound controls remain accessible in a compact 2x2 control deck. */
+  .beat-section{margin-top:9px;padding:12px 13px;border-radius:18px}
+  .quick-options-four{gap:6px}
+  .quick-options label{gap:4px;font-size:11px}
+  .quick-options select{min-height:40px;padding:7px;font-size:13px}
+
+  /* A small dock appears only after the main BPM card has left the viewport. */
+  .mobile-scroll-dock{
+    position:fixed;z-index:940;left:50%;bottom:calc(72px + env(safe-area-inset-bottom));
+    transform:translateX(-50%);width:min(430px,calc(100% - 20px));
+    grid-template-columns:42px 64px 54px 1fr 42px;gap:6px;padding:7px;
+    background:rgba(8,15,22,.96);border:1px solid rgba(214,174,98,.24);border-radius:18px;
+    box-shadow:0 14px 36px rgba(0,0,0,.48);backdrop-filter:blur(18px)
+  }
+  .mobile-scroll-dock:not(.hidden){display:grid}
+  .mobile-scroll-dock button{height:44px;min-width:0;border:1px solid rgba(214,174,98,.18);border-radius:12px;background:#101b27;color:#e8d6b0;font-weight:850}
+  .mobile-scroll-dock .mobile-dock-bpm{font-size:18px;color:#f1d693}
+  .mobile-scroll-dock .mobile-dock-play{font-size:20px;background:linear-gradient(135deg,#8d4058,#672c42);color:#fff4e3}
+  .mobile-scroll-dock .mobile-dock-play.playing{background:#6c9b92;color:#07120f}
+  .mobile-scroll-dock #mobileDockTap{font-size:12px;letter-spacing:.7px}
+  body.mobile-dock-visible #app{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
+
+  /* Advanced sections are deliberately roomy only when the user opens them. */
+  body.simple-ui .training-panel{display:none!important}
+}
+
+@media(max-width:360px){
+  .mobile-scroll-dock{width:calc(100% - 14px);grid-template-columns:38px 58px 50px 1fr 38px;gap:5px;padding:6px}
+  .mobile-scroll-dock button{height:42px}
+}
