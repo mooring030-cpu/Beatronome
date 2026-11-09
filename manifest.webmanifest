@@ -7,7 +7,7 @@
   "background_color": "#081019",
   "theme_color": "#081019",
   "orientation": "any",
-  "description": "Offline-first musician toolkit with metronome, grooves, tuner, practice tools, cloud-synced presets and interactive music theory/jazz knowledge reference.",
+  "description": "Offline-first pro musician toolkit with metronome, grooves, strobe tuner, Stage Mode, routines, set lists, practice logs, cloud sync and interactive music theory/jazz reference.",
   "icons": [
     {
       "src": "./icon-192.png",

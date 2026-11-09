@@ -1,108 +1,102 @@
-# Beatronome v0.10.2 — UI Refinement Edition
+# Beatronome v0.11.0 — Pro UX Edition
 
-이번 버전은 기능 추가보다 실제 연습 흐름과 조작성 개선에 초점을 둔 UX/Practice 업데이트입니다.
+Beatronome은 메트로놈, Groove Engine, 튜너, 연습 루틴/세트리스트, 음악이론·재즈 지식 레퍼런스를 하나로 묶은 Offline-first PWA입니다.
 
-## 주요 기능
+## v0.11.0 핵심 개선
 
-### 빠른 메트로놈
-- BPM 30~300: 드래그, 다이얼, +/- 길게 누르기, Tap Tempo
-- Count-in: OFF / 1 / 2 / 4마디
-- Visual Beat, 화면 Pulse, 진동 보조
-- 기본 화면은 단순 모드, 필요할 때 `고급 기능 펼치기`
-- Quick Preset 3개와 상단 ☆ 즉시 저장
-- Focus Mode: BPM/박자/재생만 크게 표시
+### Performance / Stage
+- 전체 화면 Stage Mode
+- 큰 BPM / 박자 / START·STOP / PREV·NEXT
+- Set List 곡명과 메모 표시
+- PREV/NEXT는 길게 눌러 동작해 공연 중 오조작 방지
+- BPM Lock: 드래그·다이얼·+/−·TAP의 의도치 않은 BPM 변경 차단
+- 화면 자동 꺼짐 방지와 연동
+- 선택형 Stage 화면 탭 START/STOP (기본 OFF)
 
-### 고급 리듬 훈련
-- Beat Accent / Normal / Mute
-- Meter Chain + 각 박자 1~32마디 반복
-- Random Mute / Internal Clock / Auto Tempo / Gradual Mute / Practice Timer
+### 빠른 조작 / 접근성
+- One Hand Mode: START / TAP / BPM / Lock을 엄지 영역에 고정
+- Interface Size: Compact / Normal / Large
+- Undo: BPM, 박자, 분할, Meter Chain, 패턴, 프리셋 등의 주요 변경을 5초 내 되돌리기
+- 마지막 탭, 마지막 설정, 진행 중 Routine/Set List 위치를 다음 실행에서 복원
+- 주요 상단/하단 액션 아이콘을 SVG로 통일
+- 의미 색상 통일: Gold=선택/Accent, Teal=정상/완료, Burgundy=Training, Red=정지/삭제
 
-### Groove Engine
-- Metronome Only / Metro / Drum / Both
-- Rock / Jazz / Funk / Blues / Latin / Pop / R&B
-- 16-step Kick / Snare / Hi-hat / Ride 등 8악기 편집
-- Swing / Humanize / Drum Dropout
+### Tuner Pro
+- Normal / Strobe Display
+- Sensitivity: Low / Normal / High
+- Noise Gate 조정
+- 베이스 Low B 대응을 위해 Bass 모드에서 더 큰 분석 버퍼 사용
+- Electric / Acoustic Guitar, Bass 4/5/6, Chromatic 및 다양한 Drop/Open/Custom tuning 지원
 
-### Tuner
-- 일렉기타 / 어쿠스틱기타
-- 베이스 4현 / 5현 / 6현
-- Standard, Drop tuning, 다운튜닝, Open tuning, DADGAD, Custom
-- 마이크 크로매틱 튜너 + cents 표시 + 기준음 재생
+### Audio Latency Calibration
+- -250 ~ +250 ms 보정
+- Bluetooth 등에서 클릭음과 Visual Beat가 어긋날 때 화면 타이밍을 맞출 수 있음
 
-### Practice Routine
-현재 설정을 단계로 추가하고 각 단계 시간을 정합니다.
-루틴 실행 시 시간이 끝나면 다음 BPM/박자/그루브 설정으로 자동 전환됩니다.
+### Music Knowledge → Practice
+- 코드/스케일 즐겨찾기
+- 최근 본 항목
+- Theory Lab의 코드/스케일에서 바로 Metronome 연습 시작
+- 지식 레퍼런스는 Offline-ready 후 인터넷 없이 사용 가능
 
-### Set List
-곡 이름과 현재 설정을 저장해 합주/리허설 중 PREV/NEXT로 즉시 전환합니다.
-활성 세션은 어느 화면에 있어도 하단의 작은 컨트롤 바에서 이동할 수 있습니다.
+### Set List / Practice
+- 곡 메모 저장
+- 드래그 또는 ↑/↓로 곡 순서 변경
+- 저장된 Set List 재편집
+- Stage Mode와 연동
+- Practice Log: Metronome / Groove / Tuner 사용시간과 최근 7일 기록
 
-### Preset / Backup / Cloud
-- 현재 설정을 Preset으로 저장
-- JSON 백업 파일 내보내기 / 가져오기
-- Cloud Sync 로그인 시 폰, Mac, 태블릿 간 설정/프리셋/루틴/세트리스트 동기화
-- 인터넷이 없어도 로컬 우선 저장
+### Global Search
+- 상단 검색 또는 `Cmd/Ctrl + K`
+- 기능, 프리셋, Routine, Set List 검색
+- 검색어를 Music Knowledge 검색으로 바로 전달
 
-### Offline-first
-Settings → 오프라인 사용 준비 완료 후 앱 본체와 Basic 샘플을 기기에 저장합니다.
-비행기 모드에서도 메트로놈, 드럼, 튜너, Preset, Routine 등을 사용할 수 있습니다.
+### First-run Onboarding
+- BPM 조작
+- Training
+- Groove / Tuner
+- Knowledge → Practice
+- 4단계 빠른 안내
+- 설정에서 다시 보기 가능
 
-### Mac 키보드 단축키
-- Space: START / STOP
-- ↑ / ↓: BPM ±1
-- Shift + ↑ / ↓: BPM ±5
-- T: Tap Tempo
-- M: Mute
-- F: Focus Mode
-- 1~9: 저장된 프리셋 1~9 불러오기
+## 키보드 단축키
+- `Space`: 재생 / 정지
+- `↑ / ↓`: BPM ±1
+- `Shift + ↑ / ↓`: BPM ±5
+- `T`: Tap Tempo
+- `M`: Mute
+- `F`: Focus Mode
+- `L`: BPM Lock
+- `S`: Stage Mode
+- `1~9`: 저장 프리셋 호출
+- `Cmd/Ctrl + K`: 전체 검색
+- `Esc`: 검색 / Stage Mode 닫기
 
-## 앱 내 매뉴얼
-`더보기 → 매뉴얼`에서 기능별 사용법과 추천 연습 방법을 검색할 수 있습니다.
+## Offline-first
+1. 설정 → 오프라인 사용 준비
+2. `OFFLINE READY` 확인
+3. 이후 데이터/Wi-Fi 없이 메트로놈, Basic Sample, Groove, Tuner, Knowledge, Preset, Routine/Set List 사용 가능
+
+새 버전은 백그라운드에서 준비하지만 현재 연주/튜너 세션을 강제로 새로고침하지 않습니다. Beatronome 창을 모두 닫은 뒤 다음 실행부터 새 버전이 적용됩니다.
+
+## Cloud Sync
+Cloud Sync는 선택 기능입니다. 로그인하지 않아도 모든 핵심 기능은 로컬/오프라인으로 동작합니다.
+
+로그인 시 다음 항목이 Local-first 방식으로 동기화됩니다.
+- 앱 설정
+- Preset
+- Groove / Drum Pattern
+- Tuner 설정
+- Routine / Set List
+- Music Knowledge 즐겨찾기 / 최근 항목
+- Practice Log
+
+기존 `beatronome_sync` JSON 테이블을 그대로 사용하므로 v0.11.0 전용 추가 테이블은 필요하지 않습니다.
 
 ## GitHub Pages 업데이트
 1. ZIP 압축 해제
-2. GitHub Desktop에서 사용 중인 `Beatronome` 저장소 폴더에 전체 파일 덮어쓰기
-3. Commit: `Beatronome v0.10.2`
-4. Push origin
-5. 사이트에서 상단 버전이 `v0.10.2`인지 확인
+2. 기존 Beatronome 저장소 폴더에 파일 전체 덮어쓰기
+3. GitHub Desktop → Commit to main
+4. Commit 예: `Beatronome v0.11.0`
+5. Push origin
 
-기존 Supabase Cloud Sync를 사용 중이라면 `beatronome_sync` 테이블을 그대로 사용합니다. v0.9의 루틴/세트리스트는 settings JSON 안에 포함되어 별도의 DB 테이블 추가가 필요하지 않습니다.
-
-
-## v0.10.2 Safe Auto Update
-
-- 새 버전은 실행 중 백그라운드에서 자동 확인/다운로드합니다.
-- 현재 연주·튜너·연습 화면에는 강제 새로고침을 하지 않습니다.
-- 새 Service Worker는 대기 상태로 유지되고, Beatronome 창을 모두 닫은 뒤 자동 활성화됩니다.
-- 다음 실행에서는 최신 버전이 자동 적용되므로 Ctrl+F5/수동 새로고침이 필요하지 않습니다.
-- 설정 > 앱 업데이트에서 `최신 상태` 또는 `업데이트 준비 완료`를 확인할 수 있습니다.
-- 오프라인 상태에서는 현재 설치본을 그대로 사용하고, 인터넷이 다시 연결되면 업데이트를 확인합니다.
-
-## v0.10.2 UI Refinement + Knowledge
-
-더보기 → **뮤직 지식**에서 오프라인 레퍼런스를 사용할 수 있습니다.
-
-- Root + Chord 선택 → 코드톤/공식 자동 계산 및 구성음 재생
-- Root + Scale 선택 → Major/Minor/Modes/Pentatonic/Blues/Altered/Diminished 등 구성음 자동 계산
-- Major/Natural Minor 다이아토닉 7th chord 자동 표시
-- 음표 길이, 점음표, 타이, 셋잇단음표, 오선/음자리표/임시표
-- 조표: # 순서 F-C-G-D-A-E-B / b 순서 B-E-A-D-G-C-F
-- 음정, 코드 기호, 7 Modes, ii-V-I, guide tones, chord-scale/tension 빠른 표
-- Jazz history timeline, 주요 뮤지션, 전공생용 listening routine
-- 지식 검색 및 뮤지션 악기별 필터
-- 모든 지식 데이터와 코드 계산은 오프라인에서 동작
-
-새 `knowledge.js`가 추가되었으므로 GitHub 업데이트 시 반드시 함께 업로드하세요.
-
-## v0.10.2 UI Refinement
-
-- 전체 글자 크기 및 버튼/입력 터치 영역 확대
-- Knowledge/Manual의 작은 본문, 표, 카드 가독성 개선
-- 중복 상단 Core Mode 바 제거: 하단/PC 내비게이션으로 통합
-- 저장은 상단 ☆ 버튼으로 통합하고 중복 Save 버튼 정리
-- Focus 진입 버튼 중복 정리
-- Settings 안의 중복 Manual 진입점 정리
-- PC/Mac 창 크기에 따라 1열/2열/3열 자동 재배치
-- 넓은 PC 화면에서는 하단 내비게이션을 상단 가로 내비게이션으로 전환
-- Metronome, Groove, Tuner, Practice, Knowledge, Manual, Presets 데스크톱 레이아웃 최적화
-- 모바일 입력 요소 16px 적용으로 iOS 입력 시 불필요한 자동 확대 감소
+상단 버전 배지가 `v0.11.0`이면 최신 버전입니다.
