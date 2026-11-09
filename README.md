@@ -1,4 +1,4 @@
-# Beatronome v0.10.1 — UI Refinement Edition
+# Beatronome v0.10.2 — UI Refinement Edition
 
 이번 버전은 기능 추가보다 실제 연습 흐름과 조작성 개선에 초점을 둔 UX/Practice 업데이트입니다.
 
@@ -62,14 +62,23 @@ Settings → 오프라인 사용 준비 완료 후 앱 본체와 Basic 샘플을
 ## GitHub Pages 업데이트
 1. ZIP 압축 해제
 2. GitHub Desktop에서 사용 중인 `Beatronome` 저장소 폴더에 전체 파일 덮어쓰기
-3. Commit: `Beatronome v0.10.1`
+3. Commit: `Beatronome v0.10.2`
 4. Push origin
-5. 사이트에서 상단 버전이 `v0.10.1`인지 확인
+5. 사이트에서 상단 버전이 `v0.10.2`인지 확인
 
 기존 Supabase Cloud Sync를 사용 중이라면 `beatronome_sync` 테이블을 그대로 사용합니다. v0.9의 루틴/세트리스트는 settings JSON 안에 포함되어 별도의 DB 테이블 추가가 필요하지 않습니다.
 
 
-## v0.10.1 UI Refinement + Knowledge
+## v0.10.2 Safe Auto Update
+
+- 새 버전은 실행 중 백그라운드에서 자동 확인/다운로드합니다.
+- 현재 연주·튜너·연습 화면에는 강제 새로고침을 하지 않습니다.
+- 새 Service Worker는 대기 상태로 유지되고, Beatronome 창을 모두 닫은 뒤 자동 활성화됩니다.
+- 다음 실행에서는 최신 버전이 자동 적용되므로 Ctrl+F5/수동 새로고침이 필요하지 않습니다.
+- 설정 > 앱 업데이트에서 `최신 상태` 또는 `업데이트 준비 완료`를 확인할 수 있습니다.
+- 오프라인 상태에서는 현재 설치본을 그대로 사용하고, 인터넷이 다시 연결되면 업데이트를 확인합니다.
+
+## v0.10.2 UI Refinement + Knowledge
 
 더보기 → **뮤직 지식**에서 오프라인 레퍼런스를 사용할 수 있습니다.
 
@@ -85,7 +94,7 @@ Settings → 오프라인 사용 준비 완료 후 앱 본체와 Basic 샘플을
 
 새 `knowledge.js`가 추가되었으므로 GitHub 업데이트 시 반드시 함께 업로드하세요.
 
-## v0.10.1 UI Refinement
+## v0.10.2 UI Refinement
 
 - 전체 글자 크기 및 버튼/입력 터치 영역 확대
 - Knowledge/Manual의 작은 본문, 표, 카드 가독성 개선

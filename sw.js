@@ -1,4 +1,4 @@
-const VERSION = '0.10.1';
+const VERSION = '0.10.2';
 const CACHE = `beatronome-offline-v${VERSION}`;
 
 const BASIC = [];
@@ -67,7 +67,9 @@ self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
     await Promise.allSettled(OFFLINE_ASSETS.map(path => cacheOne(cache, path)));
-    await self.skipWaiting();
+    // Do not call skipWaiting here. The current Beatronome session keeps using
+    // the version it started with. The new worker activates after all old
+    // Beatronome windows are closed, so audio/practice is never interrupted.
   })());
 });
 

@@ -513,10 +513,32 @@
   function setFocusMode(on){focusMode=!!on;$('focusOverlay')?.classList.toggle('hidden',!focusMode);renderUiExtras();if(on){try{$('focusOverlay').requestFullscreen?.();}catch{}}else{try{if(document.fullscreenElement)document.exitFullscreen?.();}catch{}}}
   function handleTapTempo(){const now=performance.now();tapTimes=tapTimes.filter(t=>now-t<2600);tapTimes.push(now);tapTimes=tapTimes.slice(-8);if($('tapHint'))$('tapHint').textContent=`${tapTimes.length}회 탭`;if(tapTimes.length>=2){const ints=tapTimes.slice(1).map((t,i)=>t-tapTimes[i]);const sorted=[...ints].sort((a,b)=>a-b),median=sorted[Math.floor(sorted.length/2)];const good=ints.filter(x=>Math.abs(x-median)/median<.22);const use=good.length?good:ints;let total=0,weight=0;use.forEach((x,i)=>{const w=i+1;total+=x*w;weight+=w;});setBpm(60000/(total/weight));}clearTimeout(handleTapTempo._t);handleTapTempo._t=setTimeout(()=>{tapTimes=[];if($('tapHint'))$('tapHint').textContent='4회 정도 탭';},2600);}
 
-  const APP_VERSION='0.10.1';
+  const APP_VERSION='0.10.2';
   let swRegistration=null;
   let offlinePreparing=false;
+  let updateWorker=null;
+  let updateReady=false;
   function networkLabel(){return navigator.onLine?'인터넷 연결됨 · 저장본 우선 실행':'현재 오프라인 · 저장된 앱으로 실행 중';}
+  function setUpdateUi(mode='checking'){
+    const title=$('appUpdateTitle'),text=$('appUpdateText'),hint=$('appUpdateHint'),badge=document.querySelector('.version-badge');
+    if(!title||!text||!hint)return;
+    if(mode==='ready'){title.textContent='업데이트 준비 완료';text.textContent='새 버전을 백그라운드에 받아두었습니다.';hint.textContent='현재 사용 중인 화면은 유지되며, 앱을 완전히 닫고 다음에 열면 자동 적용됩니다.';badge?.classList.add('update-ready');badge?.setAttribute('title','새 버전 준비됨 · 다음 실행 때 자동 적용');}
+    else if(mode==='latest'){title.textContent='앱 업데이트';text.textContent=`현재 v${APP_VERSION} · 최신 상태`;hint.textContent='새 버전은 자동으로 확인하며 사용 중에는 강제 새로고침하지 않습니다.';badge?.classList.remove('update-ready');badge?.setAttribute('title',`Beatronome v${APP_VERSION}`);}
+    else if(mode==='offline'){title.textContent='앱 업데이트';text.textContent=`현재 v${APP_VERSION} · 오프라인`;hint.textContent='인터넷이 연결되면 새 버전을 자동 확인합니다.';}
+    else{title.textContent='앱 업데이트';text.textContent='새 버전을 확인하는 중입니다.';hint.textContent='업데이트가 있어도 현재 연주/튜너 화면은 바뀌지 않습니다.';}
+  }
+  function markUpdateReady(worker){
+    if(!worker)return;updateWorker=worker;updateReady=true;setUpdateUi('ready');
+  }
+  function watchServiceWorkerRegistration(reg){
+    if(!reg)return;if(reg.waiting)markUpdateReady(reg.waiting);
+    reg.addEventListener('updatefound',()=>{const worker=reg.installing;if(!worker)return;worker.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)markUpdateReady(reg.waiting||worker);});});
+  }
+  async function checkForAppUpdate(){
+    if(!swRegistration||!navigator.onLine){setUpdateUi(navigator.onLine?'checking':'offline');return;}
+    try{setUpdateUi(updateReady?'ready':'checking');await swRegistration.update();if(swRegistration.waiting)markUpdateReady(swRegistration.waiting);else if(!updateReady)setUpdateUi('latest');}
+    catch(e){console.warn('Beatronome update check failed',e);if(!updateReady)setUpdateUi('latest');}
+  }
   function setOfflineUi(status){
     const title=$('offlineReadyTitle'),text=$('offlineStatusText'),bar=$('offlineProgressBar'),conn=$('offlineConnectionText'),btn=$('prepareOffline');
     if(!title||!text||!bar||!conn||!btn)return;
@@ -546,12 +568,15 @@
     if(userTriggered)notify(status?.ready?'오프라인 사용 준비가 완료되었습니다.':'일부 파일을 받지 못했습니다. 연결 상태를 확인해주세요.');
   }
   async function registerOfflineWorker(){
-    if(!('serviceWorker' in navigator)){setOfflineUi(null);return;}
+    if(!('serviceWorker' in navigator)){setOfflineUi(null);setUpdateUi('offline');return;}
     try{
-      swRegistration=await navigator.serviceWorker.register(`./sw.js?v=${APP_VERSION}`,{updateViaCache:'none'});await swRegistration.update();await navigator.serviceWorker.ready;
+      swRegistration=await navigator.serviceWorker.register(`./sw.js?v=${APP_VERSION}`,{updateViaCache:'none'});
+      watchServiceWorkerRegistration(swRegistration);
+      await navigator.serviceWorker.ready;
+      await checkForAppUpdate();
       let status=await refreshOfflineStatus();
       if(status&&!status.ready&&navigator.onLine){await prepareOffline(false);status=await refreshOfflineStatus();}
-    }catch(e){console.warn('Beatronome service worker registration failed',e);setOfflineUi(null);}
+    }catch(e){console.warn('Beatronome service worker registration failed',e);setOfflineUi(null);setUpdateUi(navigator.onLine?'latest':'offline');}
   }
   function resetSettings(){if(playing)stop();if(tunerStream)stopTunerMic();const library=state.library;state=deepMerge(defaults,{library});selectedChainIndex=0;selectedGenre='Rock';persist();renderAll();notify('기본값으로 초기화했습니다.');}
 
@@ -611,7 +636,7 @@
   document.addEventListener('keydown',e=>{if(e.target?.matches('input,textarea,select')||e.metaKey||e.ctrlKey||e.altKey)return;const k=e.key.toLowerCase();if(e.code==='Space'){e.preventDefault();playing?stop():start();}else if(e.key==='ArrowUp'){e.preventDefault();setBpm(state.bpm+(e.shiftKey?5:1));}else if(e.key==='ArrowDown'){e.preventDefault();setBpm(state.bpm-(e.shiftKey?5:1));}else if(k==='t'){e.preventDefault();handleTapTempo();}else if(k==='m'){e.preventDefault();toggleMiniMute();}else if(k==='f'){e.preventDefault();setFocusMode(!focusMode);}else if(/^[1-9]$/.test(e.key)){const p=presets[Number(e.key)-1];if(p)loadPreset(p);}});
   $$('.bottom-nav button').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));$('savePreset').onclick=savePreset;$('openSettings').onclick=()=>{$('settingsModal').classList.remove('hidden');refreshOfflineStatus();renderCloudUi();};$('closeSettings').onclick=()=>$('settingsModal').classList.add('hidden');$('settingsModal').onclick=e=>{if(e.target===$('settingsModal'))$('settingsModal').classList.add('hidden');};$('resetSettings').onclick=resetSettings;$('prepareOffline').onclick=()=>{if(offlinePreparing)return;if($('prepareOffline').textContent==='다시 확인')refreshOfflineStatus();else prepareOffline(true);};
   $('cloudLogin').onclick=cloudSignIn;$('cloudSignup').onclick=cloudSignUp;$('cloudSyncNow').onclick=()=>syncCloud(false);$('cloudLogout').onclick=cloudLogout;$('cloudAutoSync').onchange=e=>{cloudMeta.autoSync=!!e.target.checked;persistCloudMeta();renderCloudUi();if(cloudMeta.autoSync)scheduleCloudSync(200);};
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){configureIOSAudioSession('playback',true);if(playing)requestWakeLock();refreshOfflineStatus();if(cloudSessionValid()&&navigator.onLine)scheduleCloudSync(300);}});window.addEventListener('pageshow',()=>{configureIOSAudioSession('playback',true);refreshOfflineStatus();renderCloudUi();if(cloudSessionValid()&&navigator.onLine)scheduleCloudSync(300);});window.addEventListener('online',()=>{refreshOfflineStatus().then(st=>{if(st&&!st.ready)prepareOffline(false);});if(cloudSessionValid())syncCloud(false);});window.addEventListener('offline',()=>refreshOfflineStatus());window.addEventListener('beforeunload',()=>{if(scheduler)clearInterval(scheduler);if(tunerStream)stopTunerMic();if(audioCtx)audioCtx.close();});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){configureIOSAudioSession('playback',true);if(playing)requestWakeLock();refreshOfflineStatus();checkForAppUpdate();if(cloudSessionValid()&&navigator.onLine)scheduleCloudSync(300);}});window.addEventListener('pageshow',()=>{configureIOSAudioSession('playback',true);refreshOfflineStatus();checkForAppUpdate();renderCloudUi();if(cloudSessionValid()&&navigator.onLine)scheduleCloudSync(300);});window.addEventListener('online',()=>{refreshOfflineStatus().then(st=>{if(st&&!st.ready)prepareOffline(false);});checkForAppUpdate();if(cloudSessionValid())syncCloud(false);});window.addEventListener('offline',()=>{refreshOfflineStatus();setUpdateUi(updateReady?'ready':'offline');});window.addEventListener('beforeunload',()=>{if(scheduler)clearInterval(scheduler);if(tunerStream)stopTunerMic();if(audioCtx)audioCtx.close();});
 
   ensureNormalPattern();if(state.meterChainEnabled)ensureChain();renderAll();renderCloudUi();setOfflineUi(null);registerOfflineWorker();if(cloudSessionValid()&&navigator.onLine){ensureCloudSession().then(ok=>{renderCloudUi();if(ok)syncCloud(true);});}
 })();
