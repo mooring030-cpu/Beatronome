@@ -1,8 +1,8 @@
-# Beatronome v0.11.0 — Pro UX Edition
+# Beatronome v0.11.1 — Pro UX Edition
 
 Beatronome은 메트로놈, Groove Engine, 튜너, 연습 루틴/세트리스트, 음악이론·재즈 지식 레퍼런스를 하나로 묶은 Offline-first PWA입니다.
 
-## v0.11.0 핵심 개선
+## v0.11.1 핵심 개선
 
 ### Performance / Stage
 - 전체 화면 Stage Mode
@@ -90,13 +90,21 @@ Cloud Sync는 선택 기능입니다. 로그인하지 않아도 모든 핵심 �
 - Music Knowledge 즐겨찾기 / 최근 항목
 - Practice Log
 
-기존 `beatronome_sync` JSON 테이블을 그대로 사용하므로 v0.11.0 전용 추가 테이블은 필요하지 않습니다.
+기존 `beatronome_sync` JSON 테이블을 그대로 사용하므로 v0.11.1 전용 추가 테이블은 필요하지 않습니다.
 
 ## GitHub Pages 업데이트
 1. ZIP 압축 해제
 2. 기존 Beatronome 저장소 폴더에 파일 전체 덮어쓰기
 3. GitHub Desktop → Commit to main
-4. Commit 예: `Beatronome v0.11.0`
+4. Commit 예: `Beatronome v0.11.1`
 5. Push origin
 
-상단 버전 배지가 `v0.11.0`이면 최신 버전입니다.
+상단 버전 배지가 `v0.11.1`이면 최신 버전입니다.
+
+## v0.11.1 Mobile Fit Fix
+- 모바일에서 상단 액션 버튼 때문에 전체 페이지가 가로로 늘어나던 문제 수정
+- 모든 주요 카드/그리드에 viewport 폭 제한 적용
+- 모바일 헤더를 자동 압축하고 Cloud/Mini 버튼은 설정 화면에서 접근하도록 정리
+- BPM 숫자/상태/컨트롤을 작은 화면에 맞춰 유동 크기로 조정
+- 하단 내비게이션과 시퀀서가 페이지 전체 폭을 밀어내지 않도록 overflow 범위 분리
+- pinch zoom은 접근성을 위해 유지하지만, 정상 접속 시 확대/축소 없이 화면 폭에 맞게 표시

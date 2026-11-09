@@ -682,3 +682,146 @@ select,input{font-size:15px;min-height:44px}
 .topbar-actions .ui-icon{width:19px;height:19px;margin:auto}
 .stage-text-button{width:auto!important;min-width:56px;padding:0 10px!important;font-size:9px!important;font-weight:900;letter-spacing:.8px}
 .cloud-top{display:grid;place-items:center}
+
+/* =========================================================
+   v0.11.1 Mobile Fit / Overflow Guard
+   Keep the app inside the physical viewport on phones.
+   ========================================================= */
+html,body{
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  overflow-x:hidden;
+}
+body{min-width:0}
+#app{
+  width:100%;
+  max-width:1440px;
+  min-width:0;
+  overflow-x:clip;
+}
+main,.tab-page,.card,.topbar,.topbar>*,.section-heading,.quick-preset-strip,.visual-beat-card,
+.beat-section,.transport-card,.training-panel,.groove-hero,.groove-library,.groove-controls,
+.sequencer-card,.tuner-hero,.tuner-display,.tuner-strings-card,.custom-tuning-card,
+.practice-builder,.saved-practice,.knowledge-panel,.manual-list,.settings-sheet{
+  min-width:0;
+  max-width:100%;
+}
+img,canvas,video{max-width:100%;height:auto}
+svg{max-width:100%}
+.sequencer-wrap{width:100%;max-width:100%;min-width:0;overscroll-behavior-x:contain}
+
+@media(max-width:700px){
+  #app{margin:0;width:100%;max-width:100%}
+  main{width:100%;max-width:100%;padding:12px;overflow-x:clip}
+
+  /* Mobile header: keep only the actions that are needed constantly.
+     Cloud state and Mini Mode remain available in Settings / More. */
+  .topbar{
+    width:100%;
+    max-width:100%;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:7px;
+    align-items:center;
+    padding-left:12px;
+    padding-right:12px;
+  }
+  .topbar>div:first-child{min-width:0;overflow:hidden}
+  .brand-line{min-width:0;gap:5px;align-items:center}
+  .topbar h1{
+    min-width:0;
+    font-size:clamp(19px,5.5vw,23px);
+    line-height:1.05;
+    white-space:nowrap;
+  }
+  .topbar .eyebrow{font-size:9px;letter-spacing:1.2px;white-space:nowrap}
+  .version-badge{font-size:8px;padding:2px 5px;flex:0 0 auto}
+  .topbar-actions{min-width:0;gap:4px;flex-wrap:nowrap}
+  .topbar-actions .icon-button,.topbar-actions .cloud-top{
+    width:34px;
+    height:34px;
+    min-width:34px;
+    flex:0 0 34px;
+    border-radius:11px;
+    padding:0;
+  }
+  .topbar-actions .ui-icon{width:17px;height:17px}
+  .stage-text-button{
+    width:44px!important;
+    min-width:44px!important;
+    flex-basis:44px!important;
+    padding:0 3px!important;
+    font-size:8px!important;
+    letter-spacing:.45px!important;
+  }
+  #cloudTopBadge,#openMiniMode{display:none!important}
+
+  .quick-preset-strip,.bpm-card,.visual-beat-card,.beat-section,.transport-card,.training-panel{
+    width:100%;
+    max-width:100%;
+  }
+  .quick-preset-strip{overflow:hidden}
+  .quick-preset-list{max-width:100%;min-width:0}
+
+  .bpm-card{overflow:hidden;padding-left:14px;padding-right:14px}
+  .bpm-topline{gap:6px;min-width:0}
+  .bpm-topline>span{flex:0 0 auto}
+  .bpm-top-actions{min-width:0;gap:4px;justify-content:flex-end}
+  .bpm-lock{padding:5px 8px;font-size:8px;white-space:nowrap}
+  #sessionStatus{font-size:10px;white-space:nowrap;min-width:0}
+  .bpm-drag{width:100%;max-width:100%;gap:6px;min-height:112px}
+  .bpm-drag strong{
+    font-size:clamp(74px,24vw,98px);
+    letter-spacing:-.055em;
+    max-width:70vw;
+  }
+  .note-mark{font-size:clamp(28px,9vw,38px)}
+  .bpm-unit{font-size:12px}
+  .bpm-hint{font-size:11px;line-height:1.45;padding:0 4px}
+  .tempo-dial{width:82px;height:82px}
+  .bpm-controls{
+    width:min(100%,320px);
+    margin-left:auto;
+    margin-right:auto;
+    display:grid;
+    grid-template-columns:48px minmax(0,1fr) 48px;
+    gap:10px;
+  }
+  .round-control{width:48px;min-width:48px}
+  .tap-button{width:100%;min-width:0}
+
+  .visual-beat-head{min-width:0;flex-wrap:wrap;align-items:flex-start}
+  .visual-actions{max-width:100%;justify-content:flex-start}
+  .visual-actions button{min-width:0;white-space:normal}
+  .visual-options{min-width:0}
+  .visual-options label{min-width:0}
+
+  .quick-options,.quick-options-four,.dual-inputs,.dual-inputs.three,
+  .tuner-pro-controls,.today-stats,.knowledge-memory-strip{
+    min-width:0;
+  }
+  .stepper,.range-wrap,.training-row-head,.training-row-copy{min-width:0}
+  .range-wrap input[type=range]{min-width:0;width:100%}
+
+  .bottom-nav{width:100%;max-width:100%;left:0;transform:none}
+  .bottom-nav button{min-width:0;overflow:hidden}
+  .bottom-nav small{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* Large UI should remain readable without making the layout wider. */
+  .ui-large .bpm-drag strong{font-size:clamp(82px,25vw,104px)}
+  .ui-large .topbar h1{font-size:clamp(20px,5.8vw,24px)}
+}
+
+@media(max-width:360px){
+  .topbar{padding-left:10px;padding-right:10px;gap:5px}
+  .topbar-actions{gap:3px}
+  .topbar-actions .icon-button{width:32px;height:32px;min-width:32px;flex-basis:32px}
+  .stage-text-button{width:39px!important;min-width:39px!important;flex-basis:39px!important;font-size:7px!important}
+  .brand-line{gap:4px}
+  .version-badge{font-size:7px;padding:2px 4px}
+  .bpm-drag strong{font-size:clamp(70px,23vw,88px)}
+  .bpm-controls{grid-template-columns:44px minmax(0,1fr) 44px;gap:8px}
+  .round-control{width:44px;min-width:44px;height:44px}
+  .tap-button{height:44px}
+}
