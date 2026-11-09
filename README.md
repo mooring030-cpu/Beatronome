@@ -1,8 +1,8 @@
-# Beatronome v0.11.2 — Pro UX Edition
+# Beatronome v0.11.3 — Mobile Performance Fix
 
 Beatronome은 메트로놈, Groove Engine, 튜너, 연습 루틴/세트리스트, 음악이론·재즈 지식 레퍼런스를 하나로 묶은 Offline-first PWA입니다.
 
-## v0.11.2 핵심 개선
+## v0.11.3 핵심 개선
 
 ### Performance / Stage
 - 전체 화면 Stage Mode
@@ -90,30 +90,28 @@ Cloud Sync는 선택 기능입니다. 로그인하지 않아도 모든 핵심 �
 - Music Knowledge 즐겨찾기 / 최근 항목
 - Practice Log
 
-기존 `beatronome_sync` JSON 테이블을 그대로 사용하므로 v0.11.2 전용 추가 테이블은 필요하지 않습니다.
+기존 `beatronome_sync` JSON 테이블을 그대로 사용하므로 v0.11.3 전용 추가 테이블은 필요하지 않습니다.
 
 ## GitHub Pages 업데이트
 1. ZIP 압축 해제
 2. 기존 Beatronome 저장소 폴더에 파일 전체 덮어쓰기
 3. GitHub Desktop → Commit to main
-4. Commit 예: `Beatronome v0.11.2`
+4. Commit 예: `Beatronome v0.11.3`
 5. Push origin
 
-상단 버전 배지가 `v0.11.2`이면 최신 버전입니다.
+상단 버전 배지가 `v0.11.3`이면 최신 버전입니다.
 
-## v0.11.2 Mobile Fit Fix
-- 모바일에서 상단 액션 버튼 때문에 전체 페이지가 가로로 늘어나던 문제 수정
-- 모든 주요 카드/그리드에 viewport 폭 제한 적용
-- 모바일 헤더를 자동 압축하고 Cloud/Mini 버튼은 설정 화면에서 접근하도록 정리
-- BPM 숫자/상태/컨트롤을 작은 화면에 맞춰 유동 크기로 조정
-- 하단 내비게이션과 시퀀서가 페이지 전체 폭을 밀어내지 않도록 overflow 범위 분리
-- pinch zoom은 접근성을 위해 유지하지만, 정상 접속 시 확대/축소 없이 화면 폭에 맞게 표시
-
-
-## v0.11.2 Mobile Flow Fix
-- 모바일 메트로놈 화면을 BPM → START/TAP → Visual Beat → 빠른 설정 순으로 재배치
-- 비어 있는 Quick Presets 카드는 모바일에서 자동 숨김
-- BPM 카드의 불필요한 세로 공간 축소 (기능은 유지)
-- Simple Mode에서는 Pulse/진동/Training을 접어 스크롤 길이 축소
-- 아래로 스크롤하면 하단 메뉴 위에 BPM/START/TAP 빠른 컨트롤이 자동 표시
-- 빠른 컨트롤은 One Hand/Stage/Focus/Mini Mode와 충돌하지 않도록 자동 숨김
+## v0.11.3 Mobile Performance Fix
+- 모바일 스크롤 이벤트에서 `getBoundingClientRect()`를 계속 호출하던 빠른 컨트롤 로직 제거
+- 자동 Mobile Scroll Dock 비활성화 (고정 컨트롤이 필요하면 One Hand Mode 사용)
+- 모바일 Topbar의 sticky + backdrop blur 제거
+- 모바일 Bottom Navigation의 backdrop blur 제거
+- 주요 카드의 무거운 그림자/전환 효과 최소화
+- BPM 숫자 영역에서 세로 스와이프는 페이지 스크롤로 처리
+- 모바일 BPM 드래그는 좌우 제스처가 확실할 때만 시작
+- 모바일 Tempo Dial도 세로 스와이프와 충돌하지 않도록 좌우 제스처 우선으로 변경
+- BPM 변경 시 전체 화면을 다시 렌더하지 않고 숫자·다이얼 등 필요한 UI만 갱신
+- BPM 연속 변경 시 localStorage/Cloud 변경 표시를 매 이벤트마다 실행하지 않고 짧게 묶어서 저장
+- Stage Mode가 닫혀 있을 때 매 박자마다 숨겨진 Stage DOM을 다시 만들던 작업 제거
+- 모바일 탭 전환 시 강제 smooth scroll 대신 즉시 위치 이동
+- v0.11.1의 화면 폭 고정 및 v0.11.2의 짧아진 모바일 레이아웃은 유지

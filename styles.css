@@ -907,3 +907,41 @@ svg{max-width:100%}
   .mobile-scroll-dock{width:calc(100% - 14px);grid-template-columns:38px 58px 50px 1fr 38px;gap:5px;padding:6px}
   .mobile-scroll-dock button{height:42px}
 }
+
+/* =========================================================
+   v0.11.3 Mobile Performance Fix
+   Reduce scroll jank and touch conflicts on phones.
+   ========================================================= */
+@media(max-width:700px){
+  html,body{overscroll-behavior-y:auto;-webkit-overflow-scrolling:touch}
+  body{min-width:0}
+
+  /* Sticky/fixed blur layers are costly on iOS/Android while scrolling. */
+  .topbar{position:relative;top:auto;background:#09111a;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  .bottom-nav{background:#081019;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none}
+  .one-hand-dock,.mobile-scroll-dock{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+
+  /* The v0.11.2 auto scroll dock is intentionally disabled. One Hand Mode
+     remains available when persistent transport controls are wanted. */
+  .mobile-scroll-dock,.mobile-scroll-dock:not(.hidden){display:none!important}
+  body.mobile-dock-visible #app{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+
+  /* Vertical swipes on the large BPM number must scroll the page naturally.
+     BPM drag on phones is horizontal only. */
+  .bpm-drag{touch-action:pan-y;cursor:ew-resize}
+
+  /* Reduce paint/compositing work while the document is moving. */
+  .card,.bpm-card,.transport-card,.visual-beat-card,.beat-section,.training-panel{box-shadow:none!important}
+  .beat-dot,.visual-lamp,.switch,.meter-chain-chip,.bottom-nav button,.genre-chip{transition:none!important}
+  .bpm-card:after{opacity:.45}
+
+  /* Keep native scrolling dominant. */
+  main,.tab-page,.card{overscroll-behavior:auto}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
+@media(max-width:700px){
+  .tempo-dial{touch-action:pan-y}
+}
