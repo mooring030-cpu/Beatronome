@@ -970,7 +970,7 @@ svg{max-width:100%}
 
 
 /* =========================================================
-   v0.11.8 Home Logo + Desktop Single Scroll Owner
+   v0.11.9 Home Logo + Desktop Single Scroll Owner
    ========================================================= */
 .brand-home-group{display:flex;align-items:center;gap:10px;min-width:0}
 .brand-copy{min-width:0}
@@ -996,5 +996,5 @@ svg{max-width:100%}
 }
 
 
-/* v0.11.8: Undo snackbar removed by product decision. */
+/* v0.11.9: Undo snackbar removed by product decision. */
 .undo-bar{display:none!important}

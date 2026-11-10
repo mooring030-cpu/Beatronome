@@ -614,7 +614,7 @@
   function knowledgePractice(item){captureUndo('Knowledge 연습 시작');state.groove.genreEnabled=false;state.playbackMode='metro';state.bpm=item?.bpm||100;state.subdivision=item?.type==='scale'?2:1;state.practice.countInBars=1;persist();renderAll();switchTab('metronome');notify(`${item?.label||'이론'} · ${state.bpm} BPM 연습`);}
   window.BeatronomeBridge={recordKnowledge:knowledgeRecord,toggleKnowledgeFavorite:knowledgeToggleFavorite,startKnowledgePractice:knowledgePractice,isKnowledgeFavorite:id=>(state.library.knowledgeFavorites||[]).some(x=>x.id===id),refreshKnowledgeMemory:renderKnowledgeMemory};
 
-  const APP_VERSION='0.11.8';
+  const APP_VERSION='0.11.9';
   let swRegistration=null;
   let offlinePreparing=false;
   let updateWorker=null;
@@ -623,8 +623,8 @@
   function setUpdateUi(mode='checking'){
     const title=$('appUpdateTitle'),text=$('appUpdateText'),hint=$('appUpdateHint'),badge=document.querySelector('.version-badge');
     if(!title||!text||!hint)return;
-    if(mode==='ready'){title.textContent='업데이트 준비 완료';text.textContent='새 버전을 백그라운드에 받아두었습니다.';hint.textContent='현재 사용 중인 화면은 유지되며, 앱을 완전히 닫고 다음에 열면 자동 적용됩니다.';badge?.classList.add('update-ready');badge?.setAttribute('title','새 버전 준비됨 · 다음 실행 때 자동 적용');}
-    else if(mode==='latest'){title.textContent='앱 업데이트';text.textContent=`현재 v${APP_VERSION} · 최신 상태`;hint.textContent='새 버전은 자동으로 확인하며 사용 중에는 강제 새로고침하지 않습니다.';badge?.classList.remove('update-ready');badge?.setAttribute('title',`Beatronome v${APP_VERSION}`);}
+    if(mode==='ready'){title.textContent='업데이트 준비 완료';text.textContent='새 버전을 백그라운드에 받아두었습니다.';hint.textContent='현재 화면은 유지됩니다. 다음 실행부터 새 버전이 자동 적용되며 새로고침은 필요 없습니다.';badge?.classList.add('update-ready');badge?.setAttribute('title','새 버전 준비됨 · 다음 실행 때 자동 적용');}
+    else if(mode==='latest'){title.textContent='앱 업데이트';text.textContent=`현재 v${APP_VERSION} · 최신 상태`;hint.textContent='새 버전은 백그라운드에서 준비되며 현재 세션은 유지되고 다음 실행부터 자동 적용됩니다.';badge?.classList.remove('update-ready');badge?.setAttribute('title',`Beatronome v${APP_VERSION}`);}
     else if(mode==='offline'){title.textContent='앱 업데이트';text.textContent=`현재 v${APP_VERSION} · 오프라인`;hint.textContent='인터넷이 연결되면 새 버전을 자동 확인합니다.';}
     else{title.textContent='앱 업데이트';text.textContent='새 버전을 확인하는 중입니다.';hint.textContent='업데이트가 있어도 현재 연주/튜너 화면은 바뀌지 않습니다.';}
   }

@@ -1,4 +1,4 @@
-const VERSION = '0.11.8';
+const VERSION = '0.11.9';
 const CACHE = `beatronome-offline-v${VERSION}`;
 
 const BASIC = [];
@@ -67,24 +67,35 @@ self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
     await Promise.allSettled(OFFLINE_ASSETS.map(path => cacheOne(cache, path)));
-    // Do not call skipWaiting here. The current Beatronome session keeps using
-    // the version it started with. The new worker activates after all old
-    // Beatronome windows are closed, so audio/practice is never interrupted.
+    // Activate the new worker as soon as its cache is ready, but do NOT claim
+    // already-open Beatronome pages. Existing practice/audio sessions therefore
+    // keep their current controller and are never reloaded mid-session. The next
+    // navigation/app launch is controlled by this new worker automatically.
+    await self.skipWaiting();
   })());
 });
 
+async function cleanupOldCaches() {
+  const keys = await caches.keys();
+  await Promise.all(keys.filter(key => key.startsWith('beatronome-') && key !== CACHE).map(key => caches.delete(key)));
+}
+
 self.addEventListener('activate', event => {
-  event.waitUntil((async () => {
-    const keys = await caches.keys();
-    await Promise.all(keys.filter(key => key.startsWith('beatronome-') && key !== CACHE).map(key => caches.delete(key)));
-    await self.clients.claim();
-  })());
+  event.waitUntil(Promise.resolve());
+  // Intentionally no clients.claim() and no old-cache deletion here.
+  // An already-open Beatronome session can keep using its old controller/cache
+  // without interruption. Old caches are removed only after the next launch is
+  // actually controlled by this new worker.
 });
 
 self.addEventListener('message', event => {
   const type = event.data?.type;
   if (type === 'GET_OFFLINE_STATUS') {
-    event.waitUntil(offlineStatus().then(status => event.ports?.[0]?.postMessage(status)));
+    event.waitUntil((async () => {
+      await cleanupOldCaches();
+      const status = await offlineStatus();
+      event.ports?.[0]?.postMessage(status);
+    })());
   }
   if (type === 'PREPARE_OFFLINE') {
     event.waitUntil(prepareOffline().then(status => event.ports?.[0]?.postMessage(status)));
@@ -98,6 +109,7 @@ self.addEventListener('fetch', event => {
   if (url.origin !== self.location.origin) return;
 
   if (event.request.mode === 'navigate') {
+    event.waitUntil(cleanupOldCaches());
     event.respondWith((async () => {
       const cached = await caches.match('./index.html');
       if (cached) {
