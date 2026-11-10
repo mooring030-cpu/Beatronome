@@ -1,6 +1,20 @@
-# Beatronome v0.11.6 — Desktop Scroll Stability + Onboarding Contrast
+# Beatronome v0.11.8 — Native Scroll + Live Subdivision + Home
 
-## v0.11.6 핵심 개선
+## v0.11.8 핵심 수정
+
+- **PC/Mac 스크롤:** 전역 wheel 가로채기 코드를 제거하고 브라우저 기본 스크롤을 그대로 사용합니다. 휠/트랙패드 방향이 뒤집히거나 한 방향으로 걸리는 현상을 방지합니다.
+- **재생 중 분할 변경:** 4분 → 8분 → 3연음 → 16분 변경 시 재생을 멈추지 않고 즉시 새 분할로 스케줄을 다시 잡습니다. 이미 예약된 이전 메트로놈 클릭은 가능한 범위에서 취소합니다.
+- **Undo 안내 제거:** `BPM 변경 · 이전 설정으로 되돌릴 수 있습니다` 안내 바를 표시하지 않습니다.
+- **고양이 홈 버튼:** 상단 Beatronome 로고 왼쪽의 고양이 아이콘을 누르면 언제든 메트로놈 홈으로 돌아갑니다.
+- 박자/분모 변경 시 `stop()` 렌더링 때문에 새 선택값이 되돌아갈 수 있던 순서 문제도 함께 수정했습니다.
+
+## v0.11.8 핵심 수정
+- PC/Mac에서 세로 휠/트랙패드 스크롤을 앱 내부 컨트롤이 가로채지 않도록 메인 문서 단일 스크롤 구조로 정리했습니다.
+- 메인 페이지에서는 휠 방향을 브라우저 창 스크롤에 직접 전달하며, 설정/검색 같은 모달만 자체 스크롤을 사용합니다.
+- BPM 변경 시 `이전 설정으로 되돌릴 수 있습니다` Undo 안내가 더 이상 표시되지 않습니다.
+- 상단에 고양이 Beatronome 로고를 추가했습니다. 누르면 언제든 메트로놈 홈으로 이동합니다.
+
+## v0.11.8 핵심 개선
 - PC/Mac에서 BPM 숫자 위에 마우스가 있어도 휠은 기본적으로 페이지 스크롤을 수행합니다.
 - BPM을 휠로 조정하려면 `Alt`(Windows) / `Option`(Mac)을 누른 채 휠을 사용합니다.
 - 탭 전환 시 강제 smooth-scroll을 제거해 긴 화면에서 스크롤 점프/버벅임을 줄였습니다.
@@ -10,7 +24,7 @@
 
 Beatronome은 메트로놈, Groove Engine, 튜너, 연습 루틴/세트리스트, 음악이론·재즈 지식 레퍼런스를 하나로 묶은 Offline-first PWA입니다.
 
-## v0.11.6 핵심 개선
+## v0.11.8 핵심 개선
 
 ### Performance / Stage
 - 전체 화면 Stage Mode
@@ -98,18 +112,18 @@ Cloud Sync는 선택 기능입니다. 로그인하지 않아도 모든 핵심 �
 - Music Knowledge 즐겨찾기 / 최근 항목
 - Practice Log
 
-기존 `beatronome_sync` JSON 테이블을 그대로 사용하므로 v0.11.6 전용 추가 테이블은 필요하지 않습니다.
+기존 `beatronome_sync` JSON 테이블을 그대로 사용하므로 v0.11.8 전용 추가 테이블은 필요하지 않습니다.
 
 ## GitHub Pages 업데이트
 1. ZIP 압축 해제
 2. 기존 Beatronome 저장소 폴더에 파일 전체 덮어쓰기
 3. GitHub Desktop → Commit to main
-4. Commit 예: `Beatronome v0.11.6`
+4. Commit 예: `Beatronome v0.11.8`
 5. Push origin
 
-상단 버전 배지가 `v0.11.6`이면 최신 버전입니다.
+상단 버전 배지가 `v0.11.8`이면 최신 버전입니다.
 
-## v0.11.6 Onboarding Button Contrast Fix
+## v0.11.8 Onboarding Button Contrast Fix
 - 모바일 스크롤 이벤트에서 `getBoundingClientRect()`를 계속 호출하던 빠른 컨트롤 로직 제거
 - 자동 Mobile Scroll Dock 비활성화 (고정 컨트롤이 필요하면 One Hand Mode 사용)
 - 모바일 Topbar의 sticky + backdrop blur 제거
@@ -124,13 +138,13 @@ Cloud Sync는 선택 기능입니다. 로그인하지 않아도 모든 핵심 �
 - 모바일 탭 전환 시 강제 smooth scroll 대신 즉시 위치 이동
 - v0.11.1의 화면 폭 고정 및 v0.11.2의 짧아진 모바일 레이아웃은 유지
 
-## v0.11.6 처음 사용 안내 개선
+## v0.11.8 처음 사용 안내 개선
 - `나중에 보기`는 현재 실행에서만 안내를 닫습니다. 다음 실행 시 다시 볼 수 있습니다.
 - `다시 보지 않기`는 버전이 올라가도 유지되는 영구 설정으로 저장됩니다.
 - 마지막 단계의 `시작하기`까지 완료한 경우에도 다시 자동 표시하지 않습니다.
 - 설정 → 처음 사용 안내 → 다시 보기에서는 언제든 수동으로 다시 열 수 있습니다.
 
-## v0.11.6 Onboarding Button Contrast Fix
+## v0.11.8 Onboarding Button Contrast Fix
 
 - `다시 보지 않기` 버튼을 밝은 브라스 골드 배경 + 짙은 글자로 변경해 모바일 다크 화면에서도 확실히 보이도록 수정
 - `나중에 보기`는 딥 네이비, `다음/시작하기`는 버건디로 역할과 색상을 분리
