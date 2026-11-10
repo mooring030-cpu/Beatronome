@@ -651,7 +651,7 @@ select,input{font-size:15px;min-height:44px}
 .search-overlay{position:fixed;z-index:2300;inset:0;background:rgba(2,6,10,.76);backdrop-filter:blur(10px);padding:10vh 16px 20px}.search-palette{width:min(720px,100%);margin:0 auto;background:#0d151d;border:1px solid rgba(214,174,98,.22);border-radius:22px;box-shadow:0 30px 80px rgba(0,0,0,.58);overflow:hidden}.search-head{display:flex;align-items:center;gap:10px;padding:15px 18px;color:#aeb8c1}.search-head strong{color:#f1eee8;font-size:15px;margin-right:auto}.search-head span{font-size:10px;border:1px solid #33404c;padding:4px 7px;border-radius:7px}.search-head button{font-size:20px}.search-palette>input{width:100%;border:0;border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);border-radius:0;background:#091018;padding:18px 20px;font-size:18px}.global-search-results{max-height:58vh;overflow:auto;padding:8px}.global-search-results button{display:flex;width:100%;align-items:center;justify-content:space-between;gap:16px;padding:13px 14px;border-radius:12px;text-align:left}.global-search-results button:hover{background:rgba(214,174,98,.08)}.global-search-results strong{font-size:14px}.global-search-results span{font-size:11px;color:#7f8b97;text-align:right}
 
 /* Onboarding */
-.onboarding-overlay{position:fixed;z-index:2400;inset:0;display:grid;place-items:center;padding:18px;background:rgba(2,7,11,.87);backdrop-filter:blur(12px)}.onboarding-card{width:min(460px,100%);background:linear-gradient(160deg,#13202b,#0a1118);border:1px solid rgba(214,174,98,.23);border-radius:28px;padding:28px;box-shadow:0 30px 80px rgba(0,0,0,.55)}.onboarding-progress{font-size:10px;letter-spacing:1.8px;color:var(--ux-gold)}.onboarding-icon{display:grid;place-items:center;width:96px;height:96px;border-radius:50%;margin:26px auto 22px;background:radial-gradient(circle,#26394a,#111a23);border:1px solid rgba(214,174,98,.24);font-family:Georgia,serif;font-size:30px;color:#efd18e}.onboarding-card h2{text-align:center;font-size:25px}.onboarding-card p{text-align:center;color:#a9b2bc;line-height:1.7;font-size:14px;min-height:72px}.onboarding-actions{display:grid;grid-template-columns:1fr 1.5fr;gap:10px;margin-top:22px}.onboarding-actions button{min-height:50px;border-radius:14px}.onboarding-actions #nextOnboarding{background:linear-gradient(135deg,#8c4058,#682b40);font-weight:800}
+.onboarding-overlay{position:fixed;z-index:2400;inset:0;display:grid;place-items:center;padding:18px;background:rgba(2,7,11,.87);backdrop-filter:blur(12px)}.onboarding-card{width:min(460px,100%);background:linear-gradient(160deg,#13202b,#0a1118);border:1px solid rgba(214,174,98,.23);border-radius:28px;padding:28px;box-shadow:0 30px 80px rgba(0,0,0,.55)}.onboarding-progress{font-size:10px;letter-spacing:1.8px;color:var(--ux-gold)}.onboarding-icon{display:grid;place-items:center;width:96px;height:96px;border-radius:50%;margin:26px auto 22px;background:radial-gradient(circle,#26394a,#111a23);border:1px solid rgba(214,174,98,.24);font-family:Georgia,serif;font-size:30px;color:#efd18e}.onboarding-card h2{text-align:center;font-size:25px}.onboarding-card p{text-align:center;color:#a9b2bc;line-height:1.7;font-size:14px;min-height:72px}.onboarding-actions{display:grid;grid-template-columns:1fr 1.2fr 1.3fr;gap:10px;margin-top:22px}.onboarding-actions button{min-height:50px;border-radius:14px}.onboarding-actions #skipOnboarding{border:1px solid #42515e;color:#d8e0e6;background:#15202a;font-weight:700}.onboarding-actions #neverOnboarding{border:1px solid #e3bd70;color:#0a1118;background:linear-gradient(135deg,#f0cf88,#c99b4e);font-weight:900;box-shadow:0 8px 22px rgba(214,174,98,.22);text-shadow:none}.onboarding-actions #neverOnboarding:active{transform:translateY(1px);filter:brightness(.95)}.onboarding-actions #nextOnboarding{border:1px solid #a85a73;color:#fff;background:linear-gradient(135deg,#93435d,#682b40);font-weight:900}@media(max-width:520px){.onboarding-actions{grid-template-columns:1fr 1fr}.onboarding-actions button{font-size:14px;min-height:52px}.onboarding-actions #neverOnboarding{letter-spacing:-.2px}.onboarding-actions #nextOnboarding{grid-column:1/-1}}
 
 /* Undo */
 .undo-bar{position:fixed;z-index:2200;left:50%;bottom:calc(94px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(540px,calc(100% - 28px));display:flex;align-items:center;gap:14px;padding:12px 14px 12px 16px;border-radius:15px;background:#17212a;border:1px solid rgba(214,174,98,.28);box-shadow:0 18px 44px rgba(0,0,0,.4)}.undo-bar span{font-size:12px;color:#c1c9cf;flex:1}.undo-bar button{color:#f2d49a;font-weight:800;white-space:nowrap}
@@ -909,7 +909,7 @@ svg{max-width:100%}
 }
 
 /* =========================================================
-   v0.11.3 Mobile Performance Fix
+   v0.11.5 Onboarding Preference Fix
    Reduce scroll jank and touch conflicts on phones.
    ========================================================= */
 @media(max-width:700px){
@@ -944,4 +944,26 @@ svg{max-width:100%}
 }
 @media(max-width:700px){
   .tempo-dial{touch-action:pan-y}
+}
+
+
+/* =========================================================
+   v0.11.6 Desktop Scroll Stability
+   Keep native browser scrolling authoritative on Mac/PC.
+   ========================================================= */
+@media(min-width:701px){
+  html{overflow-y:auto;scrollbar-gutter:stable;overscroll-behavior-y:auto;scroll-behavior:auto}
+  body{overflow-y:visible;overscroll-behavior-y:auto}
+  #app{overflow-y:visible}
+  /* Avoid expensive compositing layers while a long page is scrolling. */
+  .topbar,.bottom-nav,.knowledge-nav,.global-practice-bar,.active-session-card{
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+  }
+  /* Practice cards should participate in normal document flow on desktop. */
+  .active-session-card{position:relative;bottom:auto}
+  /* Horizontal chip rows must not trap vertical trackpad/wheel scrolling. */
+  .quick-preset-list,.knowledge-chip-row,.musician-filters,.genre-scroll,.sequencer-wrap{
+    overscroll-behavior-y:auto;
+  }
 }
