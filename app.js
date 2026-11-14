@@ -398,12 +398,47 @@
     const a=cmnd[Math.max(1,best-1)],b=cmnd[best],c=cmnd[Math.min(maxLag,best+1)],den=(a-2*b+c);const shift=Math.abs(den)>1e-6?.5*(a-c)/den:0;const lag=best+clamp(shift,-1,1),freq=sr/lag;return freq>=20&&freq<=1200?freq:null;
   }
   function nearestTunerTarget(freq){
-    const ref=state.tuner.referenceA;if(state.tuner.instrument==='chromatic'){const midi=Math.round(69+12*Math.log2(freq/ref));return{midi,index:-1,freq:midiFreq(midi,ref)};}
-    const notes=currentTuningNotes();let best={midi:notes[0],index:0,d:Infinity,freq:midiFreq(notes[0],ref)};notes.forEach((m,i)=>{const f=midiFreq(m,ref),d=Math.abs(1200*Math.log2(freq/f));if(d<best.d)best={midi:m,index:i,d,freq:f};});return best;
+    const ref=state.tuner.referenceA;
+    if(state.tuner.instrument==='chromatic'){
+      const midi=Math.round(69+12*Math.log2(freq/ref));
+      return{midi,index:-1,freq:midiFreq(midi,ref),baseMidi:midi,octaveShift:0};
+    }
+    // Instrument mode is octave-aware: a string's 12th/24th-fret octave must still
+    // resolve to that same string instead of being compared only with open strings.
+    const notes=currentTuningNotes();
+    let best={midi:notes[0],baseMidi:notes[0],index:0,octaveShift:0,d:Infinity,freq:midiFreq(notes[0],ref)};
+    notes.forEach((openMidi,i)=>{
+      for(let octaveShift=0;octaveShift<=4;octaveShift++){
+        const midi=openMidi+12*octaveShift;
+        if(midi>100)break;
+        const f=midiFreq(midi,ref),d=Math.abs(1200*Math.log2(freq/f));
+        // If two strings produce exactly the same pitch, prefer the candidate closer
+        // to its open-string register. This keeps open/high strings intuitive.
+        if(d<best.d-.01||(Math.abs(d-best.d)<=.01&&octaveShift<best.octaveShift)){
+          best={midi,baseMidi:openMidi,index:i,octaveShift,d,freq:f};
+        }
+      }
+    });
+    return best;
   }
   function updateTunerDisplay(freq){
-    if(!freq){$('tunerFreq').textContent='0.0';$('tunerTargetText').textContent='소리를 기다리는 중';return;}const target=nearestTunerTarget(freq),cents=clamp(1200*Math.log2(freq/target.freq),-99,99),display=noteName(target.midi);tunerActiveString=target.index;
-    $('tunerNote').textContent=display;$('tunerFreq').textContent=freq.toFixed(1);$('tunerCents').textContent=`${Math.abs(cents)<=5?'IN TUNE':cents<0?'LOW':'HIGH'} · ${cents>=0?'+':''}${cents.toFixed(1)} cents`;if($('strobeStripes')){$('strobeStripes').style.setProperty('--strobe-speed',`${clamp(Math.abs(cents)/12,.12,3)}s`);$('strobeStripes').style.setProperty('--strobe-dir',cents<0?'-1':'1');$('strobeStripes').classList.toggle('stopped',Math.abs(cents)<=3);}$('tunerNeedle').style.left=`${clamp(50+cents,0,100)}%`;$('tunerNeedle').classList.toggle('in-tune',Math.abs(cents)<=5);$('tunerCents').classList.toggle('good',Math.abs(cents)<=5);$('tunerNote').closest('.tuner-display')?.classList.toggle('in-tune',Math.abs(cents)<=5);$('tunerTargetText').textContent=state.tuner.instrument==='chromatic'?`가장 가까운 음 ${display}`:`${TUNER_INSTRUMENTS[state.tuner.instrument]} · ${currentTuningName()}`;renderTunerStringsOnly();
+    if(!freq){$('tunerFreq').textContent='0.0';$('tunerTargetText').textContent='소리를 기다리는 중';return;}
+    const target=nearestTunerTarget(freq),cents=clamp(1200*Math.log2(freq/target.freq),-99,99),fullDisplay=noteName(target.midi),pitchClass=NOTE_NAMES[(target.midi%12+12)%12];
+    tunerActiveString=target.index;
+    // For guitar/bass, emphasize pitch class so octave harmonics do not look like a
+    // completely different target. The detected frequency still remains visible.
+    $('tunerNote').textContent=state.tuner.instrument==='chromatic'?fullDisplay:pitchClass;
+    $('tunerFreq').textContent=freq.toFixed(1);
+    $('tunerCents').textContent=`${Math.abs(cents)<=5?'IN TUNE':cents<0?'LOW':'HIGH'} · ${cents>=0?'+':''}${cents.toFixed(1)} cents`;
+    if($('strobeStripes')){$('strobeStripes').style.setProperty('--strobe-speed',`${clamp(Math.abs(cents)/12,.12,3)}s`);$('strobeStripes').style.setProperty('--strobe-dir',cents<0?'-1':'1');$('strobeStripes').classList.toggle('stopped',Math.abs(cents)<=3);}
+    $('tunerNeedle').style.left=`${clamp(50+cents,0,100)}%`;$('tunerNeedle').classList.toggle('in-tune',Math.abs(cents)<=5);$('tunerCents').classList.toggle('good',Math.abs(cents)<=5);$('tunerNote').closest('.tuner-display')?.classList.toggle('in-tune',Math.abs(cents)<=5);
+    if(state.tuner.instrument==='chromatic')$('tunerTargetText').textContent=`가장 가까운 음 ${fullDisplay}`;
+    else{
+      const stringNo=currentTuningNotes().length-target.index;
+      const octaveText=target.octaveShift>0?` · 옥타브 +${target.octaveShift}`:' · 개방현';
+      $('tunerTargetText').textContent=`${stringNo}현 ${pitchClass}${octaveText} · ${currentTuningName()}`;
+    }
+    renderTunerStringsOnly();
   }
   function renderTunerStringsOnly(){if(state.tuner.instrument==='chromatic')return;$$('#tunerStrings .tuner-string').forEach((b,i)=>b.classList.toggle('active',i===tunerActiveString));}
   async function startTunerMic(){
@@ -530,7 +565,14 @@
     if(step===0)scheduleDrumBar(time,beatDuration*meter.beats);
     let audible=pat!=='mute'&&subAudible,trainingMuted=false;if(t.internalEnabled){const cycle=Math.max(1,t.soundBars+t.muteBars),phase=barIndex%cycle;if(phase>=t.soundBars)trainingMuted=true;}
     let mutePct=t.randomMuteEnabled?t.randomMute:0;if(t.gradualEnabled){const sec=Math.max(0,audioCtx.currentTime-startTime),ratio=clamp(sec/Math.max(1,t.gradualSeconds),0,1);mutePct=Math.max(mutePct,t.gradualTarget*ratio);}if(audible&&!trainingMuted&&mutePct>0&&Math.random()*100<mutePct)trainingMuted=true;audible=audible&&!trainingMuted;
-    if(audible&&['metro','both'].includes(state.playbackMode)){const role=isMain?(pat==='accent'?'strong':'normal'):'weak';rememberMetroSources(time,synthClick(time,state.sound,isMain&&pat==='accent',isMain?state.volume:state.volume*.52,role,subInfo.bank));}
+    if(audible&&['metro','both'].includes(state.playbackMode)){
+      const role=isMain?(pat==='accent'?'strong':'normal'):'weak';
+      // Enforce a clear rhythmic hierarchy in every subdivision:
+      // beat-1 accent > other downbeats > offbeat/subdivision clicks.
+      // This also compensates for level differences between the recorded Basic banks.
+      const roleGain=role==='strong'?1.18:role==='normal'?.86:.38;
+      rememberMetroSources(time,synthClick(time,state.sound,role==='strong',state.volume*roleGain,role,subInfo.bank));
+    }
     if(isMain)visualQueue.push({time,beat,chainIndex,chainBar});stepIndex++;const perBar=meter.beats*count;
     if(stepIndex>=perBar){stepIndex=0;barIndex++;
       if(state.meterChainEnabled&&state.meterChain.length){playbackChainBarCount++;const repeat=Math.max(1,Number(meter.repeatBars)||1);if(playbackChainBarCount>=repeat){playbackChainBarCount=0;playbackChainIndex=(playbackChainIndex+1)%state.meterChain.length;}}
@@ -622,7 +664,7 @@
   function knowledgePractice(item){captureUndo('Knowledge 연습 시작');state.groove.genreEnabled=false;state.playbackMode='metro';state.bpm=item?.bpm||100;state.subdivision=item?.type==='scale'?2:1;state.practice.countInBars=1;persist();renderAll();switchTab('metronome');notify(`${item?.label||'이론'} · ${state.bpm} BPM 연습`);}
   window.BeatronomeBridge={recordKnowledge:knowledgeRecord,toggleKnowledgeFavorite:knowledgeToggleFavorite,startKnowledgePractice:knowledgePractice,isKnowledgeFavorite:id=>(state.library.knowledgeFavorites||[]).some(x=>x.id===id),refreshKnowledgeMemory:renderKnowledgeMemory};
 
-  const APP_VERSION='0.12.1';
+  const APP_VERSION='0.12.2';
   let swRegistration=null;
   let offlinePreparing=false;
   let updateWorker=null;
