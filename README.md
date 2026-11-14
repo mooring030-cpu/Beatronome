@@ -1,4 +1,9 @@
-# Beatronome v0.12.0 — Stable Clock + Beat Hero
+# Beatronome v0.12.1 — Touch Navigation Fix
+
+- Fixed a startup crash caused by bindings to removed mobile dock controls.
+- Restored Groove / Tuner / Practice / More navigation taps.
+- Removed global touch preventDefault handlers that could swallow taps.
+- Zoom remains disabled through the viewport and touch CSS.
 
 ## 핵심 패치
 - 모바일 확대 차단: double-tap/pinch zoom 방지, 고정 앱 스케일

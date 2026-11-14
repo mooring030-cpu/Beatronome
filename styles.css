@@ -1003,7 +1003,7 @@ svg{max-width:100%}
 /* =========================================================
    v0.12.0 - Fixed mobile scale + top Beat Hero + stable clock
    ========================================================= */
-html,body{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+html,body{touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 body{overflow-x:hidden;}
 #app{padding-top:0;}
 .topbar,.core-mode-bar{display:none!important;}
@@ -1069,4 +1069,21 @@ body{overflow-x:hidden;}
   .hero-beat-lamps{gap:5px!important;}
   .beat-hero-card{padding-left:10px!important;padding-right:10px!important;}
   .hero-version{font-size:8px;}
+}
+
+
+/* =========================================================
+   v0.12.1 - Touch navigation recovery
+   Keep zoom disabled without swallowing ordinary taps.
+   ========================================================= */
+button,a,label,select,input,.bottom-nav,.bottom-nav button,.more-launch{
+  pointer-events:auto;
+}
+.bottom-nav{z-index:900!important;}
+.bottom-nav button{touch-action:manipulation!important;-webkit-tap-highlight-color:transparent;}
+.tab-page{pointer-events:auto;}
+@media(max-width:849px){
+  body,main,#app{touch-action:pan-y;}
+  .bpm-drag,.tempo-dial{touch-action:pan-y!important;}
+  button,select,input,label{touch-action:manipulation;}
 }

@@ -1,9 +1,8 @@
 (() => {
   'use strict';
 
-  // Fixed-scale app shell on mobile: block pinch/gesture zoom while preserving normal one-finger scrolling.
-  ['gesturestart','gesturechange','gestureend'].forEach(type=>document.addEventListener(type,e=>e.preventDefault(),{passive:false}));
-  document.addEventListener('touchmove',e=>{if(e.touches&&e.touches.length>1)e.preventDefault();},{passive:false});
+  // Mobile scale is fixed by the viewport/CSS. Do not globally prevent touch events:
+  // global preventDefault handlers can swallow taps on navigation and controls.
 
   const BPM_MIN = 30;
   const BPM_MAX = 300;
@@ -623,7 +622,7 @@
   function knowledgePractice(item){captureUndo('Knowledge 연습 시작');state.groove.genreEnabled=false;state.playbackMode='metro';state.bpm=item?.bpm||100;state.subdivision=item?.type==='scale'?2:1;state.practice.countInBars=1;persist();renderAll();switchTab('metronome');notify(`${item?.label||'이론'} · ${state.bpm} BPM 연습`);}
   window.BeatronomeBridge={recordKnowledge:knowledgeRecord,toggleKnowledgeFavorite:knowledgeToggleFavorite,startKnowledgePractice:knowledgePractice,isKnowledgeFavorite:id=>(state.library.knowledgeFavorites||[]).some(x=>x.id===id),refreshKnowledgeMemory:renderKnowledgeMemory};
 
-  const APP_VERSION='0.12.0';
+  const APP_VERSION='0.12.1';
   let swRegistration=null;
   let offlinePreparing=false;
   let updateWorker=null;
@@ -723,7 +722,7 @@
   $('tunerDisplayMode').onchange=e=>{state.tuner.displayMode=e.target.value;persist();renderTuner();};$('tunerSensitivity').onchange=e=>{state.tuner.sensitivity=e.target.value;persist();renderTuner();};$('tunerNoiseGate').oninput=e=>{state.tuner.noiseGate=Number(e.target.value);persist();renderTuner();};
 
   if($('openMiniMode'))$('openMiniMode').onclick=()=>setMiniMode(true);$('settingsMiniMode').onclick=()=>setMiniMode(true);$('closeMiniMode').onclick=()=>setMiniMode(false);$('miniPlay').onclick=()=>playing?stop():start();$('miniTap').onclick=()=>$('tapTempo').click();$('miniMinus').onpointerdown=()=>startRepeat(-1);$('miniPlus').onpointerdown=()=>startRepeat(1);['pointerup','pointercancel','pointerleave'].forEach(ev=>{$('miniMinus').addEventListener(ev,stopRepeat);$('miniPlus').addEventListener(ev,stopRepeat);});$('miniMute').onclick=toggleMiniMute;
-  $('mobileDockPlay').onclick=()=>playing?stop():start();$('mobileDockTap').onclick=handleTapTempo;$('mobileDockMinus').onclick=()=>userSetBpm(state.bpm-1,{capture:true});$('mobileDockPlus').onclick=()=>userSetBpm(state.bpm+1,{capture:true});$('mobileDockBpm').onclick=()=>document.querySelector('.bpm-card')?.scrollIntoView({behavior:'auto',block:'start'});
+  // Legacy mobile scroll dock was removed in v0.12.0; no bindings should target it.
   $('bpmLock').onclick=toggleBpmLock;if($('openStageMode'))$('openStageMode').onclick=()=>setStageMode(true);if($('moreStageMode'))$('moreStageMode').onclick=()=>setStageMode(true);$('closeStageMode').onclick=()=>setStageMode(false);$('stagePlay').onclick=()=>playing?stop():start();$('stageLock').onclick=toggleBpmLock;$('stageOverlay').onclick=e=>{if(!state.ui.stageTapPlay||e.target.closest('button'))return;playing?stop():start();};bindHoldAction($('stagePrev'),()=>stepActivePractice(-1));bindHoldAction($('stageNext'),()=>stepActivePractice(1));$('oneHandPlay').onclick=()=>playing?stop():start();$('oneHandTap').onclick=handleTapTempo;$('oneHandMinus').onclick=()=>userSetBpm(state.bpm-1,{capture:true});$('oneHandPlus').onclick=()=>userSetBpm(state.bpm+1,{capture:true});$('oneHandLock').onclick=toggleBpmLock;$('undoAction').onclick=restoreUndo;$('openGlobalSearch').onclick=openGlobalSearch;$('closeGlobalSearch').onclick=closeGlobalSearch;$('globalSearchOverlay').onclick=e=>{if(e.target===$('globalSearchOverlay'))closeGlobalSearch();};$('globalSearchInput').oninput=e=>renderGlobalSearch(e.target.value);$('interfaceSize').onchange=e=>{state.ui.interfaceSize=e.target.value;persist();renderUiExtras();};$('oneHandToggle').onclick=()=>{state.ui.oneHand=!state.ui.oneHand;persist();renderUiExtras();};$('stageTapToggle').onclick=()=>{state.ui.stageTapPlay=!state.ui.stageTapPlay;persist();renderUiExtras();};$('latencyCalibration').oninput=e=>{state.ui.audioLatencyMs=Number(e.target.value);persist();renderUiExtras();};$('replayOnboarding').onclick=()=>{$('settingsModal').classList.add('hidden');openOnboarding();};$('skipOnboarding').onclick=deferOnboarding;$('neverOnboarding').onclick=()=>{completeOnboarding();notify('처음 사용 안내를 다시 표시하지 않습니다.');};$('nextOnboarding').onclick=()=>{if(onboardingIndex>=ONBOARDING.length-1)completeOnboarding();else{onboardingIndex++;renderOnboarding();}};
 
   // v0.9 UX controls
