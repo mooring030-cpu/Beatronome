@@ -970,7 +970,7 @@ svg{max-width:100%}
 
 
 /* =========================================================
-   v0.11.9 Home Logo + Desktop Single Scroll Owner
+   v0.12.0 Home Logo + Desktop Single Scroll Owner
    ========================================================= */
 .brand-home-group{display:flex;align-items:center;gap:10px;min-width:0}
 .brand-copy{min-width:0}
@@ -996,5 +996,77 @@ svg{max-width:100%}
 }
 
 
-/* v0.11.9: Undo snackbar removed by product decision. */
+/* v0.12.0: Undo snackbar removed by product decision. */
 .undo-bar{display:none!important}
+
+
+/* =========================================================
+   v0.12.0 - Fixed mobile scale + top Beat Hero + stable clock
+   ========================================================= */
+html,body{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+body{overflow-x:hidden;}
+#app{padding-top:0;}
+.topbar,.core-mode-bar{display:none!important;}
+
+/* Beat indicator is now the first, largest metronome element. */
+.beat-hero-card{margin-top:0!important;padding:14px 14px 16px!important;border-radius:0 0 24px 24px!important;background:linear-gradient(180deg,#0d1822 0%,#0a121b 100%)!important;border-top:0!important;box-shadow:0 12px 28px rgba(0,0,0,.22)!important;}
+.beat-hero-head{display:grid;grid-template-columns:46px 1fr auto;align-items:center;gap:11px;margin-bottom:12px;}
+.hero-home-logo{width:46px;height:46px;padding:0;border:1px solid rgba(214,174,98,.26);border-radius:14px;overflow:hidden;background:#0d1721;box-shadow:none;}
+.hero-home-logo img{width:100%;height:100%;display:block;object-fit:cover;}
+.beat-hero-copy{min-width:0;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;}
+.beat-hero-copy .eyebrow{font-size:10px;}
+.beat-hero-copy strong{font-family:Georgia,"Times New Roman",serif;color:#f0d28e;font-size:28px;line-height:1;}
+.beat-hero-copy small{color:#8fa097;font-size:11px;font-weight:800;}
+.hero-version{font-size:9px;font-weight:900;color:#697886;white-space:nowrap;}
+.hero-beat-lamps{display:grid!important;grid-template-columns:repeat(var(--hero-columns,4),minmax(0,1fr));gap:9px!important;margin:0!important;align-items:stretch!important;}
+.hero-beat-lamps .visual-lamp{width:auto!important;height:auto!important;aspect-ratio:1;border-radius:18px!important;display:grid;place-items:center;font-style:normal;font-size:clamp(16px,5vw,23px);font-weight:950;color:#7e8d99;background:#111d28;border:1px solid rgba(222,185,105,.16);box-shadow:none;transition:none!important;transform:none!important;}
+.hero-beat-lamps .visual-lamp.accent{color:#d9b96f;border-color:rgba(214,174,98,.48);}
+.hero-beat-lamps .visual-lamp.on{background:linear-gradient(145deg,#d7aa55,#b77c34)!important;color:#10151a!important;border-color:#f0cd80!important;box-shadow:0 0 0 3px rgba(214,174,98,.13),0 8px 22px rgba(0,0,0,.20)!important;}
+.hero-beat-lamps .visual-lamp.on.normal{background:linear-gradient(145deg,#78b1a6,#54877f)!important;color:#07110f!important;border-color:#92c8bd!important;}
+
+/* Utilities moved away from the removed top toolbar. */
+.beat-utility-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:7px;margin-top:10px;align-items:stretch;}
+.beat-utility-row>label{min-width:0;padding:8px 9px;border:1px solid rgba(222,185,105,.12);border-radius:11px;background:#0e1923;color:#81909d;font-size:10px;font-weight:800;display:flex;align-items:center;gap:7px;}
+.beat-utility-row select{padding:7px;margin-left:auto;max-width:90px;}
+.beat-visual-options{grid-template-columns:1fr 1fr!important;margin-top:8px;}
+
+/* Keep the bottom navigation at the bottom on desktop too; no top toolbar/nav. */
+@media(min-width:850px){
+  #app{padding-bottom:calc(92px + env(safe-area-inset-bottom))!important;}
+  main{padding-top:18px!important;}
+  .bottom-nav{position:fixed!important;top:auto!important;bottom:0!important;left:50%!important;transform:translateX(-50%)!important;width:min(980px,calc(100vw - 40px))!important;border-radius:16px 16px 0 0!important;border:1px solid rgba(222,185,105,.12)!important;border-bottom:0!important;}
+  #tabMetronome.active{grid-template-areas:"visual visual" "bpm beat" "transport beat" "quick quick" "training training"!important;}
+  #tabMetronome>.visual-beat-card{grid-area:visual!important;}
+  #tabMetronome>.bpm-card{grid-area:bpm!important;}
+  #tabMetronome>.beat-section{grid-area:beat!important;}
+  #tabMetronome>.transport-card{grid-area:transport!important;}
+  #tabMetronome>.quick-preset-strip{grid-area:quick!important;}
+  #tabMetronome>.training-panel{grid-area:training!important;}
+  .beat-hero-card{border-radius:24px!important;}
+  .hero-beat-lamps .visual-lamp{font-size:24px;max-height:78px;}
+}
+
+@media(max-width:849px){
+  main{padding-top:0!important;padding-left:10px!important;padding-right:10px!important;}
+  #tabMetronome.active{display:flex!important;flex-direction:column!important;}
+  #tabMetronome>.visual-beat-card{order:0!important;margin-left:-10px!important;margin-right:-10px!important;width:calc(100% + 20px)!important;max-width:none!important;}
+  #tabMetronome>.bpm-card{order:1!important;}
+  #tabMetronome>.transport-card{order:2!important;}
+  #tabMetronome>.beat-section{order:3!important;}
+  #tabMetronome>.quick-preset-strip{order:4!important;}
+  #tabMetronome>.training-panel{order:5!important;}
+  .beat-hero-head{grid-template-columns:42px 1fr auto;gap:9px;}
+  .hero-home-logo{width:42px;height:42px;border-radius:13px;}
+  .beat-hero-copy strong{font-size:25px;}
+  .hero-beat-lamps{gap:7px!important;}
+  .hero-beat-lamps .visual-lamp{border-radius:15px!important;font-size:clamp(15px,5.2vw,22px);}
+  .beat-utility-row{grid-template-columns:1fr 1fr;}
+  .beat-utility-row>label{grid-column:1/-1;}
+  .beat-utility-row button{min-width:0;}
+}
+
+@media(max-width:390px){
+  .hero-beat-lamps{gap:5px!important;}
+  .beat-hero-card{padding-left:10px!important;padding-right:10px!important;}
+  .hero-version{font-size:8px;}
+}
