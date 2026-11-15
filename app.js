@@ -664,7 +664,7 @@
   function knowledgePractice(item){captureUndo('Knowledge 연습 시작');state.groove.genreEnabled=false;state.playbackMode='metro';state.bpm=item?.bpm||100;state.subdivision=item?.type==='scale'?2:1;state.practice.countInBars=1;persist();renderAll();switchTab('metronome');notify(`${item?.label||'이론'} · ${state.bpm} BPM 연습`);}
   window.BeatronomeBridge={recordKnowledge:knowledgeRecord,toggleKnowledgeFavorite:knowledgeToggleFavorite,startKnowledgePractice:knowledgePractice,isKnowledgeFavorite:id=>(state.library.knowledgeFavorites||[]).some(x=>x.id===id),refreshKnowledgeMemory:renderKnowledgeMemory};
 
-  const APP_VERSION='0.12.3';
+  const APP_VERSION='0.12.4';
   let swRegistration=null;
   let offlinePreparing=false;
   let updateWorker=null;
@@ -774,7 +774,7 @@
   $('toggleSimpleMode').onclick=()=>{state.practice.simpleMode=!state.practice.simpleMode;persist();renderUiExtras();};
   $('flashToggle').onclick=()=>{state.practice.flash=!state.practice.flash;persist();renderUiExtras();};
   $('vibrateToggle').onclick=()=>{state.practice.vibrate=!state.practice.vibrate;persist();renderUiExtras();};
-  ['focusModeButton','transportFocus'].forEach(id=>$(id).onclick=()=>setFocusMode(true));$('closeFocus').onclick=()=>setFocusMode(false);$('focusPlay').onclick=()=>playing?stop():start();$('focusTap').onclick=handleTapTempo;$('focusMinus').onclick=()=>userSetBpm(state.bpm-1,{capture:true});$('focusPlus').onclick=()=>userSetBpm(state.bpm+1,{capture:true});
+  ['focusModeButton','transportFocus'].forEach(id=>{const el=$(id);if(el)el.onclick=()=>setFocusMode(true);});$('closeFocus').onclick=()=>setFocusMode(false);$('focusPlay').onclick=()=>playing?stop():start();$('focusTap').onclick=handleTapTempo;$('focusMinus').onclick=()=>userSetBpm(state.bpm-1,{capture:true});$('focusPlus').onclick=()=>userSetBpm(state.bpm+1,{capture:true});
   ['quickSavePreset','quickSaveTop','transportSave'].forEach(id=>{const el=$(id);if(el)el.onclick=quickSaveCurrent;});
   $$('[data-core-tab]').forEach(b=>b.onclick=()=>switchTab(b.dataset.coreTab));
   $$('.more-launch[data-open-tab]').forEach(b=>b.onclick=()=>switchTab(b.dataset.openTab));$('moreSettings').onclick=()=>{$('settingsModal').classList.remove('hidden');refreshOfflineStatus();renderCloudUi();};

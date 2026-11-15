@@ -1170,3 +1170,64 @@ button,a,label,select,input,.bottom-nav,.bottom-nav button,.more-launch{
   .top-beat-grid .beat-dot{min-height:60px;}
   .top-beat-hint{gap:4px;}
 }
+
+
+/* =========================================================
+   v0.12.4 - Inline START next to ROTATE
+   ========================================================= */
+.tempo-action-row{
+  position:relative;z-index:3;
+  display:flex;align-items:center;justify-content:center;
+  gap:18px;margin:13px auto 4px;
+}
+.tempo-action-row .tempo-dial{margin:0!important;flex:0 0 auto;}
+.inline-play-button{
+  flex:0 0 88px!important;width:88px!important;height:88px!important;
+  border-radius:50%!important;
+  display:flex!important;flex-direction:column!important;
+  align-items:center!important;justify-content:center!important;gap:2px!important;
+  font-size:27px!important;
+  background:linear-gradient(145deg,#d7a64f,#b98536)!important;
+  color:#111820!important;
+  border:1px solid rgba(240,205,128,.32)!important;
+  box-shadow:0 10px 25px rgba(0,0,0,.20)!important;
+}
+.inline-play-button small{
+  font-size:9px;line-height:1;font-weight:950;letter-spacing:.8px;color:inherit;
+}
+.inline-play-button.playing{
+  background:linear-gradient(145deg,#78b1a6,#54877f)!important;
+  color:#07110f!important;
+  border-color:#92c8bd!important;
+}
+.tempo-action-summary{
+  position:relative;z-index:2;
+  min-height:14px;margin:4px auto 0;text-align:center;
+  color:#9b8f7c;font-size:9px;font-weight:800;letter-spacing:.2px;
+}
+/* Old full-width transport card is removed in v0.12.4. */
+.transport-card{display:none!important;}
+
+@media(min-width:850px){
+  #tabMetronome.active{
+    grid-template-areas:"pattern pattern" "bpm beat" "quick quick" "training training"!important;
+  }
+  #tabMetronome>.bpm-card{grid-area:bpm!important;}
+  #tabMetronome>.beat-section{grid-area:beat!important;}
+  #tabMetronome>.quick-preset-strip{grid-area:quick!important;}
+  #tabMetronome>.training-panel{grid-area:training!important;}
+}
+@media(max-width:849px){
+  #tabMetronome>.beat-pattern-hero{order:0!important;}
+  #tabMetronome>.bpm-card{order:1!important;}
+  #tabMetronome>.beat-section{order:2!important;}
+  #tabMetronome>.quick-preset-strip{order:3!important;}
+  #tabMetronome>.training-panel{order:4!important;}
+}
+@media(max-width:430px){
+  .tempo-action-row{gap:14px;margin-top:10px;}
+  .tempo-action-row .tempo-dial{width:76px!important;height:76px!important;}
+  .inline-play-button{flex-basis:76px!important;width:76px!important;height:76px!important;font-size:24px!important;}
+  .inline-play-button small{font-size:8px;}
+  .tempo-action-summary{font-size:8px;}
+}
