@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1118" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Beatronome" />
+  <title>Beatronome</title>
+  <link rel="manifest" href="./manifest.webmanifest?v=0.12.4" />
+  <link rel="icon" href="./favicon.png" type="image/png" />
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+  <link rel="stylesheet" href="./styles.css?v=0.12.4" />
+</head>
+<body>
+<div id="app">
+  <div class="global-practice-bar hidden" id="globalPracticeBar"><div><strong id="globalPracticeTitle">—</strong><span id="globalPracticeDetail">—</span></div><button id="globalPracticePrev">PREV</button><button id="globalPracticeNext">NEXT</button><button id="globalPracticeClose">×</button></div>
+
+  <main>
+    <section id="tabMetronome" class="tab-page active">
+      <section class="quick-preset-strip card"><div><span class="eyebrow">QUICK PRESETS</span><strong>최근 프리셋</strong></div><div class="quick-preset-list" id="quickPresetList"></div><button class="outline-small ui-redundant" id="quickSavePreset">＋ 저장</button></section>
+      <section class="beat-pattern-hero card">
+        <div class="beat-hero-head">
+          <button class="hero-home-logo" id="homeLogoButton" aria-label="메트로놈 홈" title="Beatronome 홈"><img src="./icon-192.png" alt="Beatronome"></button>
+          <div class="beat-hero-copy"><span class="eyebrow">BEAT</span><strong id="visualMeterLabel">4/4</strong><small id="heroSubdivisionLabel">Quarter</small></div>
+          <span class="hero-version">v0.12.4</span>
+        </div>
+        <div class="top-beat-hint"><span>박자를 눌러</span><b>A 강박</b><i>• 일반</i><em>× 무음</em></div>
+        <div class="beat-grid top-beat-grid" id="beatGrid" aria-label="박자 패턴"></div>
+      </section>
+
+      <section class="bpm-card">
+        <div class="bpm-topline"><span id="meterTop">4/4</span><div class="bpm-top-actions"><button class="bpm-lock" id="bpmLock" title="BPM 잠금">UNLOCKED</button><span id="sessionStatus">READY</span></div></div>
+        <div class="bpm-drag" id="bpmDrag" title="좌우/위아래 드래그 · Alt(Option)+휠">
+          <span class="note-mark">♩</span><strong id="bpmValue">120</strong><span class="bpm-unit">BPM</span>
+        </div>
+        <div class="tempo-name" id="tempoName">ALLEGRO</div>
+        <div class="bpm-hint">숫자를 좌우·위아래 드래그 / Alt(Option)+휠</div>
+        <div class="tempo-action-row">
+          <div class="tempo-dial" id="tempoDial" aria-label="BPM 다이얼">
+            <div class="dial-face"><span class="dial-marker"></span><span class="dial-center">ROTATE</span></div>
+          </div>
+          <button class="play-button inline-play-button" id="playButton" aria-label="재생">
+            <span id="playIcon">▶</span><small id="playLabel">START</small>
+          </button>
+        </div>
+        <div class="tempo-action-summary" id="soundSummary">Classic Click · Quarter</div>
+        <div class="bpm-controls">
+          <button class="round-control" id="minusBpm">−</button>
+          <button class="tap-button" id="tapTempo">TAP<small id="tapHint">4회 정도 탭</small></button>
+          <button class="round-control" id="plusBpm">＋</button>
+        </div>
+      </section>
+
+      <section class="beat-section card">
+        <div class="meter-chain-block advanced-only">
+          <div class="meter-chain-head">
+            <div>
+              <strong>Meter Chain</strong>
+              <span>여러 박자를 이어서 반복 재생</span>
+            </div>
+            <button class="switch" id="meterChainToggle" aria-label="Meter Chain 켜기"><i></i></button>
+          </div>
+          <div class="meter-chain-body hidden" id="meterChainBody">
+            <div class="meter-chain-list" id="meterChainList"></div>
+            <div class="meter-chain-toolbar">
+              <button id="chainMoveLeft" title="앞으로 이동">←</button>
+              <button id="chainMoveRight" title="뒤로 이동">→</button>
+              <button id="chainDuplicate">복제</button>
+              <button id="chainDelete" class="danger-soft">삭제</button>
+            </div>
+            <div class="chain-repeat-editor">
+              <div><strong>이 박자 반복</strong><span>선택한 박자를 몇 마디 연속 재생할지 설정</span></div>
+              <div class="chain-repeat-stepper"><button id="chainRepeatMinus">−</button><strong id="chainRepeatValue">1마디</strong><button id="chainRepeatPlus">＋</button></div>
+            </div>
+            <div class="common-meter-label">빠른 추가</div>
+            <div class="common-meter-row" id="commonMeterRow">
+              <button data-meter="2/4">+ 2/4</button>
+              <button data-meter="3/4">+ 3/4</button>
+              <button data-meter="4/4">+ 4/4</button>
+              <button data-meter="5/4">+ 5/4</button>
+              <button data-meter="6/8">+ 6/8</button>
+              <button data-meter="7/8">+ 7/8</button>
+              <button data-meter="9/8">+ 9/8</button>
+              <button data-meter="12/8">+ 12/8</button>
+            </div>
+            <div class="meter-chain-note">각 항목별로 1~32마디 반복을 지정할 수 있습니다. 예: 4/4 ×2 → 7/8 ×1 → 3/4 ×4.</div>
+          </div>
+        </div>
+
+        <div class="quick-options quick-options-four">
+          <label>박자<select id="beatsPerBar"></select></label>
+          <label>분모<select id="denominator"><option>2</option><option selected>4</option><option>8</option><option>16</option></select></label>
+          <label>분할<select id="subdivision"><option value="1">♩ 1</option><option value="2">♪ 2</option><option value="3">3연음</option><option value="5">3연음 1·3</option><option value="4">16분</option><option value="6">16분 1·4</option></select></label>
+          <label>클릭<select id="quickSoundSelect"></select></label>
+        </div>
+        <div class="beat-utility-row">
+          <label>Count-in<select id="countInBars"><option value="0">OFF</option><option value="1">1마디</option><option value="2">2마디</option><option value="4">4마디</option></select></label>
+          <button class="outline-small" id="toggleSimpleMode">고급 기능 펼치기</button>
+          <button class="outline-small" id="focusModeButton">FOCUS</button>
+        </div>
+        <div class="visual-options advanced-only beat-visual-options">
+          <label>화면 Pulse<button class="switch compact" id="flashToggle"><i></i></button></label>
+          <label>진동<button class="switch compact" id="vibrateToggle"><i></i></button></label>
+        </div>
+      </section>
+
+      <section class="training-panel card advanced-only">
+        <button class="section-toggle" id="trainingToggle">
+          <div class="section-heading inline"><div class="training-icon">◎</div><div><span class="eyebrow">TRAINING</span><h2>Internal Clock</h2></div><span class="count-badge hidden" id="trainingCount">0</span></div>
+          <span id="trainingChevron">⌃</span>
+        </button>
+        <div class="training-list" id="trainingList">
+          <div class="training-row" data-row="randomMute">
+            <div class="training-row-head"><div class="training-row-icon">⤨</div><div class="training-row-copy"><strong>Random Mute</strong><span>클릭을 무작위로 숨깁니다</span></div><button class="switch" data-toggle="randomMuteEnabled"><i></i></button></div>
+            <div class="training-row-body hidden" data-body="randomMuteEnabled"><div class="range-wrap"><input id="randomMute" type="range" min="0" max="90" step="5"><output id="randomMuteOut"></output></div></div>
+          </div>
+
+          <div class="training-row" data-row="internal">
+            <div class="training-row-head"><div class="training-row-icon">◷</div><div class="training-row-copy"><strong>Internal Clock</strong><span>소리/무음 마디를 반복합니다</span></div><button class="switch" data-toggle="internalEnabled"><i></i></button></div>
+            <div class="training-row-body hidden" data-body="internalEnabled"><div class="dual-inputs"><div class="stepper" data-stepper="soundBars"><span>소리</span><div><button data-step="-1">−</button><strong data-value></strong><button data-step="1">+</button></div></div><div class="stepper" data-stepper="muteBars"><span>무음</span><div><button data-step="-1">−</button><strong data-value></strong><button data-step="1">+</button></div></div></div></div>
+          </div>
+
+          <div class="training-row" data-row="autoTempo">
+            <div class="training-row-head"><div class="training-row-icon">↗</div><div class="training-row-copy"><strong>Auto Tempo</strong><span>설정한 마디마다 BPM을 변경합니다</span></div><button class="switch" data-toggle="autoTempoEnabled"><i></i></button></div>
+            <div class="training-row-body hidden" data-body="autoTempoEnabled">
+              <div class="segmented" id="tempoMode"><button data-mode="up">증가</button><button data-mode="down">감소</button><button data-mode="pyramid">왕복</button></div>
+              <div class="dual-inputs three"><div class="stepper" data-stepper="tempoStep"><span>변화</span><div><button data-step="-1">−</button><strong data-value></strong><button data-step="1">+</button></div></div><div class="stepper" data-stepper="everyBars"><span>마다</span><div><button data-step="-1">−</button><strong data-value></strong><button data-step="1">+</button></div></div><div class="stepper" data-stepper="targetBpm"><span>목표 BPM</span><div><button data-step="-5">−</button><strong data-value></strong><button data-step="5">+</button></div></div></div>
+            </div>
+          </div>
+
+          <div class="training-row" data-row="gradual">
+            <div class="training-row-head"><div class="training-row-icon">◒</div><div class="training-row-copy"><strong>Gradual Mute</strong><span>시간이 지날수록 랜덤 음소거를 늘립니다</span></div><button class="switch" data-toggle="gradualEnabled"><i></i></button></div>
+            <div class="training-row-body hidden" data-body="gradualEnabled">
+              <div class="range-wrap"><input id="gradualTarget" type="range" min="10" max="100" step="5"><output id="gradualTargetOut"></output></div>
+              <div class="chip-row" id="gradualSeconds"><button data-sec="30">30초</button><button data-sec="60">1분</button><button data-sec="120">2분</button><button data-sec="300">5분</button></div>
+            </div>
+          </div>
+
+          <div class="training-row" data-row="timer">
+            <div class="training-row-head"><div class="training-row-icon">◴</div><div class="training-row-copy"><strong>Practice Timer</strong><span>시간이 끝나면 자동 정지합니다</span></div><button class="switch" data-toggle="timerEnabled"><i></i></button></div>
+            <div class="training-row-body hidden" data-body="timerEnabled"><div class="chip-row" id="timerMinutes"><button data-min="5">5분</button><button data-min="10">10분</button><button data-min="15">15분</button><button data-min="20">20분</button><button data-min="30">30분</button><button data-min="45">45분</button><button data-min="60">60분</button></div></div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section id="tabSound" class="tab-page">
+      <div class="page-title"><div><span class="eyebrow">SOUND</span><h2>클릭 사운드</h2></div><span class="page-symbol">♪</span></div>
+      <div class="sound-grid" id="soundGrid"></div>
+      <div class="card volume-card"><div class="section-heading inline"><div class="training-icon">◖</div><div><span class="eyebrow">VOLUME</span><h2>클릭 음량</h2></div></div><div class="range-wrap"><input id="volume" type="range" min="10" max="100" step="5"><output id="volumeOut"></output></div></div>
+      <div class="card volume-card"><div class="section-heading inline"><div class="training-icon">⇈</div><div><span class="eyebrow">MASTER BOOST</span><h2>전체 출력 부스트</h2></div></div><div class="range-wrap"><input id="outputBoost" type="range" min="50" max="400" step="10"><output id="outputBoostOut"></output></div><div class="boost-presets" id="boostPresets"><button data-boost="1">100%</button><button data-boost="2">LOUD 200%</button><button data-boost="3">MAC 300%</button><button data-boost="4">MAX 400%</button></div><div class="groove-tip">메트로놈·드럼·튜너 기준음을 함께 증폭합니다. MacBook처럼 체감 출력이 작은 기기에서는 MAC 300%부터 테스트하세요. 250% 이상은 기기·음색에 따라 압축/왜곡이 느껴질 수 있습니다.</div></div>
+      <div class="card volume-card"><div class="section-heading inline"><div class="training-icon">◉</div><div><span class="eyebrow">IPHONE AUDIO</span><h2>무음 스위치 대응</h2></div></div><div class="groove-tip">지원되는 iPhone/iPad에서는 재생 시 Audio Session을 <strong>Playback</strong>으로 전환해 옆면 무음 스위치가 켜져 있어도 소리가 나도록 시도합니다. 구형 iOS/브라우저에서는 시스템 제한으로 동작이 다를 수 있습니다.</div></div>
+    </section>
+
+    <section id="tabGroove" class="tab-page">
+      <div class="page-title"><div><span class="eyebrow">GROOVE ENGINE</span><h2>드럼 & 장르</h2></div><span class="page-symbol">♬</span></div>
+
+      <section class="groove-hero card">
+        <div class="groove-hero-head">
+          <div><span class="eyebrow">PLAYBACK</span><h3>재생 모드</h3></div>
+          <span id="grooveStatusBadge" class="groove-status-badge">BOTH</span>
+        </div>
+        <div class="segmented groove-mode" id="playbackMode">
+          <button data-playback="metro">METRO</button>
+          <button data-playback="drum">DRUM</button>
+          <button data-playback="both">BOTH</button>
+        </div>
+      </section>
+
+      <section class="card groove-library">
+        <div class="section-heading"><div><span class="eyebrow">STYLE LIBRARY</span><h2>장르 프리셋</h2></div><span class="muted">선택 후 자유 편집</span></div>
+        <div class="genre-scroll" id="genreChips"></div>
+        <div class="groove-preset-grid" id="groovePresetGrid"></div>
+      </section>
+
+      <section class="card groove-controls" id="grooveControlsCard">
+        <div class="section-heading"><div><span class="eyebrow">FEEL</span><h2>그루브 설정</h2></div><span class="muted" id="selectedGrooveName">Custom</span></div>
+        <div class="groove-control-grid">
+          <label>Drum Kit<select id="drumKit"></select></label>
+          <label>Groove Volume<div class="mini-range"><input id="drumVolume" type="range" min="0" max="100" step="5"><output id="drumVolumeOut"></output></div></label>
+          <label>Swing<div class="mini-range"><input id="swingAmount" type="range" min="0" max="75" step="1"><output id="swingAmountOut"></output></div></label>
+          <label>Humanize<div class="mini-range"><input id="humanizeAmount" type="range" min="0" max="100" step="5"><output id="humanizeAmountOut"></output></div></label>
+          <label>Drum Dropout<div class="mini-range"><input id="drumDropout" type="range" min="0" max="80" step="5"><output id="drumDropoutOut"></output></div></label>
+        </div>
+        <div class="groove-tip">Swing은 짝수 16분 스텝을 뒤로 밀어 셔플감을 만들고, Humanize는 타이밍과 세기를 미세하게 흔듭니다.</div>
+      </section>
+
+      <section class="card sequencer-card" id="sequencerCard">
+        <div class="section-heading"><div><span class="eyebrow">16-STEP EDITOR</span><h2>드럼 패턴</h2></div><button class="outline-small" id="clearDrums">전체 지우기</button></div>
+        <div class="sequencer-help"><span>● ON</span><span>각 악기 MUTE / VOL 개별 설정</span><span>1·5·9·13 = 박 시작</span></div>
+        <div class="sequencer-wrap" id="sequencer"></div>
+      </section>
+    </section>
+
+    <section id="tabTuner" class="tab-page">
+      <div class="page-title"><div><span class="eyebrow">TUNER</span><h2>악기 튜너</h2></div><span class="page-symbol">◒</span></div>
+
+      <section class="card tuner-hero">
+        <div class="tuner-select-grid">
+          <label>Instrument<select id="tunerInstrument"><option value="electric">일렉기타 · 6현</option><option value="acoustic">어쿠스틱기타 · 6현</option><option value="bass4">베이스 · 4현</option><option value="bass5">베이스 · 5현</option><option value="bass6">베이스 · 6현</option><option value="chromatic">Chromatic</option></select></label>
+          <label id="tuningSelectWrap">Tuning<select id="tunerTuning"></select></label>
+        </div>
+        <div class="tuner-calibration">
+          <span>A4 기준</span><button id="tunerAminus">−</button><strong id="tunerAValue">440 Hz</strong><button id="tunerAplus">＋</button>
+        </div>
+        <div class="tuner-pro-controls">
+          <label>DISPLAY<select id="tunerDisplayMode"><option value="normal">Normal</option><option value="strobe">Strobe</option></select></label>
+          <label>SENSITIVITY<select id="tunerSensitivity"><option value="low">Low</option><option value="normal">Normal</option><option value="high">High</option></select></label>
+          <label>NOISE GATE<input id="tunerNoiseGate" type="range" min="1" max="30" step="1"><output id="tunerNoiseGateOut">8</output></label>
+        </div>
+      </section>
+
+      <section class="card tuner-display">
+        <div class="tuner-status-row"><span id="tunerMicState">MIC OFF</span><span id="tunerTargetText">목표음을 선택하거나 마이크를 시작하세요</span></div>
+        <div class="tuner-note" id="tunerNote">—</div>
+        <div class="tuner-frequency"><strong id="tunerFreq">0.0</strong><span>Hz</span></div>
+        <div class="tuner-gauge">
+          <div class="tuner-scale"><span>-50</span><span>-25</span><span>0</span><span>+25</span><span>+50</span></div>
+          <div class="tuner-track"><i class="tuner-center-line"></i><b id="tunerNeedle"></b></div>
+          <div class="tuner-cents" id="tunerCents">0 cents</div>
+          <div class="strobe-lane hidden" id="strobeLane"><div class="strobe-stripes" id="strobeStripes"></div><span>STROBE · 멈추면 정확</span></div>
+        </div>
+        <button class="tuner-mic-button" id="toggleTunerMic">마이크로 튜닝 시작</button>
+        <div class="tuner-tip">마이크 권한이 필요합니다. 기타·베이스는 개방현뿐 아니라 12/24프렛의 같은 음 옥타브도 같은 줄로 인식합니다. 주변 소음이 적을수록 정확합니다.</div>
+      </section>
+
+      <section class="card tuner-strings-card">
+        <div class="section-heading"><div><span class="eyebrow">STRINGS</span><h2 id="tuningTitle">Standard</h2></div><span class="muted">줄을 누르면 기준음을 재생</span></div>
+        <div class="tuner-strings" id="tunerStrings"></div>
+      </section>
+
+      <section class="card custom-tuning-card hidden" id="customTuningCard">
+        <div class="section-heading"><div><span class="eyebrow">CUSTOM</span><h2>커스텀 튜닝</h2></div><span class="muted">반음 단위 조절</span></div>
+        <div class="custom-tuning-list" id="customTuningList"></div>
+      </section>
+    </section>
+
+    <section id="tabPractice" class="tab-page">
+      <div class="page-title"><div><span class="eyebrow">PRACTICE</span><h2>루틴 & 세트리스트</h2></div><span class="page-symbol">▶</span></div>
+      <section class="card practice-builder">
+        <div class="section-heading"><div><span class="eyebrow">PRACTICE ROUTINE</span><h2>자동 연습 루틴</h2></div><span class="muted">단계별 자동 진행</span></div>
+        <div class="practice-add-row"><input id="routineName" placeholder="예: Bass Warm Up"><select id="routineStepMinutes"><option value="1">1분</option><option value="3" selected>3분</option><option value="5">5분</option><option value="10">10분</option><option value="15">15분</option></select><button class="outline-small" id="addRoutineStep">현재 설정 추가</button></div>
+        <div class="draft-list" id="routineDraftList"></div>
+        <button class="primary-small full-button" id="saveRoutine">루틴 저장</button>
+      </section>
+      <section class="card saved-practice"><div class="section-heading"><div><span class="eyebrow">MY ROUTINES</span><h2>저장된 루틴</h2></div></div><div id="routineList" class="practice-list"></div></section>
+
+      <section class="card practice-builder setlist-builder">
+        <div class="section-heading"><div><span class="eyebrow">SET LIST</span><h2>곡 순서</h2></div><span class="muted">NEXT로 빠른 전환</span></div>
+        <div class="practice-add-row setlist-input-row"><input id="setlistName" placeholder="예: 토요일 합주"><input id="songName" placeholder="곡 이름"><input id="songNote" placeholder="메모: Intro 2마디 후 시작"><button class="outline-small" id="addSetlistSong">현재 설정으로 곡 추가</button></div><div class="drag-help">☰ 곡을 길게 누르거나 드래그해 순서를 바꿀 수 있습니다.</div>
+        <div class="draft-list" id="setlistDraftList"></div>
+        <button class="primary-small full-button" id="saveSetlist">세트리스트 저장</button>
+      </section>
+      <section class="card saved-practice"><div class="section-heading"><div><span class="eyebrow">MY SET LISTS</span><h2>저장된 세트리스트</h2></div></div><div id="setlistList" class="practice-list"></div></section>
+      <section class="card practice-stats-card"><div class="section-heading"><div><span class="eyebrow">PRACTICE LOG</span><h2>연습 기록</h2></div><button class="outline-small" id="clearPracticeLog">기록 초기화</button></div><div class="today-stats" id="todayPracticeStats"></div><div class="week-bars" id="practiceWeekBars"></div></section>
+      <section class="card active-session-card hidden" id="activePracticeSession"><div><span class="eyebrow">NOW PRACTICING</span><strong id="activePracticeTitle">—</strong><span id="activePracticeDetail">—</span></div><div class="session-actions"><button id="practicePrev">PREV</button><button id="practiceStop">STOP</button><button id="practiceNext">NEXT</button></div></section>
+    </section>
+
+    <section id="tabMore" class="tab-page">
+      <div class="page-title"><div><span class="eyebrow">MORE</span><h2>도구 & 설정</h2></div><span class="page-symbol">＋</span></div>
+      <div class="more-grid">
+        <button class="more-launch card" id="openGlobalSearch"><span>⌕</span><strong>전체 검색</strong><small>기능·프리셋·지식 빠른 검색</small></button>
+        <button class="more-launch card" id="moreStageMode"><span>▶</span><strong>Stage Mode</strong><small>공연·합주용 대형 화면</small></button>
+        <button class="more-launch card" data-open-tab="sound"><span>♪</span><strong>클릭 사운드</strong><small>Basic·Digital·볼륨·Boost</small></button>
+        <button class="more-launch card" data-open-tab="presets"><span>☆</span><strong>프리셋</strong><small>저장·불러오기·백업</small></button>
+        <button class="more-launch card knowledge-launch" data-open-tab="knowledge"><span>♯</span><strong>뮤직 지식</strong><small>코드·스케일·다이아토닉·재즈 레퍼런스</small></button>
+        <button class="more-launch card" data-open-tab="manual"><span>?</span><strong>매뉴얼</strong><small>기능별 사용법과 추천 연습</small></button>
+        <button class="more-launch card" id="moreSettings"><span>☰</span><strong>앱 설정</strong><small>오프라인·Cloud Sync·Mini Mode</small></button>
+      </div>
+    </section>
+
+    <section id="tabKnowledge" class="tab-page knowledge-page">
+      <div class="page-title"><div><span class="eyebrow">KNOWLEDGE</span><h2>뮤지션 레퍼런스</h2></div><span class="page-symbol">♯</span></div>
+      <section class="knowledge-hero card">
+        <div><span class="eyebrow">QUICK MUSIC THEORY</span><h3>연습 중 바로 꺼내 쓰는 음악 지식</h3><p>코드톤·스케일·다이아토닉부터 기보법, 재즈 화성, 역사와 주요 뮤지션까지 오프라인으로 확인합니다.</p></div>
+        <div class="knowledge-search-wrap"><input id="knowledgeSearch" placeholder="검색: 예) m7♭5, Dorian, # 순서, Coltrane"><button id="clearKnowledgeSearch" aria-label="검색 지우기">×</button></div>
+      </section>
+      <section class="knowledge-memory-strip card"><div><span class="eyebrow">MY REFERENCE</span><strong>즐겨찾기</strong><div id="knowledgeFavorites" class="knowledge-chip-row"></div></div><div><span class="eyebrow">RECENT</span><strong>최근 본 항목</strong><div id="knowledgeRecent" class="knowledge-chip-row"></div></div></section>
+      <div class="knowledge-nav" id="knowledgeNav">
+        <button class="selected" data-knowledge-panel="lab">THEORY LAB</button><button data-knowledge-panel="basics">BASICS</button><button data-knowledge-panel="harmony">HARMONY</button><button data-knowledge-panel="jazz">JAZZ</button>
+      </div>
+
+      <div class="knowledge-panel active" data-knowledge-content="lab">
+        <section class="knowledge-tool card">
+          <div class="section-heading"><div><span class="eyebrow">CHORD TONES</span><h2>코드 구성음</h2></div><span class="muted">Root + Chord</span></div>
+          <div class="theory-picker"><label>ROOT<select id="chordRoot"></select></label><label>CHORD<select id="chordType"></select></label></div>
+          <div class="theory-result" id="chordResult"></div>
+        </section>
+        <section class="knowledge-tool card">
+          <div class="section-heading"><div><span class="eyebrow">SCALE TONES</span><h2>스케일 구성음</h2></div><span class="muted">Scale / Mode</span></div>
+          <div class="theory-picker"><label>ROOT<select id="scaleRoot"></select></label><label>SCALE<select id="scaleType"></select></label></div>
+          <div class="theory-result" id="scaleResult"></div>
+        </section>
+        <section class="knowledge-tool card">
+          <div class="section-heading"><div><span class="eyebrow">DIATONIC</span><h2>다이아토닉 코드</h2></div><span class="muted">Triads + 7th</span></div>
+          <div class="theory-picker"><label>KEY<select id="diatonicRoot"></select></label><label>SYSTEM<select id="diatonicMode"><option value="major">Major</option><option value="minor">Natural Minor</option></select></label></div>
+          <div class="diatonic-result" id="diatonicResult"></div>
+          <p class="theory-footnote">Minor의 V는 자연단음계에서는 minor이지만, 실제 tonal/jazz harmony에서는 harmonic minor의 leading tone을 사용해 V7로 만드는 경우가 매우 흔합니다.</p>
+        </section>
+      </div>
+
+      <div class="knowledge-panel" data-knowledge-content="basics">
+        <section class="reference-card card" data-knowledge-search="기보법 음표 쉼표 박자 점음표 타이 셋잇단음표"><div class="ref-head"><span>01</span><div><h3>음표와 리듬 기보</h3><p>4/4에서의 기본 길이</p></div></div><div class="note-value-grid"><div><b>𝅝</b><strong>온음표</strong><span>4박</span></div><div><b>𝅗𝅥</b><strong>2분음표</strong><span>2박</span></div><div><b>𝅘𝅥</b><strong>4분음표</strong><span>1박</span></div><div><b>𝅘𝅥𝅮</b><strong>8분음표</strong><span>1/2박</span></div><div><b>𝅘𝅥𝅯</b><strong>16분음표</strong><span>1/4박</span></div></div><div class="ref-lines"><p><b>점음표</b> 원래 길이의 1.5배. 예: 점4분음표 = 1.5박.</p><p><b>타이(Tie)</b> 같은 높이의 두 음 길이를 합쳐 연주.</p><p><b>셋잇단음표(Triplet)</b> 보통 둘이 들어갈 시간에 같은 길이의 세 음을 배치.</p><p><b>쉼표(Rest)</b> 음을 내지 않는 시간을 길이값으로 기보합니다.</p></div></section>
+        <section class="reference-card card" data-knowledge-search="오선 보표 음자리표 높은음자리 낮은음자리 scientific pitch middle c"><div class="ref-head"><span>02</span><div><h3>음높이 표기</h3><p>Staff · Clef · Octave</p></div></div><div class="ref-lines"><p><b>오선(Staff)</b> 5개의 선과 4개의 칸에 음높이를 표시합니다.</p><p><b>높은음자리표(Treble)</b> G clef. 기타, 피아노 오른손, 관악기 등에서 흔히 사용.</p><p><b>낮은음자리표(Bass)</b> F clef. 베이스, 피아노 왼손 등 저음역에 사용.</p><p><b>Scientific Pitch</b> 가운데 C를 C4로 표기하는 방식이 널리 쓰입니다. 베이스의 실제 울림은 악보 표기와 옥타브가 다를 수 있습니다.</p><p><b>임시표</b> ♯ = 반음 올림 · ♭ = 반음 내림 · ♮ = 원래 음으로 복귀.</p><p><b>Enharmonic</b> C♯=D♭, D♯=E♭처럼 실제 음높이는 같지만 화성적 기능과 악보 문맥에 따라 이름이 달라집니다.</p></div></section>
+        <section class="reference-card card" data-knowledge-search="sharp flat key signature order # 샵 플랫 조표 5도권"><div class="ref-head"><span>03</span><div><h3>조표 순서</h3><p>Circle of Fifths 핵심 암기</p></div></div><div class="signature-order"><div><span>♯ 붙는 순서</span><strong>F → C → G → D → A → E → B</strong></div><div><span>♭ 붙는 순서</span><strong>B → E → A → D → G → C → F</strong></div></div><div id="keySignatureTable" class="signature-table"></div></section>
+        <section class="reference-card card" data-knowledge-search="interval 음정 단2 장2 단3 장3 완4 트라이톤 완5 장6 단7 장7 옥타브"><div class="ref-head"><span>04</span><div><h3>음정 빠른 표</h3><p>반음 수로 확인</p></div></div><div id="intervalGrid" class="interval-grid"></div></section>
+      </div>
+
+      <div class="knowledge-panel" data-knowledge-content="harmony">
+        <section class="reference-card card" data-knowledge-search="코드 공식 triad seventh chord symbol maj7 dominant m7 dim aug sus add9"><div class="ref-head"><span>01</span><div><h3>코드 기호 & 공식</h3><p>프로 세션에서 자주 보는 표기</p></div></div><div id="chordFormulaTable" class="formula-list"></div></section>
+        <section class="reference-card card" data-knowledge-search="전위 inversion slash chord root position first second third inversion"><div class="ref-head"><span>02</span><div><h3>Chord Inversion</h3><p>같은 코드, 다른 bass note</p></div></div><div class="ref-lines"><p><b>Root Position</b> Root가 가장 낮은 음. Cmaj7 = C–E–G–B.</p><p><b>1st Inversion</b> 3rd가 bass. C/E처럼 slash chord로 자주 표기.</p><p><b>2nd Inversion</b> 5th가 bass. C/G.</p><p><b>3rd Inversion</b> 7th chord에서 7th가 bass. Cmaj7/B.</p><p><b>실전</b> 전위는 voice-leading을 부드럽게 하고 bass line을 설계하는 데 중요합니다.</p></div></section>
+        <section class="reference-card card" data-knowledge-search="functional harmony tonic predominant dominant 기능화성 tonic subdominant dominant"><div class="ref-head"><span>03</span><div><h3>Functional Harmony Map</h3><p>Major key의 기본 기능</p></div></div><div class="tension-grid"><div><b>TONIC</b><span>Imaj7 · iii7 · vi7 — 안정과 귀착</span></div><div><b>PRE-DOMINANT</b><span>ii7 · IVmaj7 — dominant로 진행하는 준비</span></div><div><b>DOMINANT</b><span>V7 · viiø/° — tonic으로 향하는 긴장</span></div><div><b>TURNAROUND</b><span>I–VI–ii–V 등 기능을 연결해 다음 구간으로 회귀</span></div></div></section>
+        <section class="reference-card card" data-knowledge-search="모드 ionian dorian phrygian lydian mixolydian aeolian locrian scale"><div class="ref-head"><span>04</span><div><h3>Major Scale의 7 Modes</h3><p>모드 공식과 대표 화성 성격</p></div></div><div id="modeTable" class="mode-table"></div></section>
+        <section class="reference-card card" data-knowledge-search="ii v i 251 jazz harmony guide tones 3 7 voice leading"><div class="ref-head"><span>05</span><div><h3>ii–V–I & Guide Tones</h3><p>재즈 화성의 핵심 연결</p></div></div><div class="ii-v-i"><div><b>ii7</b><span>Dorian이 흔한 출발점</span><small>3rd·7th를 다음 코드로 반음/온음 최소 이동</small></div><i>→</i><div><b>V7</b><span>Mixolydian / Altered 등</span><small>3rd와 ♭7이 dominant 성격을 결정</small></div><i>→</i><div><b>Imaj7</b><span>Ionian / Lydian</span><small>Guide tone voice-leading을 해결</small></div></div><p class="theory-footnote">Chord–Scale은 ‘정답 하나’가 아니라 문맥·멜로디·기능에 따라 선택하는 도구입니다. 아래 표는 자주 쓰는 출발점입니다.</p></section>
+        <section class="reference-card card" data-knowledge-search="chord scale 재즈 스케일 altered diminished lydian dominant locrian sharp2"><div class="ref-head"><span>06</span><div><h3>Chord–Scale 빠른 매칭</h3><p>자주 쓰는 선택지</p></div></div><div id="chordScaleTable" class="formula-list"></div></section>
+        <section class="reference-card card" data-knowledge-search="tension 텐션 9 11 13 altered b9 #9 #11 b13"><div class="ref-head"><span>07</span><div><h3>Tensions</h3><p>7th chord 위의 확장음</p></div></div><div class="tension-grid"><div><b>9</b><span>2도를 한 옥타브 올린 개념</span></div><div><b>11</b><span>4도를 한 옥타브 올린 개념</span></div><div><b>13</b><span>6도를 한 옥타브 올린 개념</span></div><div><b>Altered</b><span>♭9 · ♯9 · ♯11/♭5 · ♭13 등 dominant tension</span></div></div></section>
+      </div>
+
+      <div class="knowledge-panel" data-knowledge-content="jazz">
+        <section class="reference-card card" data-knowledge-search="재즈 역사 new orleans swing bebop cool hard bop modal free fusion contemporary"><div class="ref-head"><span>01</span><div><h3>Jazz History Timeline</h3><p>스타일 변화의 큰 흐름</p></div></div><div id="jazzTimeline" class="jazz-timeline"></div></section>
+        <section class="reference-card card" data-knowledge-search="뮤지션 louis armstrong duke ellington charlie parker dizzy monk miles coltrane mingus blakey bill evans ornette herbie wayne shorter chick corea jaco"><div class="ref-head"><span>02</span><div><h3>주요 뮤지션</h3><p>악기·시대·기여로 빠르게 보기</p></div></div><div class="musician-filters" id="musicianFilters"><button class="selected" data-inst="all">ALL</button><button data-inst="trumpet">TRUMPET</button><button data-inst="sax">SAX</button><button data-inst="piano">PIANO</button><button data-inst="bass">BASS</button><button data-inst="drums">DRUMS</button></div><div id="musicianGrid" class="musician-grid"></div></section>
+        <section class="reference-card card" data-knowledge-search="재즈 연습 listening guide 듣기 transcribe transcription standards"><div class="ref-head"><span>03</span><div><h3>전공생용 Listening Routine</h3><p>지식 → 귀 → 연주로 연결</p></div></div><div class="ref-lines"><p><b>1. Form</b> 먼저 12-bar blues, AABA, ABAC 등 곡의 큰 구조를 듣습니다.</p><p><b>2. Time Feel</b> Ride/Hi-hat, bass walking, comping의 위치와 subdivision을 분리해 듣습니다.</p><p><b>3. Harmony</b> ii–V–I, secondary dominant, turnaround, modal center를 표시합니다.</p><p><b>4. Transcribe</b> 한 코러스 전체보다 2~4마디를 정확한 rhythm·articulation까지 따라가는 연습부터 시작합니다.</p><p><b>5. Apply</b> 같은 아이디어를 12 keys와 다른 tempo에서 변형해 내 언어로 만듭니다.</p></div></section>
+        <div class="knowledge-source card"><strong>REFERENCE NOTE</strong><p>이 지식 탭은 표준 음악이론과 재즈 교육에서 널리 쓰이는 개념을 요약한 레퍼런스입니다. 역사 파트는 Smithsonian의 재즈 역사 자료, 이론 구조는 Berklee Online 및 Open Music Theory의 공개 교육 자료를 참고해 자체 문장으로 정리했습니다.</p></div>
+      </div>
+      <div class="knowledge-empty hidden" id="knowledgeEmpty">검색 결과가 없습니다. 다른 키워드로 검색해보세요.</div>
+    </section>
+
+    <section id="tabManual" class="tab-page">
+      <div class="page-title"><div><span class="eyebrow">MANUAL</span><h2>Beatronome 사용 가이드</h2></div><span class="page-symbol">?</span></div>
+      <div class="manual-search card"><input id="manualSearch" placeholder="기능 검색: 예) Meter Chain, 튜너, 루틴"></div>
+      <div class="manual-list" id="manualList">
+        <article class="manual-card card" data-manual="메트로놈 bpm tap tempo"><h3>메트로놈 기본</h3><p>BPM 숫자를 드래그하거나 다이얼·+/−·TAP으로 속도를 맞춥니다. TAP은 4회 이상 일정하게 누르면 안정적인 BPM을 계산합니다.</p><b>추천</b><span>처음에는 60~80 BPM에서 정확도를 익힌 뒤 5 BPM씩 올리세요.</span></article>
+        <article class="manual-card card" data-manual="count in 카운트인"><h3>Count-in</h3><p>START 전에 1·2·4마디를 먼저 들려줍니다. 곡이나 루틴 시작 전에 자세와 호흡을 맞출 때 유용합니다.</p></article>
+        <article class="manual-card card" data-manual="visual beat flash vibration 시각 진동"><h3>Visual Beat / Pulse / 진동</h3><p>박자를 화면의 점으로 확인합니다. 화면 Pulse와 진동은 소리를 크게 듣기 어려운 환경에서 보조 신호로 사용할 수 있습니다.</p></article>
+        <article class="manual-card card" data-manual="meter chain 박자 변박"><h3>Meter Chain</h3><p>4/4 ×2 → 7/8 ×1 → 3/4 ×4처럼 여러 박자와 반복 마디 수를 이어서 연습합니다. 고급 기능을 펼치면 사용할 수 있습니다.</p></article>
+        <article class="manual-card card" data-manual="training random mute internal clock auto tempo gradual"><h3>Training</h3><p>Random Mute는 클릭을 랜덤으로 숨기고, Internal Clock은 소리/무음 마디를 반복합니다. Auto Tempo는 일정 마디마다 BPM을 자동 변경합니다.</p><b>추천</b><span>4마디 소리 + 2마디 무음부터 시작하면 내부 박자 훈련에 좋습니다.</span></article>
+        <article class="manual-card card" data-manual="groove drum genre swing humanize"><h3>Groove Engine</h3><p>Rock·Jazz·Funk 등 프리셋을 선택하거나 16-step에서 Kick/Snare/Hi-hat을 직접 편집합니다. 장르 없이 메트로놈만 사용하려면 ‘없음 · 메트로놈만’을 선택합니다.</p></article>
+        <article class="manual-card card" data-manual="tuner guitar bass drop tuning"><h3>튜너</h3><p>일렉/어쿠스틱 기타와 베이스 4·5·6현을 지원합니다. Drop D/C/B, 다운튜닝, Open tuning, Custom을 선택할 수 있습니다. 마이크를 켜면 cents 편차가 표시됩니다.</p></article>
+        <article class="manual-card card" data-manual="preset 프리셋 cloud sync"><h3>Preset & Cloud Sync</h3><p>☆ SAVE로 현재 설정을 저장합니다. 로그인하면 폰·Mac·태블릿에서 프리셋과 설정을 자동 동기화합니다. 인터넷이 없을 때도 로컬 저장은 계속 됩니다.</p></article>
+        <article class="manual-card card" data-manual="routine practice 연습 루틴"><h3>Practice Routine</h3><p>현재 설정을 단계로 추가하고 각 단계의 시간을 지정합니다. 실행하면 단계가 끝날 때 다음 설정으로 자동 전환됩니다.</p></article>
+        <article class="manual-card card" data-manual="setlist set list 곡 합주 드래그 메모"><h3>Set List</h3><p>곡마다 BPM·박자·사운드 설정과 메모를 저장합니다. 곡을 드래그해 순서를 바꿀 수 있고, 실행 중에는 PREV/NEXT로 즉시 전환합니다. Stage Mode와 함께 쓰면 공연·리허설에 특히 편합니다.</p></article>
+        <article class="manual-card card" data-manual="focus fullscreen 전체화면"><h3>Focus Mode</h3><p>BPM, 박자, START/STOP만 크게 보여주는 연습 화면입니다. F 키 또는 FOCUS 버튼으로 켜고 끌 수 있습니다.</p></article>
+        <article class="manual-card card" data-manual="mini pdf 악보 팝업"><h3>Mini Mode / PDF 악보</h3><p>▣ 버튼으로 작은 컨트롤 화면을 켭니다. 갤럭시의 ‘팝업 화면으로 보기’와 함께 사용하면 PDF 악보 위에 Beatronome을 둘 수 있습니다.</p></article>
+        <article class="manual-card card" data-manual="offline 오프라인 비행기모드"><h3>오프라인</h3><p>설정의 ‘오프라인 사용 준비’를 완료하면 앱·Basic 음원을 기기에 저장하여 데이터나 Wi-Fi가 없어도 사용할 수 있습니다.</p></article>
+        <article class="manual-card card" data-manual="knowledge 지식 코드 스케일 다이아토닉 재즈 역사 즐겨찾기 최근 연습"><h3>뮤직 지식</h3><p>코드 구성음, 스케일, 다이아토닉, 조표 순서, 기보법, 재즈 화성과 역사·뮤지션을 확인합니다. 자주 보는 항목은 ☆ 즐겨찾기에 저장하고 최근 항목에서 다시 열 수 있습니다. 코드/스케일의 ‘이 설정으로 연습’을 누르면 메트로놈 연습으로 바로 연결됩니다.</p></article>
+        <article class="manual-card card" data-manual="stage performance 공연 bpm lock"><h3>Stage / Performance Mode</h3><p>공연·합주 중 BPM, 박자, START/STOP, PREV/NEXT만 크게 표시합니다. BPM Lock을 켜면 실수로 속도가 바뀌는 것을 막습니다. 설정에서 Stage 화면 탭 재생을 켜면 버튼이 아닌 빈 공간을 탭해 START/STOP 할 수도 있습니다.</p></article>
+        <article class="manual-card card" data-manual="strobe tuner noise gate low b"><h3>Strobe Tuner</h3><p>튜너 DISPLAY를 Strobe로 바꾸면 음이 낮거나 높을 때 줄무늬가 움직이고 정확해지면 멈춥니다. 베이스 Low B에서는 High 감도와 낮은 Noise Gate가 유용합니다.</p></article>
+        <article class="manual-card card" data-manual="latency bluetooth 보정"><h3>Audio Latency Calibration</h3><p>Bluetooth에서 소리와 화면 박자가 어긋날 때 지연값을 조정해 Visual Beat를 맞춥니다.</p></article>
+        <article class="manual-card card" data-manual="one hand 한손 interface size"><h3>One Hand / Interface Size</h3><p>설정에서 한 손 모드를 켜면 주요 조작을 화면 아래에 모읍니다. Compact/Normal/Large로 인터페이스 크기도 바꿀 수 있습니다.</p></article>
+        <article class="manual-card card" data-manual="search cmd k 전체 검색"><h3>전체 검색</h3><p>⌘K 또는 Ctrl+K로 기능·프리셋·루틴·세트리스트·뮤직 지식을 한 번에 검색합니다.</p></article>
+        <article class="manual-card card" data-manual="keyboard shortcut 키보드 단축키 mac"><h3>Mac/키보드 단축키</h3><p>Space 재생/정지 · ↑/↓ BPM ±1 · Shift+↑/↓ ±5 · T TAP · M Mute · F Focus · L BPM Lock · S Stage · 숫자 1~9 프리셋 · ⌘/Ctrl+K 전체 검색.</p></article>
+        <article class="manual-card card" data-manual="undo 실행취소 되돌리기"><h3>Undo</h3><p>박자·분할·Meter Chain·프리셋 등 주요 설정을 바꾸면 5초간 실행 취소 바가 표시됩니다. BPM 변경은 즉시 적용되며 실행 취소 안내를 띄우지 않습니다. 잘못 건드렸을 때 즉시 이전 설정으로 돌아갑니다.</p></article>
+        <article class="manual-card card" data-manual="practice log 연습 기록 통계 주간"><h3>Practice Log</h3><p>메트로놈·Groove·Tuner 사용 시간을 오늘/최근 7일 기준으로 기록합니다. 기록은 로컬 우선 저장되고 Cloud Sync 사용 시 다른 기기와 함께 보관됩니다.</p></article>
+        <article class="manual-card card" data-manual="onboarding 처음 안내 초보"><h3>처음 사용 안내</h3><p>첫 실행 시 핵심 기능을 4단계로 안내합니다. 다시 보고 싶다면 설정 → 처음 사용 안내 → 다시 보기를 누르세요.</p></article>
+      </div>
+    </section>
+
+    <section id="tabPresets" class="tab-page">
+      <div class="page-title"><div><span class="eyebrow">PRESETS</span><h2>내 연습 설정</h2></div><span class="page-symbol">☆</span></div>
+      <div class="save-preset card"><input id="presetName" placeholder="예: 기타 크로매틱 80→140"><button class="primary-small" id="savePreset">현재 설정 저장</button></div>
+      <div class="backup-tools card"><div><strong>설정 백업</strong><span>Cloud를 쓰지 않아도 프리셋·루틴·세트리스트·튜닝을 파일로 보관할 수 있습니다.</span></div><div class="backup-actions"><button class="outline-small" id="exportBackup">내보내기</button><button class="outline-small" id="importBackupButton">가져오기</button><input class="hidden" id="importBackupFile" type="file" accept="application/json,.json"></div></div><div class="preset-list" id="presetList"></div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav"><button class="active" data-tab="metronome"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><path d="M12 5v7l4 2"/></svg></span><small>메트로놈</small></button><button data-tab="groove"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M8 5v10a3 3 0 1 1-2-2.8V7l10-2v8a3 3 0 1 1-2-2.8V3z"/></svg></span><small>그루브</small></button><button data-tab="tuner"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M5 16c4-8 10-8 14 0"/><path d="M12 12v5"/><circle cx="12" cy="18" r="1"/></svg></span><small>튜너</small></button><button data-tab="practice"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></svg></span><small>연습</small></button><button data-tab="more"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></span><small>더보기</small></button></nav>
+
+  <section class="focus-overlay hidden" id="focusOverlay">
+    <div class="focus-top"><span>BEATRONOME · FOCUS</span><button id="closeFocus">×</button></div>
+    <div class="focus-meter" id="focusMeter">4/4</div>
+    <div class="focus-bpm"><strong id="focusBpm">120</strong><span>BPM</span></div>
+    <div class="focus-lamps" id="focusLamps"></div>
+    <button class="focus-play" id="focusPlay">▶ START</button>
+    <div class="focus-actions"><button id="focusMinus">− BPM</button><button id="focusTap">TAP</button><button id="focusPlus">＋ BPM</button></div>
+    <div class="focus-status" id="focusStatus">READY</div>
+  </section>
+
+  <section class="mini-player" id="miniPlayer">
+    <div class="mini-head"><div><span>BEATRONOME</span><strong id="miniMeter">4/4</strong></div><button id="closeMiniMode">×</button></div>
+    <div class="mini-bpm"><button id="miniMinus">−</button><div><strong id="miniBpm">120</strong><span>BPM</span></div><button id="miniPlus">＋</button></div>
+    <button class="mini-play" id="miniPlay"><span id="miniPlayIcon">▶</span><strong id="miniPlayLabel">START</strong></button>
+    <div class="mini-actions"><button id="miniTap">TAP</button><button id="miniMute">MUTE</button></div>
+    <div class="mini-status"><span id="miniModeText">METRO + DRUM</span><span id="miniTimer">READY</span></div>
+    <div class="mini-help">갤럭시: 최근 앱 → Beatronome 아이콘 → 팝업 화면으로 보기</div>
+  </section>
+
+  <section class="stage-overlay hidden" id="stageOverlay"><div class="stage-top"><div><span>BEATRONOME · STAGE</span><strong id="stageSongTitle">PERFORMANCE MODE</strong></div><button id="closeStageMode">×</button></div><div class="stage-meter" id="stageMeter">4/4</div><div class="stage-bpm"><strong id="stageBpm">120</strong><span>BPM</span></div><div class="stage-lamps" id="stageLamps"></div><button class="stage-play" id="stagePlay">▶ START</button><div class="stage-actions"><button id="stagePrev">PREV</button><button id="stageLock">BPM LOCK</button><button id="stageNext">NEXT</button></div><div class="stage-note" id="stageSongNote">설정 변경은 잠금 상태에서 제한됩니다.</div></section>
+  <section class="one-hand-dock hidden" id="oneHandDock"><button id="oneHandMinus">−</button><button id="oneHandTap">TAP</button><button class="one-hand-play" id="oneHandPlay">▶</button><button id="oneHandPlus">＋</button><button id="oneHandLock">LOCK</button></section>
+  <div class="search-overlay hidden" id="globalSearchOverlay"><div class="search-palette"><div class="search-head"><strong>Beatronome Search</strong><span>⌘/Ctrl + K</span><button id="closeGlobalSearch">×</button></div><input id="globalSearchInput" autocomplete="off" placeholder="기능, 프리셋, 루틴, 세트리스트, 음악이론 검색"><div id="globalSearchResults" class="global-search-results"></div></div></div>
+  <div class="onboarding-overlay hidden" id="onboardingOverlay"><div class="onboarding-card"><div class="onboarding-progress" id="onboardingProgress">1 / 4</div><div class="onboarding-icon" id="onboardingIcon">120</div><h2 id="onboardingTitle">BPM을 빠르게 조절하세요</h2><p id="onboardingText">숫자를 드래그하거나 +/−, 다이얼, TAP으로 원하는 템포를 맞출 수 있습니다.</p><div class="onboarding-actions"><button id="skipOnboarding">나중에 보기</button><button id="neverOnboarding">다시 보지 않기</button><button id="nextOnboarding">다음</button></div></div></div>
+  <div class="undo-bar hidden" id="undoBar"><span id="undoText">이전 설정으로 되돌릴 수 있습니다.</span><button id="undoAction">실행 취소</button></div>
+  <div class="modal-backdrop hidden" id="settingsModal"><div class="settings-sheet"><div class="sheet-handle"></div><div class="page-title"><div><span class="eyebrow">SETTINGS</span><h2>앱 설정</h2></div><button class="icon-button" id="closeSettings">×</button></div><div class="settings-item"><span class="settings-icon">⌂</span><div><strong>PWA 홈 화면 설치</strong><span>브라우저 메뉴에서 ‘홈 화면에 추가’를 선택하면 앱처럼 사용할 수 있습니다.</span></div></div><div class="settings-item"><span class="settings-icon">☀</span><div><strong>화면 자동 꺼짐 방지</strong><span>재생 중 지원되는 기기에서 Screen Wake Lock을 자동 사용합니다.</span></div></div><div class="settings-item offline-settings"><span class="settings-icon">⇩</span><div><strong id="offlineReadyTitle">오프라인 사용 준비</strong><span id="offlineStatusText">상태를 확인하는 중입니다.</span><div class="offline-progress"><i id="offlineProgressBar"></i></div><small id="offlineConnectionText">네트워크 상태 확인 중</small></div><button class="outline-small" id="prepareOffline">준비하기</button></div><div class="settings-item"><span class="settings-icon">↻</span><div><strong id="appUpdateTitle">앱 업데이트</strong><span id="appUpdateText">새 버전을 자동 확인합니다.</span><small id="appUpdateHint">사용 중에는 화면을 바꾸지 않습니다.</small></div></div><div class="settings-item"><span class="settings-icon">▣</span><div><strong>악보 연습 Mini Mode</strong><span>Beatronome을 작은 컨트롤 화면으로 바꿉니다. 갤럭시에서는 최근 앱 → Beatronome 아이콘 → ‘팝업 화면으로 보기’를 함께 사용하면 PDF 악보 위에 작은 창으로 둘 수 있습니다.</span></div><button class="outline-small" id="settingsMiniMode">열기</button></div><div class="settings-item cloud-settings-item"><span class="settings-icon">☁</span><div class="cloud-settings-copy"><strong>Cloud Sync</strong><span id="cloudStatusText">로그인하면 폰·Mac·태블릿에서 설정과 프리셋을 동기화합니다.</span><small id="cloudLastSync">로컬 저장만 사용 중</small><div id="cloudSignedOut" class="cloud-auth-panel"><input id="cloudEmail" type="email" inputmode="email" autocomplete="email" placeholder="이메일"><input id="cloudPassword" type="password" autocomplete="current-password" placeholder="비밀번호 (6자 이상)"><div class="cloud-auth-actions"><button class="outline-small" id="cloudLogin">로그인</button><button class="outline-small" id="cloudSignup">회원가입</button></div></div><div id="cloudSignedIn" class="cloud-account-panel hidden"><div class="cloud-account-line"><b id="cloudUserEmail">—</b><span id="cloudStateBadge">SYNCED</span></div><label class="cloud-auto-row"><span>자동 동기화</span><input id="cloudAutoSync" type="checkbox" checked></label><div class="cloud-auth-actions"><button class="outline-small" id="cloudSyncNow">지금 동기화</button><button class="outline-small" id="cloudLogout">로그아웃</button></div></div><div id="cloudSetupHint" class="cloud-setup-hint hidden">Supabase에 Beatronome 테이블이 아직 없습니다. ZIP의 <b>supabase_setup.sql</b>을 SQL Editor에서 한 번 실행하세요.</div></div></div><div class="settings-item ui-redundant"><span class="settings-icon">?</span><div><strong>사용 매뉴얼</strong><span>각 기능의 사용법과 추천 연습 방법을 확인합니다.</span></div><button class="outline-small" id="settingsManual">열기</button></div><div class="settings-item pro-settings"><span class="settings-icon">Aa</span><div><strong>Interface Size</strong><span>화면과 글자 크기를 선택합니다.</span></div><select id="interfaceSize"><option value="compact">Compact</option><option value="normal">Normal</option><option value="large">Large</option></select></div><div class="settings-item pro-settings"><span class="settings-icon">☝</span><div><strong>One Hand Mode</strong><span>START·TAP·BPM 조작을 엄지 위치에 고정합니다.</span></div><button class="switch" id="oneHandToggle"><i></i></button></div><div class="settings-item pro-settings"><span class="settings-icon">▶</span><div><strong>Stage 화면 탭 재생</strong><span>Stage Mode의 빈 공간을 탭해 START/STOP 합니다. 공연 중 오조작이 걱정되면 OFF로 두세요.</span></div><button class="switch" id="stageTapToggle"><i></i></button></div><div class="settings-item pro-settings"><span class="settings-icon">◷</span><div><strong>Audio Latency Calibration</strong><span>Bluetooth 사용 시 Visual Beat 표시를 소리에 맞춥니다.</span><div class="latency-setting"><input id="latencyCalibration" type="range" min="-250" max="250" step="5"><output id="latencyCalibrationOut">0 ms</output></div></div></div><div class="settings-item pro-settings"><span class="settings-icon">◎</span><div><strong>처음 사용 안내</strong><span>20초 핵심 안내를 다시 볼 수 있습니다.</span></div><button class="outline-small" id="replayOnboarding">다시 보기</button></div><div class="settings-item"><span class="settings-icon">↺</span><div><strong>현재 설정 초기화</strong><span>프리셋은 유지하고 메트로놈/훈련 설정만 기본값으로 되돌립니다.</span></div><button class="outline-small" id="resetSettings">초기화</button></div><div class="version-note">Beatronome v0.12.4 Inline Transport + Beat Hierarchy Edition<br>Pure Metronome Mode · Offline-first PWA · 400% Output Boost · Mac Quick Boost · iPhone Playback<br>Basic Sample Click · Guitar/Bass Tuner · Mini Mode<br>Groove Engine · Meter Chain · Training · Jazz UI</div></div></div>
+  <div class="toast hidden" id="toast"></div>
+</div>
+<script src="./cloud-config.js?v=0.12.4"></script>
+<script src="./app.js?v=0.12.4"></script>
+<script src="./knowledge.js?v=0.12.4"></script>
+</body>
+</html>

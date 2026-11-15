@@ -1231,3 +1231,53 @@ button,a,label,select,input,.bottom-nav,.bottom-nav button,.more-launch{
   .inline-play-button small{font-size:8px;}
   .tempo-action-summary{font-size:8px;}
 }
+
+/* =========================================================
+   v0.12.5 - Stage controls explicit theme styling
+   ========================================================= */
+.stage-overlay button{
+  -webkit-appearance:none;
+  appearance:none;
+  font-family:inherit;
+  color:#f4f0e8;
+  background:#17212b;
+  border:1px solid rgba(214,174,98,.34);
+  box-shadow:none;
+}
+#closeStageMode{
+  background:#18232e!important;
+  color:#f0cf87!important;
+  border:1px solid rgba(214,174,98,.52)!important;
+}
+#closeStageMode:hover,#closeStageMode:focus-visible{
+  background:#24313d!important;
+  color:#ffe2a6!important;
+  border-color:rgba(214,174,98,.85)!important;
+}
+.stage-actions button{
+  background:#18232e!important;
+  color:#e8edf1!important;
+  border:1px solid #46525e!important;
+}
+.stage-actions button:disabled{
+  background:#111922!important;
+  color:#66737f!important;
+  border-color:#2b3641!important;
+  opacity:.72;
+}
+#stageLock{
+  background:#18232e!important;
+  color:#f0cf87!important;
+  border-color:rgba(214,174,98,.50)!important;
+}
+#stageLock.locked{
+  background:#6f5430!important;
+  color:#fff1ca!important;
+  border-color:#d6ae62!important;
+  box-shadow:0 0 0 2px rgba(214,174,98,.12),0 8px 24px rgba(0,0,0,.22);
+}
+.stage-play{
+  background:linear-gradient(135deg,#8d4058,#6b2c42)!important;
+  color:#fff7ed!important;
+  border-color:rgba(240,207,135,.28)!important;
+}
