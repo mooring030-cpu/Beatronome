@@ -285,7 +285,7 @@
   function renderCore(){
     ensureNormalPattern();if(state.meterChainEnabled)ensureChain();
     const meter=getSelectedMeter();const chainPos=state.meterChainEnabled?` · ${selectedChainIndex+1}/${state.meterChain.length}`:'';
-    $('bpmValue').textContent=state.bpm;$('tempoName').textContent=tempoName(state.bpm);$('meterTop').textContent=`${meter.beats}/${meter.denominator}${chainPos}`;$('meterTitle').textContent=`${meter.beats}/${meter.denominator}`;
+    $('bpmValue').textContent=state.bpm;$('tempoName').textContent=tempoName(state.bpm);$('meterTop').textContent=`${meter.beats}/${meter.denominator}${chainPos}`;if($('meterTitle'))$('meterTitle').textContent=`${meter.beats}/${meter.denominator}`;
     $('subdivision').value=state.subdivision;syncMeterControls();
     const subInfo=SUBDIVISIONS[state.subdivision]||SUBDIVISIONS[1],sub=subInfo.label;
     const mode=!state.groove.genreEnabled?'Metronome Only':state.playbackMode==='metro'?'Metro':state.playbackMode==='drum'?'Drum':`Metro + ${state.groove.selectedName||'Drum'}`;
@@ -300,7 +300,7 @@
   function renderBeats(){
     const meter=getSelectedMeter();meter.pattern=normalizePattern(meter.pattern,meter.beats);if(!state.meterChainEnabled)state.pattern=meter.pattern;
     const g=$('beatGrid');g.style.gridTemplateColumns=`repeat(${Math.min(meter.beats,8)},1fr)`;g.innerHTML='';
-    meter.pattern.forEach((s,i)=>{const b=document.createElement('button');b.className=`beat-dot ${s}${playing&&currentBeat===i?' active':''}`;b.innerHTML=`<span>${i+1}</span><i>${s==='accent'?'A':s==='mute'?'×':'•'}</i>`;b.onclick=()=>{if(playing)stop();captureUndo('박자 패턴 변경');const target=getSelectedMeter();const c=target.pattern[i];target.pattern[i]=c==='accent'?'normal':c==='normal'?'mute':'accent';if(!state.meterChainEnabled)state.pattern=target.pattern;persist();renderBeats();renderMeterChain();};g.appendChild(b);});
+    meter.pattern.forEach((s,i)=>{const b=document.createElement('button');b.className=`beat-dot ${s}${playing&&currentBeat===i?' active':''}`;b.innerHTML=`<span>${i+1}</span><i>${s==='accent'?'A':s==='mute'?'×':'•'}</i>`;b.onclick=()=>{captureUndo('박자 패턴 변경');const target=getSelectedMeter();const c=target.pattern[i];target.pattern[i]=c==='accent'?'normal':c==='normal'?'mute':'accent';if(!state.meterChainEnabled)state.pattern=target.pattern;persist();renderBeats();renderMeterChain();};g.appendChild(b);});
   }
   function renderMeterChain(){
     $('meterChainToggle').classList.toggle('on',state.meterChainEnabled);$('meterChainBody').classList.toggle('hidden',!state.meterChainEnabled);if(!state.meterChainEnabled)return;ensureChain();
@@ -664,7 +664,7 @@
   function knowledgePractice(item){captureUndo('Knowledge 연습 시작');state.groove.genreEnabled=false;state.playbackMode='metro';state.bpm=item?.bpm||100;state.subdivision=item?.type==='scale'?2:1;state.practice.countInBars=1;persist();renderAll();switchTab('metronome');notify(`${item?.label||'이론'} · ${state.bpm} BPM 연습`);}
   window.BeatronomeBridge={recordKnowledge:knowledgeRecord,toggleKnowledgeFavorite:knowledgeToggleFavorite,startKnowledgePractice:knowledgePractice,isKnowledgeFavorite:id=>(state.library.knowledgeFavorites||[]).some(x=>x.id===id),refreshKnowledgeMemory:renderKnowledgeMemory};
 
-  const APP_VERSION='0.12.2';
+  const APP_VERSION='0.12.3';
   let swRegistration=null;
   let offlinePreparing=false;
   let updateWorker=null;

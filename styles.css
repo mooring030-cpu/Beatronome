@@ -1087,3 +1087,86 @@ button,a,label,select,input,.bottom-nav,.bottom-nav button,.more-launch{
   .bpm-drag,.tempo-dial{touch-action:pan-y!important;}
   button,select,input,label{touch-action:manipulation;}
 }
+
+/* =========================================================
+   v0.12.3 - Single Top Beat Pattern
+   One interactive beat row for mobile + desktop.
+   ========================================================= */
+.beat-pattern-hero{
+  margin:0 0 12px!important;
+  padding:13px 14px 14px!important;
+  border-radius:0 0 24px 24px!important;
+  background:linear-gradient(180deg,#0d1822 0%,#0a121b 100%)!important;
+  border-top:0!important;
+  box-shadow:0 12px 28px rgba(0,0,0,.2)!important;
+  overflow:hidden;
+}
+.beat-pattern-hero .beat-hero-head{margin-bottom:9px;}
+.top-beat-hint{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 1px 9px;color:#71808c;font-size:9px;font-weight:800;letter-spacing:.2px;}
+.top-beat-hint b,.top-beat-hint i,.top-beat-hint em{font-style:normal;font-size:9px;padding:3px 6px;border-radius:999px;background:#101c27;border:1px solid rgba(222,185,105,.12);}
+.top-beat-hint b{color:#dfbc70;border-color:rgba(214,174,98,.38);}
+.top-beat-hint i{color:#93a0aa;}
+.top-beat-hint em{color:#67727c;}
+.top-beat-grid{margin:0!important;gap:8px!important;align-items:stretch;}
+.top-beat-grid .beat-dot{
+  aspect-ratio:auto!important;
+  min-height:66px;
+  border-radius:17px;
+  background:#111d28;
+  border:1px solid rgba(222,185,105,.16);
+  box-shadow:none;
+  gap:4px;
+  transition:background .08s ease,border-color .08s ease,color .08s ease!important;
+  transform:none!important;
+  touch-action:manipulation!important;
+}
+.top-beat-grid .beat-dot span{font-size:12px;font-weight:900;color:#7e8d99;}
+.top-beat-grid .beat-dot i{font-size:21px;line-height:1;color:#94a0aa;}
+.top-beat-grid .beat-dot.accent{background:rgba(129,72,55,.22);border-color:rgba(214,174,98,.54);}
+.top-beat-grid .beat-dot.accent span,.top-beat-grid .beat-dot.accent i{color:#e2bd6d;}
+.top-beat-grid .beat-dot.mute{opacity:.48;}
+.top-beat-grid .beat-dot.active{transform:none!important;}
+.top-beat-grid .beat-dot.accent.active{background:linear-gradient(145deg,#d7aa55,#b77c34)!important;border-color:#f0cd80!important;box-shadow:0 0 0 3px rgba(214,174,98,.12)!important;}
+.top-beat-grid .beat-dot.accent.active span,.top-beat-grid .beat-dot.accent.active i{color:#111820!important;}
+.top-beat-grid .beat-dot.normal.active{background:linear-gradient(145deg,#78b1a6,#54877f)!important;border-color:#92c8bd!important;box-shadow:0 0 0 3px rgba(117,169,159,.10)!important;}
+.top-beat-grid .beat-dot.normal.active span,.top-beat-grid .beat-dot.normal.active i{color:#07110f!important;}
+/* The old visual lamp row is intentionally gone. */
+.visual-beat-card{display:none!important;}
+/* Beat settings remain below BPM, but no duplicated pattern heading/row. */
+.beat-section{padding-top:13px!important;}
+
+@media(min-width:850px){
+  #tabMetronome.active{
+    grid-template-areas:"pattern pattern" "bpm beat" "transport beat" "quick quick" "training training"!important;
+  }
+  #tabMetronome>.beat-pattern-hero{grid-area:pattern!important;margin:0!important;border-radius:22px!important;}
+  #tabMetronome>.bpm-card{grid-area:bpm!important;}
+  #tabMetronome>.beat-section{grid-area:beat!important;}
+  #tabMetronome>.transport-card{grid-area:transport!important;}
+  #tabMetronome>.quick-preset-strip{grid-area:quick!important;}
+  #tabMetronome>.training-panel{grid-area:training!important;}
+  .top-beat-grid .beat-dot{min-height:70px;}
+  .top-beat-grid .beat-dot span{font-size:13px;}
+  .top-beat-grid .beat-dot i{font-size:22px;}
+}
+@media(max-width:849px){
+  #tabMetronome>.beat-pattern-hero{
+    order:0!important;
+    margin-left:-10px!important;margin-right:-10px!important;
+    width:calc(100% + 20px)!important;max-width:none!important;
+  }
+  #tabMetronome>.bpm-card{order:1!important;}
+  #tabMetronome>.transport-card{order:2!important;}
+  #tabMetronome>.beat-section{order:3!important;}
+  #tabMetronome>.quick-preset-strip{order:4!important;}
+  #tabMetronome>.training-panel{order:5!important;}
+  .top-beat-grid .beat-dot{min-height:64px;border-radius:15px;}
+  .top-beat-grid .beat-dot span{font-size:11px;}
+  .top-beat-grid .beat-dot i{font-size:20px;}
+}
+@media(max-width:390px){
+  .beat-pattern-hero{padding-left:10px!important;padding-right:10px!important;}
+  .top-beat-grid{gap:6px!important;}
+  .top-beat-grid .beat-dot{min-height:60px;}
+  .top-beat-hint{gap:4px;}
+}
