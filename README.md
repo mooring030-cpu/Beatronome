@@ -1,17 +1,24 @@
-# Beatronome v0.14.2 Settings Readability Fix
+# Beatronome v0.14.3 Overlay Scroll Stability Fix
+
+
+## v0.14.3 Overlay Scroll Stability Fix
+- 모바일 빠른 설정/앱 설정 Bottom Sheet를 독립 세로 스크롤 컨테이너로 재구성
+- 오버레이가 열려 있을 때 배경 페이지와 하단 네비게이션의 터치 간섭 차단
+- 고급 기능을 펼쳐도 Sheet 내부에서 끝까지 스크롤 가능
+- 검색/온보딩 등 전체 화면 오버레이도 모바일 독립 스크롤 규칙으로 통일
 
 프로 뮤지션용 Offline-first PWA. 메트로놈, Groove Engine, 기타/베이스 튜너, Stage Mode, Practice Routine, Set List, Cloud Sync, Music Knowledge에 Backing Track 연습 플레이어를 추가했습니다.
 
 
 
-## v0.14.2 Settings 모바일 가독성 수정
+## v0.14.3 Settings 모바일 가독성 수정
 - Theme / Interface Size 설명이 한 글자씩 세로로 쪼개지던 모바일 flex 폭 충돌 수정
 - Select형 설정은 설명 아래 전체 폭으로 배치
 - 스위치형 설정은 설명은 넓게, 스위치는 우측 정렬 유지
 - 한국어 설명은 단어 단위 자연스러운 줄바꿈(word-break: keep-all) 적용
 - Latency / Cloud / Offline 등 같은 설정 레이아웃도 모바일 폭에 맞게 보강
 
-## v0.14.2 Practice UX 정리
+## v0.14.3 Practice UX 정리
 - 하단 `연습`은 Backing Player 전용으로 단순화
 - 자동 연습 루틴 / 세트리스트 / 연습 기록은 별도 `Practice Tools` 화면으로 분리
 - Practice Tools 내부도 `루틴 / 세트리스트 / 기록` 탭으로 분리해 한 번에 하나만 표시
@@ -19,7 +26,7 @@
 - 메인 화면의 중복 바로가기 `TRAINING / TUNER / PRESETS` 3개 카드 제거
 - 모바일에서 Speed / Key를 나란히 배치하고 플레이어 컨트롤 간격을 압축해 스크롤량 감소
 
-## v0.14.2 핵심
+## v0.14.3 핵심
 
 ### Backing Track · MY FILE
 - MP3/WAV/M4A/AAC/OGG/MP4 등 브라우저가 재생 가능한 로컬 음원·영상

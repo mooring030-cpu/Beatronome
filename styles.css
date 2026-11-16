@@ -1512,3 +1512,80 @@ body[data-theme="studio"] .bpm-card{background:linear-gradient(155deg,#282028,#1
   .settings-sheet .offline-settings>button{grid-column:2 / -1;grid-row:2;justify-self:stretch;width:100%}
   .settings-sheet .version-note{font-size:10px;line-height:1.55;padding-left:8px;padding-right:8px}
 }
+
+
+/* =========================================================
+   v0.14.3 Overlay Scroll Stability Fix
+   Mobile bottom sheets and overlays own their scrolling.
+   ========================================================= */
+@media(max-width:700px){
+  .modal-backdrop{
+    overflow:hidden!important;
+    align-items:flex-end!important;
+    padding-top:max(8px,env(safe-area-inset-top));
+  }
+
+  .settings-sheet,
+  .core-settings-sheet{
+    width:100%!important;
+    height:90vh!important;
+    height:90dvh!important;
+    max-height:none!important;
+    min-height:0!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    overscroll-behavior-y:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+    touch-action:pan-y!important;
+    scroll-behavior:auto!important;
+    padding-bottom:calc(28px + env(safe-area-inset-bottom))!important;
+  }
+
+  .settings-sheet>.page-title{
+    position:sticky;
+    top:-1px;
+    z-index:6;
+    margin-left:-4px;
+    margin-right:-4px;
+    padding:10px 4px 12px;
+    background:linear-gradient(180deg,#0d1721 0%,#0d1721 82%,rgba(13,23,33,.94) 100%);
+  }
+
+  .settings-sheet .page-title,
+  .settings-sheet .settings-item,
+  .settings-sheet .meter-chain-block,
+  .settings-sheet .beat-utility-row,
+  .settings-sheet .quick-options,
+  .settings-sheet .training-row{
+    touch-action:pan-y;
+  }
+
+  body.overlay-open{
+    overflow:hidden!important;
+    overscroll-behavior:none!important;
+  }
+
+  body.overlay-open .bottom-nav{
+    opacity:0!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+  }
+
+  .search-overlay,
+  .onboarding-overlay{
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    overscroll-behavior-y:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+    touch-action:pan-y!important;
+  }
+
+  .search-palette,
+  .onboarding-card{
+    max-height:calc(100dvh - 36px)!important;
+    overflow-y:auto!important;
+    overscroll-behavior-y:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+    touch-action:pan-y!important;
+  }
+}

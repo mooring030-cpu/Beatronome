@@ -710,7 +710,7 @@
   function knowledgePractice(item){captureUndo('Knowledge 연습 시작');state.groove.genreEnabled=false;state.playbackMode='metro';state.bpm=item?.bpm||100;state.subdivision=item?.type==='scale'?2:1;state.practice.countInBars=1;persist();renderAll();switchTab('metronome');notify(`${item?.label||'이론'} · ${state.bpm} BPM 연습`);}
   window.BeatronomeBridge={recordKnowledge:knowledgeRecord,toggleKnowledgeFavorite:knowledgeToggleFavorite,startKnowledgePractice:knowledgePractice,isKnowledgeFavorite:id=>(state.library.knowledgeFavorites||[]).some(x=>x.id===id),refreshKnowledgeMemory:renderKnowledgeMemory};
 
-  const APP_VERSION='0.14.2';
+  const APP_VERSION='0.14.3';
   let swRegistration=null;
   let offlinePreparing=false;
   let updateWorker=null;
@@ -861,4 +861,26 @@
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){configureIOSAudioSession('playback',true);requestWakeLock();refreshOfflineStatus();checkForAppUpdate();if(cloudSessionValid()&&navigator.onLine)scheduleCloudSync(300);}else{wakeLock=null;}});window.addEventListener('pageshow',()=>{configureIOSAudioSession('playback',true);requestWakeLock();refreshOfflineStatus();checkForAppUpdate();renderCloudUi();if(cloudSessionValid()&&navigator.onLine)scheduleCloudSync(300);});window.addEventListener('online',()=>{refreshOfflineStatus().then(st=>{if(st&&!st.ready)prepareOffline(false);});checkForAppUpdate();if(cloudSessionValid())syncCloud(false);});window.addEventListener('offline',()=>{refreshOfflineStatus();setUpdateUi(updateReady?'ready':'offline');});window.addEventListener('beforeunload',()=>{releaseWakeLock();if(bpmPersistTimer){clearTimeout(bpmPersistTimer);bpmPersistTimer=null;persist();}stopPracticeLog();if(scheduler)clearInterval(scheduler);if(tunerStream)stopTunerMic();if(audioCtx)audioCtx.close();});
 
   ensureNormalPattern();if(state.meterChainEnabled)ensureChain();renderAll();renderCloudUi();setOfflineUi(null);requestWakeLock();document.addEventListener('pointerdown',requestWakeLock,{once:true,passive:true});restoreResumeSession();const initialTab=document.getElementById(`tab${(state.ui.lastTab||'metronome')[0].toUpperCase()+(state.ui.lastTab||'metronome').slice(1)}`)?state.ui.lastTab:'metronome';switchTab(initialTab);registerOfflineWorker();if(!onboardingDisabled()&&!sessionStorage.getItem('beatronome-onboarding-deferred'))setTimeout(openOnboarding,450);else setTimeout(()=>notify('지난 세션 설정을 복원했습니다.'),350);if(cloudSessionValid()&&navigator.onLine){ensureCloudSession().then(ok=>{renderCloudUi();if(ok)syncCloud(true);});}
+})();
+
+
+// v0.14.3: keep background fixed while any full-screen overlay is open,
+// while allowing the overlay's own scroll container to remain touch-scrollable.
+(() => {
+  const overlaySelectors = [
+    '.modal-backdrop',
+    '.search-overlay',
+    '.onboarding-overlay'
+  ];
+  const syncOverlayOpenState = () => {
+    const open = overlaySelectors.some(sel =>
+      Array.from(document.querySelectorAll(sel)).some(el => !el.classList.contains('hidden'))
+    );
+    document.body.classList.toggle('overlay-open', open);
+  };
+  const observed = overlaySelectors.flatMap(sel => Array.from(document.querySelectorAll(sel)));
+  const observer = new MutationObserver(syncOverlayOpenState);
+  observed.forEach(el => observer.observe(el,{attributes:true,attributeFilter:['class']}));
+  window.addEventListener('pageshow',syncOverlayOpenState);
+  syncOverlayOpenState();
 })();
