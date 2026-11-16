@@ -1432,3 +1432,83 @@ body[data-theme="studio"] .bpm-card{background:linear-gradient(155deg,#282028,#1
   .practice-tools-nav{position:relative;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.practice-tools-nav button{min-height:44px;padding:8px 4px}.practice-tools-title h2{font-size:21px}
 }
 @media(max-width:340px){.backing-control-grid{grid-template-columns:1fr}.practice-tools-button small{display:none}}
+
+/* =========================================================
+   v0.14.2 Mobile Settings Readability Fix
+   Prevent Korean helper copy from collapsing into 1-char columns.
+   ========================================================= */
+@media(max-width:700px){
+  .settings-sheet{padding-left:16px!important;padding-right:16px!important;overflow-x:hidden!important}
+  .settings-sheet .settings-item{
+    width:100%;
+    min-width:0;
+    display:grid;
+    grid-template-columns:34px minmax(0,1fr) auto;
+    align-items:center;
+    column-gap:10px;
+    row-gap:9px;
+    padding:16px 0;
+  }
+  .settings-sheet .settings-icon{
+    grid-column:1;
+    width:34px;
+    min-width:34px;
+    align-self:start;
+    padding-top:1px;
+  }
+  .settings-sheet .settings-item>div{
+    grid-column:2;
+    min-width:0!important;
+    width:100%;
+    max-width:100%;
+    overflow:visible;
+  }
+  .settings-sheet .settings-item>div>strong{
+    display:block;
+    font-size:16px;
+    line-height:1.3;
+    white-space:normal;
+    word-break:keep-all;
+    overflow-wrap:normal;
+  }
+  .settings-sheet .settings-item>div>span,
+  .settings-sheet .settings-item>div>small{
+    display:block;
+    margin-top:5px;
+    font-size:12px;
+    line-height:1.55;
+    white-space:normal;
+    word-break:keep-all;
+    overflow-wrap:break-word;
+  }
+  /* Direct selects (Theme / Interface Size) use a full-width second row. */
+  .settings-sheet .settings-item>select{
+    grid-column:2 / -1;
+    grid-row:2;
+    width:100%!important;
+    min-width:0!important;
+    max-width:none!important;
+    min-height:48px;
+    margin:0;
+    font-size:16px;
+  }
+  /* Switches and action buttons remain aligned on the right of the title/copy. */
+  .settings-sheet .settings-item>.switch,
+  .settings-sheet .settings-item>.outline-small,
+  .settings-sheet .settings-item>.primary-small{
+    grid-column:3;
+    align-self:center;
+    justify-self:end;
+    flex:none;
+  }
+  .settings-sheet .settings-item>.switch{min-width:48px}
+  .settings-sheet .settings-item>.outline-small,
+  .settings-sheet .settings-item>.primary-small{white-space:nowrap}
+  /* Items with wide controls inside their copy use the full readable width. */
+  .settings-sheet .latency-setting{width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;margin-top:10px}
+  .settings-sheet .latency-setting input{width:100%!important;min-width:0}
+  .settings-sheet .cloud-settings-item{align-items:start}
+  .settings-sheet .cloud-settings-copy{width:100%;min-width:0}
+  .settings-sheet .offline-settings>button{grid-column:2 / -1;grid-row:2;justify-self:stretch;width:100%}
+  .settings-sheet .version-note{font-size:10px;line-height:1.55;padding-left:8px;padding-right:8px}
+}
