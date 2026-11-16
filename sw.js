@@ -1,4 +1,4 @@
-const VERSION = '0.12.6';
+const VERSION = '0.13.0';
 const CACHE = `beatronome-offline-v${VERSION}`;
 
 const BASIC = [];

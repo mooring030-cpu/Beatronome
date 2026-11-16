@@ -1,4 +1,4 @@
-# Beatronome v0.12.6 — Stage Control Contrast Fix — Inline START / ROTATE Controls
+# Beatronome v0.13.0 Polish Edition
 
 ## 수정 사항
 - 8분/16분/3연음 등 모든 subdivision에서 다운비트와 업비트 강약 계층을 강제로 통일
@@ -28,3 +28,16 @@
 - 앱이 화면에 열려 있는 동안 Screen Wake Lock을 항상 요청합니다.
 - 메트로놈 재생 여부와 무관하게 튜너/그루브/연습/지식/설정에서도 화면 자동 꺼짐을 방지합니다.
 - 앱이 백그라운드/비가시 상태가 되면 OS가 Wake Lock을 해제할 수 있으며, 다시 화면으로 돌아오면 자동 재요청합니다.
+
+
+## v0.13.0 Polish Edition
+- Instrument Console: Beat Pattern + BPM + transport를 하나의 장비형 UI로 통합
+- Beat 버튼: 짧게 누르면 상태 순환, 길게 누르면 Accent/Normal/Mute 메뉴
+- 재생 상태를 CSS 기반의 가벼운 테두리 Pulse로 표시
+- 색상 역할 고정: Gold=선택/Accent, Teal=Normal/정상, Burgundy=재생/Training, Red=삭제/오류
+- 메트로놈 세부 설정을 한 줄 요약 + Bottom Sheet로 압축
+- 사용자 지정 Quick Actions 3개
+- 기타/베이스 튜너의 줄 표시 강화, 12/24프렛 표기
+- Stage Mode에 실제 A/•/× 패턴 표시와 한 줄 메모
+- Jazz Club / Studio Dark 테마
+- 저사양 성능 모드
