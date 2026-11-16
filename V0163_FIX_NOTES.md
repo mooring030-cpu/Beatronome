@@ -1,4 +1,4 @@
-# Beatronome v0.16.3 — Responsive Layout Fix
+# Beatronome v0.16.4 — Responsive Layout Fix
 
 Based on v0.16.2, preserving all sound, tuner, backing player, cloud, and offline functionality.
 
@@ -15,7 +15,7 @@ Based on v0.16.2, preserving all sound, tuner, backing player, cloud, and offlin
 - Speed/Key input and steppers have min-width safeguards. Loop actions use a four-column grid. Advanced-tool title/description and expand icon have separate tracks.
 - App diagnostics tile is inserted **inside** the More grid. At desktop widths >=980 px, 9 More cards fit in **2 rows (5 + 4)**. Tablet/mobile columns reduce responsively.
 - Responsive tweaks are isolated in `responsive-v0163.css`, loaded after the prior design styles to avoid regressions in other screens.
-- Version and service worker shell/cache bumped to 0.16.3. Offline cache includes the new CSS file.
+- Version and service worker shell/cache bumped to 0.16.4. Offline cache includes the new CSS file.
 
 ## Validation limits
 

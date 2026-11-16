@@ -1,4 +1,4 @@
-# Beatronome v0.16.3 — Responsive Layout Fix
+# Beatronome v0.16.4 — Loop & YouTube Speed Controls
 
 See `V0163_FIX_NOTES.md` for changes and QA scope.
 

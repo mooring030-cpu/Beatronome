@@ -102,13 +102,13 @@
     const g=waveGesture;waveGesture=null;wave.classList.remove('loop-dragging');
     if(Math.abs(e.clientX-g.x)>12){
       s.loopA=Math.min(g.time,waveTime(e.clientX));s.loopB=Math.max(g.time,waveTime(e.clientX));
-      if(s.loopB-s.loopA>.08){s.loopOn=true;save();renderLocalLoop();notify('파형에서 A–B 반복 구간을 설정했습니다.');}
+      if(s.loopB-s.loopA>.08){s.loopOn=true;save();renderLocalLoop();notify('파형에서 Loop 구간을 설정했습니다.');}
     }else{$('backingMedia').currentTime=g.time;}
   });
   wave.addEventListener('pointermove',e=>{if(waveGesture&&waveGesture.id===e.pointerId)wave.classList.toggle('loop-dragging',Math.abs(e.clientX-waveGesture.x)>12);});
   ['pointercancel','lostpointercapture'].forEach(name=>wave.addEventListener(name,()=>{waveGesture=null;wave.classList.remove('loop-dragging');}));
   $('backingSpeed').oninput=e=>setSpeed(e.target.value);$('backingSpeedMinus').onclick=()=>setSpeed(s.speed-5);$('backingSpeedPlus').onclick=()=>setSpeed(s.speed+5);$('backingKey').oninput=e=>setKey(e.target.value);$('backingKeyMinus').onclick=()=>setKey(s.key-1);$('backingKeyPlus').onclick=()=>setKey(s.key+1);$('backingVolume').oninput=e=>{s.volume=clamp(Number(e.target.value),0,100);save();applyLocalSettings();};
-  $('backingSetA').onclick=()=>{s.loopA=$('backingMedia').currentTime;if(Number.isFinite(s.loopB)&&s.loopB<=s.loopA)s.loopB=null;save();renderLocalLoop();};$('backingSetB').onclick=()=>{s.loopB=$('backingMedia').currentTime;if(!Number.isFinite(s.loopA))s.loopA=0;if(s.loopB<=s.loopA+.05){notify('B 지점은 A보다 뒤여야 합니다.');s.loopB=null;}save();renderLocalLoop();};$('backingLoopToggle').onclick=()=>{s.loopOn=!s.loopOn;save();renderLocalLoop();};$('backingLoopClear').onclick=()=>{s.loopA=s.loopB=null;s.loopOn=false;save();renderLocalLoop();};
+  $('backingSetA').onclick=()=>{s.loopA=$('backingMedia').currentTime;if(Number.isFinite(s.loopB)&&s.loopB<=s.loopA)s.loopB=null;save();renderLocalLoop();};$('backingSetB').onclick=()=>{s.loopB=$('backingMedia').currentTime;if(!Number.isFinite(s.loopA))s.loopA=0;if(s.loopB<=s.loopA+.05){notify('END는 START보다 뒤여야 합니다.');s.loopB=null;}save();renderLocalLoop();};$('backingLoopToggle').onclick=()=>{s.loopOn=!s.loopOn;save();renderLocalLoop();};$('backingLoopClear').onclick=()=>{s.loopA=s.loopB=null;s.loopOn=false;save();renderLocalLoop();};
   $('backingMetroTogether').onchange=e=>{s.metroTogether=e.target.checked;save();};$('backingTrackBpm').onchange=e=>{s.trackBpm=clamp(Number(e.target.value)||120,30,300);save();};$('backingApplyBpm').onclick=()=>{s.trackBpm=clamp(Number($('backingTrackBpm').value)||120,30,300);save();window.BeatronomeAPI?.setBpm?.(s.trackBpm);notify(`Beatronome ${s.trackBpm} BPM`);};$('backingAddMarker').onclick=()=>addMarker('local');
 
   ['speedTrainerStart','speedTrainerEnd','speedTrainerStep','speedTrainerLoops','keyTrainerStart','keyTrainerStep','keyTrainerLoops'].forEach(id=>{$(id).onchange=e=>{const map={speedTrainerStart:'speedStart',speedTrainerEnd:'speedEnd',speedTrainerStep:'speedStep',speedTrainerLoops:'speedLoops',keyTrainerStart:'keyStart',keyTrainerStep:'keyStep',keyTrainerLoops:'keyLoops'};s.trainer[map[id]]=Number(e.target.value);save();renderTrainer();};});
@@ -118,13 +118,65 @@
   let ytApiPromise=null;
   function loadYouTubeApi(){if(window.YT?.Player)return Promise.resolve();if(ytApiPromise)return ytApiPromise;ytApiPromise=new Promise((resolve,reject)=>{const old=window.onYouTubeIframeAPIReady;window.onYouTubeIframeAPIReady=()=>{try{old?.();}catch{}resolve();};const sc=document.createElement('script');sc.src='https://www.youtube.com/iframe_api';sc.onerror=reject;document.head.appendChild(sc);setTimeout(()=>window.YT?.Player&&resolve(),2500);});return ytApiPromise;}
   function extractYouTubeId(url){try{const u=new URL(url.trim());if(u.hostname.includes('youtu.be'))return u.pathname.split('/').filter(Boolean)[0]||'';if(u.hostname.includes('youtube.com')){if(u.pathname.startsWith('/shorts/')||u.pathname.startsWith('/embed/'))return u.pathname.split('/')[2]||'';return u.searchParams.get('v')||'';}}catch{}return /^[\w-]{11}$/.test(url.trim())?url.trim():'';}
-  async function loadYouTube(){if(!navigator.onLine){notify('YouTube는 인터넷 연결이 필요합니다.');return;}const id=extractYouTubeId($('youtubeUrl').value);if(!id){notify('올바른 YouTube 링크를 입력하세요.');return;}s.youtube.url=$('youtubeUrl').value.trim();s.youtube.videoId=id;ytTrackKey=`yt:${id}`;save();await loadYouTubeApi();if(ytPlayer?.destroy)ytPlayer.destroy();$('youtubePlaceholder').classList.add('hidden');ytPlayer=new YT.Player('youtubePlayer',{videoId:id,width:'100%',height:'100%',playerVars:{playsinline:1,rel:0},events:{onReady:()=>{renderYoutubeLoop();renderMarkers('youtube');applyYoutubeRate(s.youtube.rate);startYtTimer();},onStateChange:e=>{if(e.data===YT.PlayerState.PLAYING){$('youtubePlay').textContent='Ⅱ PAUSE';if(s.youtube.metroTogether&&!window.BeatronomeAPI?.isPlaying?.()){window.BeatronomeAPI?.start?.();ytMetroStarted=true;}}else if(e.data===YT.PlayerState.PAUSED||e.data===YT.PlayerState.ENDED){$('youtubePlay').textContent='▶ PLAY';if(ytMetroStarted&&window.BeatronomeAPI?.isPlaying?.()){window.BeatronomeAPI.stop();ytMetroStarted=false;}}}}});}
+  async function loadYouTube(){if(!navigator.onLine){notify('YouTube는 인터넷 연결이 필요합니다.');return;}const id=extractYouTubeId($('youtubeUrl').value);if(!id){notify('올바른 YouTube 링크를 입력하세요.');return;}s.youtube.url=$('youtubeUrl').value.trim();s.youtube.videoId=id;ytTrackKey=`yt:${id}`;save();await loadYouTubeApi();if(ytPlayer?.destroy)ytPlayer.destroy();$('youtubePlaceholder').classList.add('hidden');ytPlayer=new YT.Player('youtubePlayer',{videoId:id,width:'100%',height:'100%',playerVars:{playsinline:1,rel:0},events:{onReady:()=>{renderYoutubeLoop();renderMarkers('youtube');requestYoutubePlaybackRate();renderYoutubeRate();startYtTimer();},onPlaybackRateChange:()=>renderYoutubeRate(),onStateChange:e=>{if(e.data===YT.PlayerState.PLAYING){$('youtubePlay').textContent='Ⅱ PAUSE';if(s.youtube.metroTogether&&!window.BeatronomeAPI?.isPlaying?.()){window.BeatronomeAPI?.start?.();ytMetroStarted=true;}}else if(e.data===YT.PlayerState.PAUSED||e.data===YT.PlayerState.ENDED){$('youtubePlay').textContent='▶ PLAY';if(ytMetroStarted&&window.BeatronomeAPI?.isPlaying?.()){window.BeatronomeAPI.stop();ytMetroStarted=false;}}}}});}
   function startYtTimer(){clearInterval(ytTimer);ytTimer=setInterval(()=>{if(!ytPlayer?.getCurrentTime)return;const cur=ytPlayer.getCurrentTime()||0,dur=ytPlayer.getDuration()||0;$('youtubeCurrentTime').textContent=fmt(cur);$('youtubeDuration').textContent=fmt(dur);$('youtubeSeek').value=dur?Math.round(cur/dur*1000):0;if(s.youtube.loopOn&&Number.isFinite(s.youtube.loopA)&&Number.isFinite(s.youtube.loopB)&&cur>=s.youtube.loopB-.08)ytPlayer.seekTo(s.youtube.loopA,true);},120);}
-  function applyYoutubeRate(rate){s.youtube.rate=Number(rate)||1;save();if(ytPlayer?.getAvailablePlaybackRates){const arr=ytPlayer.getAvailablePlaybackRates()||[1],best=arr.reduce((a,b)=>Math.abs(b-s.youtube.rate)<Math.abs(a-s.youtube.rate)?b:a,arr[0]||1);ytPlayer.setPlaybackRate(best);document.querySelectorAll('#youtubeSpeedPresets button').forEach(b=>b.classList.toggle('active',Number(b.dataset.rate)===best));}}
+  // YouTube IFrame API only promises video-specific available playback rates.
+  // The 5% input is a *request*, not a guarantee that the iframe can play it.
+  let youtubeRateTimer=null, youtubeRateStatusTimer=null;
+  function normalizeYoutubePercent(value){
+    const n=value===''?NaN:Number(value);
+    if(!Number.isFinite(n))return 100;
+    return clamp(Math.round(n/5)*5,25,200);
+  }
+  function youtubePlaybackRate(){
+    if(!ytPlayer?.getPlaybackRate)return null;
+    try{const rate=Number(ytPlayer.getPlaybackRate());return Number.isFinite(rate)&&rate>0?rate:null;}catch{return null;}
+  }
+  function renderYoutubeRate(){
+    const requested=normalizeYoutubePercent(s.youtube.rate*100);
+    $('youtubeSpeedRange').value=String(requested);
+    $('youtubeSpeedNumber').value=String(requested);
+    const status=$('youtubeSpeedStatus'),actual=youtubePlaybackRate();
+    if(actual===null){status.textContent=`요청 ${requested}% · 영상 로드 후 적용`;status.classList.remove('rate-limited');return;}
+    const applied=Math.round(actual*100);
+    if(Math.abs(actual*100-requested)<.5){
+      status.textContent=`실제 재생 ${applied}%`;
+      status.classList.remove('rate-limited');
+    }else{
+      status.textContent=`요청 ${requested}% · 실제 재생 ${applied}% (YouTube 지원 속도 제한)`;
+      status.classList.add('rate-limited');
+    }
+  }
+  function requestYoutubePlaybackRate(){
+    if(!ytPlayer?.setPlaybackRate)return;
+    try{ytPlayer.setPlaybackRate(s.youtube.rate);}catch(e){console.warn('YouTube playback rate request',e);}
+    clearTimeout(youtubeRateStatusTimer);
+    // setPlaybackRate is asynchronous; read back what the player ACTUALLY used.
+    youtubeRateStatusTimer=setTimeout(renderYoutubeRate,450);
+  }
+  function applyYoutubeRate(percent,delay=0){
+    const normalized=normalizeYoutubePercent(percent);
+    s.youtube.rate=normalized/100;
+    save();renderYoutubeRate();
+    clearTimeout(youtubeRateTimer);
+    if(ytPlayer?.setPlaybackRate){
+      if(delay>0)youtubeRateTimer=setTimeout(requestYoutubePlaybackRate,delay);
+      else requestYoutubePlaybackRate();
+    }
+  }
+  // Old saved values (0.5, 1.25, etc.) continue to work after upgrading.
+  s.youtube.rate=normalizeYoutubePercent((Number(s.youtube.rate)||1)*100)/100;
+  $('youtubeSpeedMinus').addEventListener('click',()=>applyYoutubeRate(s.youtube.rate*100-5));
+  $('youtubeSpeedPlus').addEventListener('click',()=>applyYoutubeRate(s.youtube.rate*100+5));
+  $('youtubeSpeedRange').addEventListener('input',e=>applyYoutubeRate(e.target.value,140));
+  $('youtubeSpeedRange').addEventListener('change',e=>applyYoutubeRate(e.target.value));
+  $('youtubeSpeedNumber').addEventListener('change',e=>applyYoutubeRate(e.target.value));
+  $('youtubeSpeedNumber').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.currentTarget.blur();}});
+  renderYoutubeRate();
   function renderYoutubeLoop(){const y=s.youtube,ok=Number.isFinite(y.loopA)&&Number.isFinite(y.loopB)&&y.loopB>y.loopA+.05;$('youtubeLoopToggle').disabled=!ok;$('youtubeLoopToggle').textContent=y.loopOn&&ok?'LOOP ON':'LOOP OFF';$('youtubeLoopToggle').classList.toggle('active',y.loopOn&&ok);$('youtubeLoopText').textContent=ok?`${fmt(y.loopA)} → ${fmt(y.loopB)}`:'구간 미설정';$('youtubeMetroTogether').checked=!!y.metroTogether;}
-  $('youtubeLoad').onclick=loadYouTube;$('youtubeUrl').value=s.youtube.url||'';$('youtubePlay').onclick=()=>{if(!ytPlayer){notify('YouTube 영상을 먼저 불러오세요.');return;}const st=ytPlayer.getPlayerState();if(st===YT.PlayerState.PLAYING)ytPlayer.pauseVideo();else ytPlayer.playVideo();};$('youtubeBack5').onclick=()=>ytPlayer?.seekTo?.(Math.max(0,(ytPlayer.getCurrentTime?.()||0)-5),true);$('youtubeForward5').onclick=()=>ytPlayer?.seekTo?.((ytPlayer.getCurrentTime?.()||0)+5,true);$('youtubeSeek').oninput=e=>{const d=ytPlayer?.getDuration?.()||0;if(d)ytPlayer.seekTo(Number(e.target.value)/1000*d,true);};document.querySelectorAll('#youtubeSpeedPresets button').forEach(b=>b.onclick=()=>applyYoutubeRate(b.dataset.rate));$('youtubeSetA').onclick=()=>{if(!ytPlayer)return;s.youtube.loopA=ytPlayer.getCurrentTime();if(Number.isFinite(s.youtube.loopB)&&s.youtube.loopB<=s.youtube.loopA)s.youtube.loopB=null;save();renderYoutubeLoop();};$('youtubeSetB').onclick=()=>{if(!ytPlayer)return;s.youtube.loopB=ytPlayer.getCurrentTime();if(!Number.isFinite(s.youtube.loopA))s.youtube.loopA=0;if(s.youtube.loopB<=s.youtube.loopA+.05){notify('B 지점은 A보다 뒤여야 합니다.');s.youtube.loopB=null;}save();renderYoutubeLoop();};$('youtubeLoopToggle').onclick=()=>{s.youtube.loopOn=!s.youtube.loopOn;save();renderYoutubeLoop();};$('youtubeLoopClear').onclick=()=>{s.youtube.loopA=s.youtube.loopB=null;s.youtube.loopOn=false;save();renderYoutubeLoop();};$('youtubeMetroTogether').onchange=e=>{s.youtube.metroTogether=e.target.checked;save();};$('youtubeAddMarker').onclick=()=>addMarker('youtube');
+  $('youtubeLoad').onclick=loadYouTube;$('youtubeUrl').value=s.youtube.url||'';$('youtubePlay').onclick=()=>{if(!ytPlayer){notify('YouTube 영상을 먼저 불러오세요.');return;}const st=ytPlayer.getPlayerState();if(st===YT.PlayerState.PLAYING)ytPlayer.pauseVideo();else ytPlayer.playVideo();};$('youtubeBack5').onclick=()=>ytPlayer?.seekTo?.(Math.max(0,(ytPlayer.getCurrentTime?.()||0)-5),true);$('youtubeForward5').onclick=()=>ytPlayer?.seekTo?.((ytPlayer.getCurrentTime?.()||0)+5,true);$('youtubeSeek').oninput=e=>{const d=ytPlayer?.getDuration?.()||0;if(d)ytPlayer.seekTo(Number(e.target.value)/1000*d,true);};$('youtubeSetA').onclick=()=>{if(!ytPlayer)return;s.youtube.loopA=ytPlayer.getCurrentTime();if(Number.isFinite(s.youtube.loopB)&&s.youtube.loopB<=s.youtube.loopA)s.youtube.loopB=null;save();renderYoutubeLoop();};$('youtubeSetB').onclick=()=>{if(!ytPlayer)return;s.youtube.loopB=ytPlayer.getCurrentTime();if(!Number.isFinite(s.youtube.loopA))s.youtube.loopA=0;if(s.youtube.loopB<=s.youtube.loopA+.05){notify('END는 START보다 뒤여야 합니다.');s.youtube.loopB=null;}save();renderYoutubeLoop();};$('youtubeLoopToggle').onclick=()=>{s.youtube.loopOn=!s.youtube.loopOn;save();renderYoutubeLoop();};$('youtubeLoopClear').onclick=()=>{s.youtube.loopA=s.youtube.loopB=null;s.youtube.loopOn=false;save();renderYoutubeLoop();};$('youtubeMetroTogether').onchange=e=>{s.youtube.metroTogether=e.target.checked;save();};$('youtubeAddMarker').onclick=()=>addMarker('youtube');
 
   // initialize
   setSource(s.source||'local');applyLocalSettings();renderRecentFiles();renderMarkers('local');renderYoutubeLoop();renderMarkers('youtube');
-  window.addEventListener('beforeunload',()=>{clearInterval(ytTimer);if(objectUrl)URL.revokeObjectURL(objectUrl);try{ctx?.close();}catch{}});
+  window.addEventListener('beforeunload',()=>{clearInterval(ytTimer);clearTimeout(youtubeRateTimer);clearTimeout(youtubeRateStatusTimer);if(objectUrl)URL.revokeObjectURL(objectUrl);try{ctx?.close();}catch{}});
 })();

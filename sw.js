@@ -1,7 +1,7 @@
-/* Beatronome v0.16.3: version-isolated, offline-first application shell.
+/* Beatronome v0.16.4: version-isolated, offline-first application shell.
  * Active sessions are never force-reloaded and existing controllers are not claimed.
  */
-const VERSION = '0.16.3';
+const VERSION = '0.16.4';
 const CACHE = `beatronome-offline-v${VERSION}`;
 const BASIC = Array.from({length:6},(_,i)=>['strong','weak','normal'].map(role=>`./audio/basic/bank${i+1}_${role}.wav`)).flat();
 const SHELL = [

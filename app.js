@@ -204,7 +204,7 @@
   let playbackChainIndex=0,playbackChainBarCount=0,visualChainIndex=-1,visualChainBarCount=0;
   let audioCtx=null,master=null,limiter=null,noiseCache=null,scheduler=null,nextNoteTime=0,stepIndex=0,barIndex=0,startTime=0,sessionBaseBpm=state.bpm,tempoDir=1;
   let scheduledMetroSources=[];
-  // v0.16.3 timing telemetry: reports Web Audio scheduling intervals only.
+  // v0.16.4 timing telemetry: reports Web Audio scheduling intervals only.
   // This cannot measure physical speaker/Bluetooth latency.
   let clockLast=null,clockChecks=0,clockErrorSum=0,clockErrorMax=0,clockRecoveries=0;
   function trackScheduledClock(time,interval){
@@ -229,7 +229,7 @@
   function cloudConfig(){const c=window.BEATRONOME_SUPABASE||{};return{url:String(c.url||'').replace(/\/$/,''),key:String(c.anonKey||'')}}
   function cloudConfigured(){const c=cloudConfig();return /^https:\/\//.test(c.url)&&!!c.key;}
   function cloudSessionValid(){return !!cloudMeta.session?.access_token&&!!cloudMeta.session?.user?.id;}
-  // v0.16.3: non-destructive cloud merge and local recovery snapshots. No credentials in backups.
+  // v0.16.4: non-destructive cloud merge and local recovery snapshots. No credentials in backups.
   const CLOUD_SAFETY_KEY='beatronome-cloud-recovery-v1';
   function cloudSafetyBackup(reason){
     try{
@@ -786,7 +786,7 @@
   function restoreResumeSession(){const r=state.practice.resumeSession;if(!r)return;const list=r.type==='routine'?state.library.routines:state.library.setlists,item=list.find(x=>x.id===r.id);if(!item)return;const max=(r.type==='routine'?item.steps:item.songs).length-1;activePractice={type:r.type,item,index:clamp(Number(r.index)||0,0,Math.max(0,max))};renderActivePractice();notify('지난 연습 세션을 복원했습니다.');}
 
   function renderGlobalSearch(q=''){const box=$('globalSearchResults');if(!box)return;const query=q.trim().toLowerCase();const items=[
-    ['메트로놈','BPM · 박자 · Training','metronome'],['그루브','Jazz · Rock · Funk · Drum','groove'],['튜너','기타 · 베이스 · Drop tuning','tuner'],['연습 플레이어','Backing Track · Speed · Key · A-B Loop','practice'],['연습 도구','Routine · Set List · 기록','practiceTools'],['백킹트랙','Speed · Key · A-B Loop · YouTube','practice'],['뮤직 지식','코드 · 스케일 · 재즈','knowledge'],['매뉴얼','기능 사용법','manual'],['클릭 사운드','Basic · Digital · Boost','sound'],['프리셋','저장된 설정','presets']
+    ['메트로놈','BPM · 박자 · Training','metronome'],['그루브','Jazz · Rock · Funk · Drum','groove'],['튜너','기타 · 베이스 · Drop tuning','tuner'],['연습 플레이어','Backing Track · Speed · Key · Loop','practice'],['연습 도구','Routine · Set List · 기록','practiceTools'],['백킹트랙','Speed · Key · Loop · YouTube','practice'],['뮤직 지식','코드 · 스케일 · 재즈','knowledge'],['매뉴얼','기능 사용법','manual'],['클릭 사운드','Basic · Digital · Boost','sound'],['프리셋','저장된 설정','presets']
   ];presets.forEach((p,i)=>items.push([p.name,`${p.bpm} BPM · Preset`,()=>loadPreset(p)]));state.library.routines.forEach(r=>items.push([r.name,`${r.steps.length}단계 · Routine`,()=>startRoutine(r)]));state.library.setlists.forEach(r=>items.push([r.name,`${r.songs.length}곡 · Set List`,()=>startSetlist(r)]));const filtered=items.filter(x=>!query||(x[0]+' '+x[1]).toLowerCase().includes(query)).slice(0,18);box.innerHTML='';filtered.forEach(([title,sub,action])=>{const b=document.createElement('button');b.innerHTML=`<strong>${escapeHtml(title)}</strong><span>${escapeHtml(sub)}</span>`;b.onclick=()=>{closeGlobalSearch();if(typeof action==='function')action();else switchTab(action);};box.appendChild(b);});if(query&&filtered.length<8){const b=document.createElement('button');b.innerHTML=`<strong>뮤직 지식에서 “${escapeHtml(q)}” 검색</strong><span>코드·스케일·뮤지션·이론 검색</span>`;b.onclick=()=>{closeGlobalSearch();switchTab('knowledge');setTimeout(()=>{if($('knowledgeSearch')){$('knowledgeSearch').value=q;$('knowledgeSearch').dispatchEvent(new Event('input'));}},40);};box.appendChild(b);}}
   function openGlobalSearch(){if(!$('globalSearchOverlay'))return;$('globalSearchOverlay').classList.remove('hidden');$('globalSearchInput').value='';renderGlobalSearch('');setTimeout(()=>$('globalSearchInput').focus(),40);}
   function closeGlobalSearch(){$('globalSearchOverlay')?.classList.add('hidden');}
@@ -812,7 +812,7 @@
   function knowledgePractice(item){captureUndo('Knowledge 연습 시작');state.groove.genreEnabled=false;state.playbackMode='metro';state.bpm=item?.bpm||100;state.subdivision=item?.type==='scale'?2:1;state.practice.countInBars=1;persist();renderAll();switchTab('metronome');notify(`${item?.label||'이론'} · ${state.bpm} BPM 연습`);}
   window.BeatronomeBridge={recordKnowledge:knowledgeRecord,toggleKnowledgeFavorite:knowledgeToggleFavorite,startKnowledgePractice:knowledgePractice,isKnowledgeFavorite:id=>(state.library.knowledgeFavorites||[]).some(x=>x.id===id),refreshKnowledgeMemory:renderKnowledgeMemory};
 
-  const APP_VERSION='0.16.3';
+  const APP_VERSION='0.16.4';
   let swRegistration=null;
   let offlinePreparing=false;
   let updateWorker=null;
