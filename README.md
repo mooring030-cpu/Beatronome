@@ -1,60 +1,53 @@
-# Beatronome v0.14.3 Overlay Scroll Stability Fix
+# Beatronome v0.15.1 – Stability / UX / Audio / Practice / QA
 
+기존 v0.14.3을 기반으로 한 **통합 업데이트**입니다. 기존 GitHub Pages `Beatronome` 저장소에 ZIP 안의 파일을 **전체 덮어쓰기**한 뒤 Commit → Push origin 하면 됩니다. 기존 Supabase 테이블 변경은 필요하지 않습니다.
 
-## v0.14.3 Overlay Scroll Stability Fix
-- 모바일 빠른 설정/앱 설정 Bottom Sheet를 독립 세로 스크롤 컨테이너로 재구성
-- 오버레이가 열려 있을 때 배경 페이지와 하단 네비게이션의 터치 간섭 차단
-- 고급 기능을 펼쳐도 Sheet 내부에서 끝까지 스크롤 가능
-- 검색/온보딩 등 전체 화면 오버레이도 모바일 독립 스크롤 규칙으로 통일
+## 버전별 통합 개선 범위
 
-프로 뮤지션용 Offline-first PWA. 메트로놈, Groove Engine, 기타/베이스 튜너, Stage Mode, Practice Routine, Set List, Cloud Sync, Music Knowledge에 Backing Track 연습 플레이어를 추가했습니다.
+### v0.14.4 – 안정성 및 데이터 보호
+- Service Worker 캐시를 빌드별로 명확하게 분리했습니다. 페이지 이동 시 `caches.match()`가 과거 버전의 HTML을 가져오는 문제를 막습니다.
+- **새 빌드의 필수 파일이 모두 저장된 뒤에만** 새로운 Service Worker가 활성화됩니다. 열려 있는 앱은 자동 강제 새로고침하지 않습니다.
+- 기존 캐시는 열려 있는 과거 버전 세션을 보호하기 위해 자동 즉시 삭제하지 않습니다.
+- Cloud Sync 최초 접속 시 **로컬 프리셋을 일괄 폐기하지 않고 ID별 병합**합니다. 삭제 정보(tombstone), `updatedAt` 필드, 동기화 전 자동 로컬 백업 5개를 지원합니다.
+- `앱 설정 → 앱 관리 → 동기화 전 백업 복원`으로 백업을 복구할 수 있습니다.
+- 모바일/PC 스크롤 및 하단 메뉴 회귀 테스트를 진행했습니다.
 
+### v0.14.5 – 설정 및 반응형 UI
+- `앱 설정`을 **화면·디자인 / 사운드 / 연습·조작 / 저장·동기화 / 앱 관리**의 5개 카테고리로 분리했습니다.
+- 긴 설정 설명을 좁은 2열에 억지로 넣지 않고 제목·설명·입력 컨트롤을 읽기 편한 너비로 표시합니다.
+- 기존 `styles.css`는 호환을 위해 유지하고, **새 공통 UI 토큰과 레이아웃을 `polish.css`에 분리**해 후속 패치의 변경 지점을 줄였습니다.
 
+### v0.14.6 – 오디오/튜너 신뢰성
+- 메트로놈 예약된 클릭 간격과 스케줄러 복구 횟수를 기록하는 **가벼운 진단 메트릭**을 추가했습니다. 실제 스피커/블루투스 출력 지연을 측정하는 것은 아닙니다.
+- 튜너 음정 표시를 최근 샘플의 **중앙값으로 안정화**, 급격한 실제 음 변화 시 즉시 창을 초기화합니다.
+- 베이스 분석 주기를 조정하여 오래된 휴대폰의 부하를 낮췄습니다.
+- 재생 중 **16분 → 8분** 등 subdivision 변경 시 재생이 멈추지 않는 기본 흐름을 브라우저에서 검증했습니다.
 
-## v0.14.3 Settings 모바일 가독성 수정
-- Theme / Interface Size 설명이 한 글자씩 세로로 쪼개지던 모바일 flex 폭 충돌 수정
-- Select형 설정은 설명 아래 전체 폭으로 배치
-- 스위치형 설정은 설명은 넓게, 스위치는 우측 정렬 유지
-- 한국어 설명은 단어 단위 자연스러운 줄바꿈(word-break: keep-all) 적용
-- Latency / Cloud / Offline 등 같은 설정 레이아웃도 모바일 폭에 맞게 보강
+### v0.15.0 – Backing Player 편의성
+- 파형을 한 번 누르면 Seek, **좌우 드래그하면 A–B Loop**를 지정합니다.
+- 최근 불러온 파일 8개를 표시하고, **동일 파일을 다시 선택하면 해당 곡의 Speed·Key·Volume·A/B·BPM 설정을 복원**합니다.
+- 브라우저 보안상 사용자의 파일을 자동으로 재열거나 서버에 업로드하지 않습니다.
+- 32MB를 초과하는 파일은 모바일 메모리 보호를 위해 파형 생성만 생략합니다. 재생/Seek/A–B 설정은 계속 이용할 수 있습니다.
+- Backing + Metronome은 Track BPM 설정을 함께 쓸 수 있지만 **음원의 첫 박을 자동 분석해 정확히 위상을 일치시키는 기능은 아닙니다**. 화면에 안내합니다.
 
-## v0.14.3 Practice UX 정리
-- 하단 `연습`은 Backing Player 전용으로 단순화
-- 자동 연습 루틴 / 세트리스트 / 연습 기록은 별도 `Practice Tools` 화면으로 분리
-- Practice Tools 내부도 `루틴 / 세트리스트 / 기록` 탭으로 분리해 한 번에 하나만 표시
-- Backing Player의 메트로놈 연동 / Track BPM / 볼륨 / 마커 / Speed·12-Key Trainer는 `고급 연습 도구`에 접어서 기본 화면을 짧게 유지
-- 메인 화면의 중복 바로가기 `TRAINING / TUNER / PRESETS` 3개 카드 제거
-- 모바일에서 Speed / Key를 나란히 배치하고 플레이어 컨트롤 간격을 압축해 스크롤량 감소
+### v0.15.1 – QA/문제 진단
+- `더보기 → 앱 상태 진단` 또는 `앱 설정 → 앱 관리`에서 환경/버전/스크롤/캐시/오디오 상태를 확인할 수 있습니다.
+- `상태 진단`, `클릭 간격 듣기(120 BPM 8박)`, `결과 복사`, `진단 JSON 저장` 기능을 추가했습니다.
+- 진단 결과에는 **비밀번호·클라우드 인증 토큰·곡/프리셋 내용**을 넣지 않습니다.
+- 메트로놈·그루브·튜너·연습·더보기 탭의 초기화 및 조작, 빠른 설정 스크롤, Backing 파일/파형 루프, 설정 카테고리 등을 여러 PC/모바일 화면 폭으로 점검했습니다.
 
-## v0.14.3 핵심
+## 설치 및 사용
+1. ZIP을 풀어서 기존 GitHub Desktop `Beatronome` 폴더의 파일들을 전체 덮어씁니다.
+2. GitHub Desktop → Commit to main (`Beatronome v0.15.1`) → Push origin.
+3. 앱을 사용 중이었다면 연주가 끝난 뒤 탭/PWA 창을 모두 종료하고 다시 실행하세요. **재생 중 강제 업데이트는 하지 않습니다.**
+4. 상단 버전이 `v0.15.1`이면 새 버전입니다.
 
-### Backing Track · MY FILE
-- MP3/WAV/M4A/AAC/OGG/MP4 등 브라우저가 재생 가능한 로컬 음원·영상
-- Speed 50~150% (브라우저 pitch-preserve 사용)
-- Key -12~+12 semitone 독립 조절 (Web Audio pitch shifter)
-- A-B Loop / ±5초 이동 / Seek / 볼륨
-- 파형 표시(디코딩 가능한 파일)
-- Marker 저장
-- Beatronome 메트로놈 함께 재생
-- Track BPM을 Beatronome BPM으로 적용
-- Speed Trainer: 반복 횟수마다 자동 속도 증가/감소
-- 12-Key Trainer: 반복 횟수마다 자동 전조
-- 로컬 파일은 업로드하지 않으며 해당 기기에서만 재생
+## 한계/주의
+- 현재 파일은 **웹/PWA 배포본**입니다. 과거 제작한 APK/Xcode 프로젝트는 자동으로 업데이트되지 않습니다.
+- 실기기 iPhone/Galaxy의 백그라운드 오디오와 실제 음향 출력 지연은 별도의 장치 테스트가 필요합니다.
+- YouTube는 공식 iframe 플레이어만 제어합니다. Key Shift는 로컬 파일에서만 사용 가능합니다.
+- Cloud Sync의 최초 병합/백업을 개선했지만 여러 기기의 **동시 원자적 편집**은 현재 단일 JSON 행 구조에서 완전히 보장할 수 없습니다. 중요한 프리셋은 백업 파일도 함께 보관하세요.
+- 기존 `styles.css` 전체를 한 번에 제거·재작성하지 않았습니다. 레거시 스타일을 유지한 채 새 변경을 `polish.css`로 분리한 **단계적 구조 개선**입니다.
+- 자체 진단은 브라우저 상태/스케줄러 예약 간격을 확인합니다. 음향 계측장비처럼 하드웨어 출력음을 정확히 측정하지는 않습니다.
 
-### Backing Track · YOUTUBE
-- YouTube URL 로드
-- 공식 IFrame Player API 기반 재생/정지/Seek/±5초
-- 지원 playback rate 선택
-- A-B Loop / Marker
-- 메트로놈 함께 재생
-- YouTube 공식 API 제한으로 Key/Pitch 변경은 지원하지 않음
-- 인터넷 연결 필요
-
-## 사용
-GitHub Pages에 전체 파일을 업로드하고 `index.html`을 실행합니다. 기존 Beatronome 저장소에 덮어쓰기 후 Commit/Push 하면 됩니다.
-
-## 오프라인
-앱 본체와 Basic 클릭음, Backing Track 처리 코드는 Service Worker에 캐시됩니다. 사용자가 선택한 로컬 미디어 파일 자체는 브라우저 보안상 앱 캐시에 자동 복제하지 않습니다. YouTube는 온라인 연결이 필요합니다.
-
-## Third-party
-`THIRD_PARTY_NOTICES.txt` 참고. 로컬 Key Shift의 delay/crossfade 처리 코어는 Chris Wilson의 Jungle 예제를 기반으로 합니다.
+자세한 테스트 항목은 `QA_REPORT.md`를 참고하세요.

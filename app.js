@@ -204,6 +204,18 @@
   let playbackChainIndex=0,playbackChainBarCount=0,visualChainIndex=-1,visualChainBarCount=0;
   let audioCtx=null,master=null,limiter=null,noiseCache=null,scheduler=null,nextNoteTime=0,stepIndex=0,barIndex=0,startTime=0,sessionBaseBpm=state.bpm,tempoDir=1;
   let scheduledMetroSources=[];
+  // v0.15.1 timing telemetry: reports Web Audio scheduling intervals only.
+  // This cannot measure physical speaker/Bluetooth latency.
+  let clockLast=null,clockChecks=0,clockErrorSum=0,clockErrorMax=0,clockRecoveries=0;
+  function trackScheduledClock(time,interval){
+    if(clockLast){
+      const error=(time-clockLast.time)-clockLast.interval;
+      if(Math.abs(error)<1){clockChecks++;clockErrorSum+=Math.abs(error);clockErrorMax=Math.max(clockErrorMax,Math.abs(error));}
+    }
+    clockLast={time,interval};
+  }
+  function getTimingStats(){return {samples:clockChecks,meanIntervalErrorMs:clockChecks?Math.round(clockErrorSum/clockChecks*1000*100)/100:0,maxIntervalErrorMs:Math.round(clockErrorMax*1000*100)/100,recoveries:clockRecoveries,scope:'Web Audio scheduler; not hardware output latency'};}
+
   let wakeLock=null,visualQueue=[],drumVisualQueue=[],rafId=null,tapTimes=[],toastTimer=null,drag=null,dialDragging=false,repeatDelay=null,repeatTimer=null,bpmPersistTimer=null;
   let selectedGenre=state.groove.genre||'Rock';
   let basicBuffers={},basicLoading=null,miniMuted=false;
@@ -211,12 +223,66 @@
   let countInEndTime=0,routineDraft=[],setlistDraft=[],activePractice=null,routineDeadline=0,focusMode=false,stageMode=false;
   let undoState=null,undoTimer=null,setlistEditingId=null,draggedDraftIndex=-1,practiceLogStart=0,practiceLogMode='metronome',tunerLogStart=0,onboardingIndex=0;
 
-  function persist(){localStorage.setItem(SETTINGS_KEY,JSON.stringify(state));if(!cloudApplyingRemote)cloudMarkLocalChange();}
-  function persistPresets(){localStorage.setItem(PRESETS_KEY,JSON.stringify(presets));if(!cloudApplyingRemote)cloudMarkLocalChange();}
+  function persist(){try{localStorage.setItem(SETTINGS_KEY,JSON.stringify(state));}catch(e){console.warn('Settings not saved',e);notify('기기 저장공간을 확인해주세요.');}if(!cloudApplyingRemote)cloudMarkLocalChange();}
+  function persistPresets(){try{localStorage.setItem(PRESETS_KEY,JSON.stringify(presets));}catch(e){console.warn('Presets not saved',e);notify('프리셋 저장공간을 확인해주세요.');}if(!cloudApplyingRemote)cloudMarkLocalChange();}
   function persistCloudMeta(){localStorage.setItem(CLOUD_META_KEY,JSON.stringify(cloudMeta));}
   function cloudConfig(){const c=window.BEATRONOME_SUPABASE||{};return{url:String(c.url||'').replace(/\/$/,''),key:String(c.anonKey||'')}}
   function cloudConfigured(){const c=cloudConfig();return /^https:\/\//.test(c.url)&&!!c.key;}
   function cloudSessionValid(){return !!cloudMeta.session?.access_token&&!!cloudMeta.session?.user?.id;}
+  // v0.15.1: non-destructive cloud merge and local recovery snapshots. No credentials in backups.
+  const CLOUD_SAFETY_KEY='beatronome-cloud-recovery-v1';
+  function cloudSafetyBackup(reason){
+    try{
+      const all=load(CLOUD_SAFETY_KEY,[]);
+      all.unshift({time:Date.now(),reason,settings:JSON.parse(JSON.stringify(state)),presets:JSON.parse(JSON.stringify(presets))});
+      localStorage.setItem(CLOUD_SAFETY_KEY,JSON.stringify(all.slice(0,5)));
+    }catch(e){console.warn('Recovery snapshot unavailable',e);}
+  }
+  function presetStamp(p){return Number(p?.updatedAt||p?.savedAt)||0;}
+  function mergeCloudPresets(local,remote,localDeleted={},remoteDeleted={}){
+    const tombstones={...remoteDeleted};
+    for(const [id,at] of Object.entries(localDeleted||{}))tombstones[id]=Math.max(Number(at)||0,Number(tombstones[id])||0);
+    const byId=new Map();
+    for(const item of [...(Array.isArray(remote)?remote:[]),...(Array.isArray(local)?local:[])]){
+      if(!item||typeof item!=='object')continue;
+      const key=String(item.id||'');if(!key)continue;
+      const current=byId.get(key);
+      if(!current||presetStamp(item)>=presetStamp(current))byId.set(key,item);
+    }
+    const merged=Array.from(byId.values()).filter(item=>(Number(tombstones[item.id])||0)<presetStamp(item));
+    merged.sort((a,b)=>presetStamp(b)-presetStamp(a));
+    return {presets:merged,tombstones};
+  }
+  function cloudSaveMerged(remote,chooseLocalSettings){
+    const before=JSON.stringify({state,presets});
+    cloudSafetyBackup('클라우드 데이터 병합 전 자동 백업');
+    const remoteSettings=remote?.settings||{};
+    const merged=mergeCloudPresets(presets,remote?.presets,state.cloudDeletedPresetIds,remoteSettings.cloudDeletedPresetIds);
+    cloudApplyingRemote=true;
+    state=deepMerge(defaults,chooseLocalSettings?state:remoteSettings);
+    state.cloudDeletedPresetIds=merged.tombstones;
+    presets=merged.presets;
+    localStorage.setItem(SETTINGS_KEY,JSON.stringify(state));
+    localStorage.setItem(PRESETS_KEY,JSON.stringify(presets));
+    cloudApplyingRemote=false;
+    if(before!==JSON.stringify({state,presets})){selectedChainIndex=0;selectedGenre=state.groove.genre||'Rock';ensureNormalPattern();if(state.meterChainEnabled)ensureChain();renderAll();}
+    return before!==JSON.stringify({state,presets});
+  }
+  function cloudDeletePreset(id){
+    if(!id)return;
+    state.cloudDeletedPresetIds=state.cloudDeletedPresetIds||{};
+    state.cloudDeletedPresetIds[id]=Date.now();
+    // Keep tombstones persisted alongside presets even without a connection.
+    persist();
+  }
+  function restoreLatestCloudBackup(){
+    const item=load(CLOUD_SAFETY_KEY,[])[0];if(!item)return false;
+    if(!confirm('이 기기에 남은 최신 동기화 전 백업을 복원할까요? 현재 설정은 별도로 백업됩니다.'))return false;
+    cloudSafetyBackup('백업 복원 직전');
+    cloudApplyingRemote=true;state=deepMerge(defaults,item.settings);presets=Array.isArray(item.presets)?item.presets:[];
+    localStorage.setItem(SETTINGS_KEY,JSON.stringify(state));localStorage.setItem(PRESETS_KEY,JSON.stringify(presets));
+    cloudApplyingRemote=false;cloudMarkLocalChange();renderAll();return true;
+  }
   function cloudMarkLocalChange(){cloudMeta.localChangedAt=Date.now();cloudMeta.dirty=true;persistCloudMeta();renderCloudUi();if(cloudMeta.autoSync)scheduleCloudSync();}
   function scheduleCloudSync(delay=1600){clearTimeout(cloudSyncTimer);if(!cloudSessionValid()||!navigator.onLine||!cloudMeta.autoSync)return;cloudSyncTimer=setTimeout(()=>syncCloud(false).catch(()=>{}),delay);}
   function cloudSetSession(session){if(session?.access_token){const expiresIn=Number(session.expires_in)||3600;cloudMeta.session={access_token:session.access_token,refresh_token:session.refresh_token||cloudMeta.session?.refresh_token||'',expires_at:Date.now()+expiresIn*1000,user:session.user||cloudMeta.session?.user||null};}else cloudMeta.session=null;persistCloudMeta();renderCloudUi();}
@@ -231,9 +297,34 @@
   async function cloudFetchRemote(){const uid=cloudMeta.session.user.id;const q=`/rest/v1/beatronome_sync?user_id=eq.${encodeURIComponent(uid)}&select=user_id,settings,presets,updated_at&limit=1`;const rows=await cloudApi(q);return Array.isArray(rows)&&rows.length?rows[0]:null;}
   async function cloudUploadLocal(){const uid=cloudMeta.session.user.id;const rows=await cloudApi('/rest/v1/beatronome_sync?on_conflict=user_id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=representation'},body:{user_id:uid,settings:state,presets}});return Array.isArray(rows)?rows[0]:rows;}
   function applyCloudRemote(remote){cloudApplyingRemote=true;state=deepMerge(defaults,remote?.settings||{});presets=Array.isArray(remote?.presets)?remote.presets:[];localStorage.setItem(SETTINGS_KEY,JSON.stringify(state));localStorage.setItem(PRESETS_KEY,JSON.stringify(presets));cloudApplyingRemote=false;selectedChainIndex=0;selectedGenre=state.groove.genre||'Rock';ensureNormalPattern();if(state.meterChainEnabled)ensureChain();renderAll();}
-  async function syncCloud(initial=false){if(cloudBusy||!cloudSessionValid())return;if(!navigator.onLine){cloudLastError='오프라인 · 변경사항은 기기에 저장됨';renderCloudUi();return;}cloudBusy=true;cloudLastError='';renderCloudUi();try{let remote=await cloudFetchRemote();if(!remote){remote=await cloudUploadLocal();cloudMeta.dirty=false;}else{const remoteTime=Date.parse(remote.updated_at)||0;const firstSync=!cloudMeta.lastSyncedAt;const remoteChanged=remoteTime>(cloudMeta.lastRemoteUpdatedAt||0);if(firstSync){applyCloudRemote(remote);cloudMeta.dirty=false;}else if(cloudMeta.dirty){if(remoteChanged&&cloudMeta.localChangedAt<remoteTime){applyCloudRemote(remote);cloudMeta.dirty=false;notify('다른 기기의 최신 설정을 불러왔습니다.');}else{remote=await cloudUploadLocal();cloudMeta.dirty=false;}}else if(remoteChanged){applyCloudRemote(remote);}}
-      const remoteTime=Date.parse(remote?.updated_at)||Date.now();cloudMeta.lastSyncedAt=Date.now();cloudMeta.lastRemoteUpdatedAt=remoteTime;persistCloudMeta();renderPresets();if(!initial)notify('클라우드 동기화 완료');
-    }catch(e){const msg=cloudFriendlyError(e);cloudLastError=msg;console.warn('Beatronome cloud sync failed',e);if(msg==='SETUP_REQUIRED'){}else if(!initial)notify(msg);}finally{cloudBusy=false;renderCloudUi();}}
+  async function syncCloud(initial=false){
+    if(cloudBusy||!cloudSessionValid())return;
+    if(!navigator.onLine){cloudLastError='오프라인 · 변경사항은 기기에 저장됨';renderCloudUi();return;}
+    cloudBusy=true;cloudLastError='';renderCloudUi();
+    try{
+      let remote=await cloudFetchRemote();
+      if(!remote){cloudSafetyBackup('최초 클라우드 업로드 전');remote=await cloudUploadLocal();cloudMeta.dirty=false;}
+      else {
+        const remoteTime=Date.parse(remote.updated_at)||0;
+        const firstSync=!cloudMeta.lastSyncedAt;
+        const remoteChanged=remoteTime>(cloudMeta.lastRemoteUpdatedAt||0);
+        const localDirty=!!cloudMeta.dirty;
+        if(firstSync||remoteChanged||localDirty){
+          // On first sign-in NEVER throw away local presets; merge by stable IDs.
+          // If a device has unsynced edits, retain its settings; all other presets
+          // and deleted-item tombstones are merged before upload.
+          const chooseLocal=localDirty&&(!firstSync||cloudMeta.localChangedAt>0);
+          const mergedChanged=cloudSaveMerged(remote,chooseLocal);
+          if(firstSync||localDirty||(remoteChanged&&mergedChanged)){remote=await cloudUploadLocal();}
+          cloudMeta.dirty=false;
+          if(firstSync&&chooseLocal)notify('기기 설정과 클라우드 프리셋을 안전하게 병합했습니다.');
+        }
+      }
+      cloudMeta.lastSyncedAt=Date.now();cloudMeta.lastRemoteUpdatedAt=Date.parse(remote?.updated_at)||Date.now();persistCloudMeta();renderPresets();
+      if(!initial)notify('클라우드 동기화 완료');
+    }catch(e){cloudLastError=cloudFriendlyError(e);console.warn('Beatronome cloud sync failed',e);if(!initial&&cloudLastError!=='SETUP_REQUIRED')notify(cloudLastError);}
+    finally{cloudBusy=false;renderCloudUi();}
+  }
   function renderCloudUi(){setTimeout(()=>{const t=$('cloudTopBadge');if(t){t.className='cloud-top '+(cloudBusy?'syncing':cloudSessionValid()?(cloudMeta.dirty?'dirty':'synced'):'');t.title=cloudSessionValid()?(cloudMeta.dirty?'Cloud: 로컬 변경 있음':'Cloud: 동기화 완료'):'Cloud: 로그인 안 됨';}},0);if(!$('cloudStatusText'))return;const signed=cloudSessionValid(),out=$('cloudSignedOut'),inn=$('cloudSignedIn'),status=$('cloudStatusText'),last=$('cloudLastSync'),badge=$('cloudStateBadge'),hint=$('cloudSetupHint');out.classList.toggle('hidden',signed);inn.classList.toggle('hidden',!signed);hint.classList.toggle('hidden',cloudLastError!=='SETUP_REQUIRED');if(!cloudConfigured()){status.textContent='Cloud 프로젝트 설정이 필요합니다.';last.textContent='cloud-config.js를 확인하세요.';return;}if(!signed){status.textContent='로그인하면 폰·Mac·태블릿에서 설정과 프리셋을 동기화합니다.';last.textContent='로그인하지 않아도 로컬/오프라인 사용 가능';return;}$('cloudUserEmail').textContent=cloudMeta.session.user?.email||'Beatronome User';$('cloudAutoSync').checked=cloudMeta.autoSync!==false;let text='모든 설정 동기화 완료',cls='';if(cloudBusy){text='동기화 중…';cls='syncing';}else if(!navigator.onLine){text='오프라인';cls='dirty';}else if(cloudMeta.dirty){text='기기 변경사항 저장됨';cls='dirty';}if(cloudLastError&&cloudLastError!=='SETUP_REQUIRED')text=cloudLastError;status.textContent=text;badge.textContent=cloudBusy?'SYNCING':cloudMeta.dirty?'LOCAL':'SYNCED';badge.className=cls;last.textContent=cloudMeta.lastSyncedAt?`마지막 동기화 ${new Date(cloudMeta.lastSyncedAt).toLocaleString('ko-KR')}`:'아직 동기화되지 않음';}
 
   const QUICK_ACTIONS={
@@ -275,9 +366,9 @@
   function restoreUndo(){}
   function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
   function setRangeStyle(el,min,max,val){const pct=(val-min)/(max-min)*100;el.style.setProperty('--pct',`${pct}%`);}
-  function snapshotState(){const copy=JSON.parse(JSON.stringify(state));delete copy.library;return copy;}
-  function applySnapshot(snapshot,{capture=false,label='설정 불러오기'}={}){if(capture)captureUndo(label);const library=state.library,uiPractice={...state.practice},ui={...state.ui};state=deepMerge(defaults,{...snapshot,library});state.library=library;state.practice.simpleMode=uiPractice.simpleMode;state.practice.resumeSession=uiPractice.resumeSession||null;state.ui={...state.ui,interfaceSize:ui.interfaceSize,oneHand:ui.oneHand,stageTapPlay:ui.stageTapPlay,audioLatencyMs:ui.audioLatencyMs,lastTab:ui.lastTab,bpmLocked:ui.bpmLocked};persist();selectedChainIndex=0;selectedGenre=state.groove.genre||'Rock';ensureNormalPattern();if(state.meterChainEnabled)ensureChain();renderAll();}
-  function saveCurrentPreset(name){const clean=(name||'').trim()||`Preset ${presets.length+1}`;presets.unshift({id:uid(),name:clean,...snapshotState(),savedAt:Date.now()});persistPresets();renderPresets();renderQuickPresets();notify('프리셋을 저장했습니다.');return presets[0];}
+  function snapshotState(){const copy=JSON.parse(JSON.stringify(state));delete copy.library;delete copy.cloudDeletedPresetIds;return copy;}
+  function applySnapshot(snapshot,{capture=false,label='설정 불러오기'}={}){if(capture)captureUndo(label);const library=state.library,cloudDeletedPresetIds=state.cloudDeletedPresetIds,uiPractice={...state.practice},ui={...state.ui};state=deepMerge(defaults,{...snapshot,library});state.library=library;state.cloudDeletedPresetIds=cloudDeletedPresetIds;state.practice.simpleMode=uiPractice.simpleMode;state.practice.resumeSession=uiPractice.resumeSession||null;state.ui={...state.ui,interfaceSize:ui.interfaceSize,oneHand:ui.oneHand,stageTapPlay:ui.stageTapPlay,audioLatencyMs:ui.audioLatencyMs,lastTab:ui.lastTab,bpmLocked:ui.bpmLocked};persist();selectedChainIndex=0;selectedGenre=state.groove.genre||'Rock';ensureNormalPattern();if(state.meterChainEnabled)ensureChain();renderAll();}
+  function saveCurrentPreset(name){const clean=(name||'').trim()||`Preset ${presets.length+1}`;presets.unshift({id:uid(),name:clean,...snapshotState(),savedAt:Date.now(),updatedAt:Date.now()});persistPresets();renderPresets();renderQuickPresets();notify('프리셋을 저장했습니다.');return presets[0];}
   function quickSaveCurrent(){const suggested=`${state.bpm} BPM · ${getSelectedMeter().beats}/${getSelectedMeter().denominator}`;const name=window.prompt('프리셋 이름을 입력하세요.',suggested);if(name!==null)saveCurrentPreset(name);}
   function pulseBeat(){if(state.practice.flash){document.body.classList.remove('beat-flash');void document.body.offsetWidth;document.body.classList.add('beat-flash');setTimeout(()=>document.body.classList.remove('beat-flash'),130);}if(state.practice.vibrate&&navigator.vibrate){try{navigator.vibrate(currentBeat===0?18:8);}catch{}}}
 
@@ -457,6 +548,16 @@
     });
     return best;
   }
+  let tunerPitchHistory=[];
+  function stabilizeTunerFrequency(freq){
+    if(!Number.isFinite(freq)||freq<=0){tunerPitchHistory=[];return null;}
+    const last=tunerPitchHistory.at(-1);
+    // Break the window on actual note changes; do not smear across notes.
+    if(last&&Math.abs(1200*Math.log2(freq/last))>180)tunerPitchHistory=[];
+    tunerPitchHistory.push(freq);if(tunerPitchHistory.length>5)tunerPitchHistory.shift();
+    const sorted=[...tunerPitchHistory].sort((a,b)=>a-b);
+    return sorted[Math.floor(sorted.length/2)];
+  }
   function updateTunerDisplay(freq){
     if(!freq){$('tunerFreq').textContent='0.0';$('tunerTargetText').textContent='소리를 기다리는 중';return;}
     const target=nearestTunerTarget(freq),cents=clamp(1200*Math.log2(freq/target.freq),-99,99),fullDisplay=noteName(target.midi),pitchClass=NOTE_NAMES[(target.midi%12+12)%12];
@@ -478,16 +579,16 @@
   }
   function renderTunerStringsOnly(){if(state.tuner.instrument==='chromatic')return;$$('#tunerStrings .tuner-string').forEach((b,i)=>b.classList.toggle('active',i===tunerActiveString));}
   async function startTunerMic(){
-    if(tunerStream)return;if(playing)stop();tunerLogStart=Date.now();if(!navigator.mediaDevices?.getUserMedia){notify('이 브라우저는 마이크 튜너를 지원하지 않습니다.');return;}try{await ensureAudio();configureIOSAudioSession('play-and-record');tunerStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});tunerSource=audioCtx.createMediaStreamSource(tunerStream);tunerAnalyser=audioCtx.createAnalyser();tunerAnalyser.fftSize=state.tuner.instrument.startsWith('bass')?16384:8192;tunerAnalyser.smoothingTimeConstant=.1;tunerSource.connect(tunerAnalyser);$('tunerMicState').textContent='MIC ON';$('tunerMicState').classList.add('on');$('toggleTunerMic').textContent='튜너 정지';$('toggleTunerMic').classList.add('on');const buf=new Float32Array(tunerAnalyser.fftSize);let last=0;const loop=ts=>{if(!tunerStream)return;if(ts-last>85){tunerAnalyser.getFloatTimeDomainData(buf);updateTunerDisplay(detectPitch(buf,audioCtx.sampleRate));last=ts;}tunerRaf=requestAnimationFrame(loop);};tunerRaf=requestAnimationFrame(loop);}catch(e){console.warn(e);notify('마이크 권한을 허용해주세요.');stopTunerMic();}
+    if(tunerStream)return;if(playing)stop();tunerLogStart=Date.now();if(!navigator.mediaDevices?.getUserMedia){notify('이 브라우저는 마이크 튜너를 지원하지 않습니다.');return;}try{await ensureAudio();configureIOSAudioSession('play-and-record');tunerStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});tunerSource=audioCtx.createMediaStreamSource(tunerStream);tunerAnalyser=audioCtx.createAnalyser();tunerAnalyser.fftSize=state.tuner.instrument.startsWith('bass')?16384:8192;tunerAnalyser.smoothingTimeConstant=.1;tunerSource.connect(tunerAnalyser);$('tunerMicState').textContent='MIC ON';$('tunerMicState').classList.add('on');$('toggleTunerMic').textContent='튜너 정지';$('toggleTunerMic').classList.add('on');const buf=new Float32Array(tunerAnalyser.fftSize);let last=0;const loop=ts=>{if(!tunerStream)return;if(ts-last>(state.tuner.instrument.startsWith('bass')?115:95)){tunerAnalyser.getFloatTimeDomainData(buf);updateTunerDisplay(stabilizeTunerFrequency(detectPitch(buf,audioCtx.sampleRate)));last=ts;}tunerRaf=requestAnimationFrame(loop);};tunerRaf=requestAnimationFrame(loop);}catch(e){console.warn(e);notify('마이크 권한을 허용해주세요.');stopTunerMic();}
   }
-  function stopTunerMic(){if(tunerLogStart){addPracticeSeconds('tuner',Math.round((Date.now()-tunerLogStart)/1000));tunerLogStart=0;}configureIOSAudioSession('playback');if(tunerRaf)cancelAnimationFrame(tunerRaf);tunerRaf=null;try{tunerSource?.disconnect();}catch{}tunerSource=null;tunerAnalyser=null;if(tunerStream)tunerStream.getTracks().forEach(t=>t.stop());tunerStream=null;tunerActiveString=-1;if($('tunerMicState')){$('tunerMicState').textContent='MIC OFF';$('tunerMicState').classList.remove('on');$('toggleTunerMic').textContent='마이크로 튜닝 시작';$('toggleTunerMic').classList.remove('on');$('tunerTargetText').textContent='목표음을 선택하거나 마이크를 시작하세요';$('tunerNeedle').style.left='50%';$('tunerNeedle').classList.remove('in-tune');$('tunerCents').textContent='0 cents';renderTunerStringsOnly();}}
+  function stopTunerMic(){if(tunerLogStart){addPracticeSeconds('tuner',Math.round((Date.now()-tunerLogStart)/1000));tunerLogStart=0;}configureIOSAudioSession('playback');if(tunerRaf)cancelAnimationFrame(tunerRaf);tunerRaf=null;tunerPitchHistory=[];try{tunerSource?.disconnect();}catch{}tunerSource=null;tunerAnalyser=null;if(tunerStream)tunerStream.getTracks().forEach(t=>t.stop());tunerStream=null;tunerActiveString=-1;if($('tunerMicState')){$('tunerMicState').textContent='MIC OFF';$('tunerMicState').classList.remove('on');$('toggleTunerMic').textContent='마이크로 튜닝 시작';$('toggleTunerMic').classList.remove('on');$('tunerTargetText').textContent='목표음을 선택하거나 마이크를 시작하세요';$('tunerNeedle').style.left='50%';$('tunerNeedle').classList.remove('in-tune');$('tunerCents').textContent='0 cents';renderTunerStringsOnly();}}
 
   function setMiniMode(on){document.body.classList.toggle('mini-mode',!!on);$('settingsModal')?.classList.add('hidden');renderCore();}
   function toggleMiniMute(){miniMuted=!miniMuted;if(master&&audioCtx)master.gain.setTargetAtTime(miniMuted?0:state.outputBoost,audioCtx.currentTime,.015);renderCore();}
 
   function renderPresets(){
     renderQuickPresets();const list=$('presetList');list.innerHTML='';if(!presets.length){list.innerHTML='<div class="empty-state"><div class="big">☆</div><strong>아직 저장된 프리셋이 없습니다.</strong><span>Meter Chain · Training · Groove 패턴까지 함께 저장됩니다.</span></div>';return;}
-    presets.forEach(p=>{const n=deepMerge(defaults,p),a=document.createElement('article');a.className='preset-card card';const detail=n.meterChainEnabled&&n.meterChain.length?n.meterChain.slice(0,4).map(m=>`${m.beats}/${m.denominator}${m.repeatBars>1?`×${m.repeatBars}`:''}`).join(' → ')+(n.meterChain.length>4?' → …':''):`${n.beatsPerBar}/${n.denominator}`;const grooveText=n.groove.genreEnabled===false?'Metronome Only':`${n.groove.genre}/${n.groove.selectedName||'Custom'} · ${n.playbackMode.toUpperCase()}`;a.innerHTML=`<button class="preset-main"><div class="preset-bpm">${n.bpm}<small>BPM</small></div><div class="preset-copy"><strong>${escapeHtml(p.name)}${cloudSessionValid()?'<i class="preset-cloud">☁</i>':''}</strong><span>${detail} · ${grooveText}</span></div></button><button class="danger-icon">×</button>`;a.querySelector('.preset-main').onclick=()=>loadPreset(p);a.querySelector('.danger-icon').onclick=()=>{presets=presets.filter(x=>x.id!==p.id);persistPresets();renderPresets();};list.appendChild(a);});
+    presets.forEach(p=>{const n=deepMerge(defaults,p),a=document.createElement('article');a.className='preset-card card';const detail=n.meterChainEnabled&&n.meterChain.length?n.meterChain.slice(0,4).map(m=>`${m.beats}/${m.denominator}${m.repeatBars>1?`×${m.repeatBars}`:''}`).join(' → ')+(n.meterChain.length>4?' → …':''):`${n.beatsPerBar}/${n.denominator}`;const grooveText=n.groove.genreEnabled===false?'Metronome Only':`${n.groove.genre}/${n.groove.selectedName||'Custom'} · ${n.playbackMode.toUpperCase()}`;a.innerHTML=`<button class="preset-main"><div class="preset-bpm">${n.bpm}<small>BPM</small></div><div class="preset-copy"><strong>${escapeHtml(p.name)}${cloudSessionValid()?'<i class="preset-cloud">☁</i>':''}</strong><span>${detail} · ${grooveText}</span></div></button><button class="danger-icon">×</button>`;a.querySelector('.preset-main').onclick=()=>loadPreset(p);a.querySelector('.danger-icon').onclick=()=>{cloudDeletePreset(p.id);presets=presets.filter(x=>x.id!==p.id);persistPresets();renderPresets();};list.appendChild(a);});
   }
   function renderAll(){renderCore();renderTraining();renderSound();renderGroove();renderTuner();renderPresets();renderPractice();renderUiExtras();renderKnowledgeMemory();}
 
@@ -598,6 +699,7 @@
   function scheduleStep(time){
     const t=state.training,meter=getPlaybackMeter(),subInfo=SUBDIVISIONS[state.subdivision]||SUBDIVISIONS[1],count=subInfo.count,chainIndex=state.meterChainEnabled?playbackChainIndex:-1,chainBar=state.meterChainEnabled?playbackChainBarCount:0,step=stepIndex,beat=Math.floor(step/count),sub=step%count,isMain=sub===0,pat=meter.pattern[beat]||'normal',subAudible=!!subInfo.mask[sub];
     const beatDuration=(60/state.bpm)*(4/meter.denominator);
+    trackScheduledClock(time,beatDuration/count);
     if(step===0)scheduleDrumBar(time,beatDuration*meter.beats);
     let audible=pat!=='mute'&&subAudible,trainingMuted=false;if(t.internalEnabled){const cycle=Math.max(1,t.soundBars+t.muteBars),phase=barIndex%cycle;if(phase>=t.soundBars)trainingMuted=true;}
     let mutePct=t.randomMuteEnabled?t.randomMute:0;if(t.gradualEnabled){const sec=Math.max(0,audioCtx.currentTime-startTime),ratio=clamp(sec/Math.max(1,t.gradualSeconds),0,1);mutePct=Math.max(mutePct,t.gradualTarget*ratio);}if(audible&&!trainingMuted&&mutePct>0&&Math.random()*100<mutePct)trainingMuted=true;audible=audible&&!trainingMuted;
@@ -617,10 +719,10 @@
     return meter;
   }
 
-  async function start(){configureIOSAudioSession('playback',true);
+  async function start(){clockLast=null;clockChecks=0;clockErrorSum=0;clockErrorMax=0;clockRecoveries=0;configureIOSAudioSession('playback',true);
     if(tunerStream)stopTunerMic();await ensureAudio();ensureNormalPattern();if(state.meterChainEnabled)ensureChain();stepIndex=0;barIndex=0;playbackChainIndex=0;playbackChainBarCount=0;visualChainIndex=state.meterChainEnabled?0:-1;visualChainBarCount=0;selectedChainIndex=state.meterChainEnabled?0:selectedChainIndex;sessionBaseBpm=state.bpm;tempoDir=state.training.tempoMode==='down'?-1:1;const firstTime=audioCtx.currentTime+.07,firstMeter=getPlaybackMeter(),firstBeatDur=(60/state.bpm)*(4/firstMeter.denominator),ci=state.practice.countInBars||0;visualQueue=[];drumVisualQueue=[];if(ci>0){for(let b=0;b<ci;b++){for(let beat=0;beat<firstMeter.beats;beat++){const t=firstTime+(b*firstMeter.beats+beat)*firstBeatDur;rememberMetroSources(t,synthClick(t,state.sound,beat===0,state.volume,beat===0?'strong':'normal',1));visualQueue.push({time:t,beat,chainIndex:-1,chainBar:0,countIn:true});}}}nextNoteTime=firstTime+ci*firstMeter.beats*firstBeatDur;countInEndTime=ci>0?nextNoteTime:0;startTime=nextNoteTime;elapsed=0;playing=true;currentBeat=-1;currentDrumStep=-1;requestWakeLock();startPracticeLog(!state.groove.genreEnabled||state.playbackMode==='metro'?'metronome':'groove');
     const LOOKAHEAD_SEC=.26,LATE_RECOVERY_SEC=.10,TICK_MS=18;
-    const tick=()=>{if(!playing||!audioCtx)return;const now=audioCtx.currentTime;if(nextNoteTime<now-LATE_RECOVERY_SEC){nextNoteTime=now+.035;visualQueue=visualQueue.filter(e=>e.time>now-.02);drumVisualQueue=drumVisualQueue.filter(e=>e.time>now-.02);}while(nextNoteTime<now+LOOKAHEAD_SEC){const m=scheduleStep(nextNoteTime),beatDuration=(60/state.bpm)*(4/m.denominator),subInfo=SUBDIVISIONS[state.subdivision]||SUBDIVISIONS[1];nextNoteTime+=beatDuration/subInfo.count;}scheduler=setTimeout(tick,TICK_MS);};tick();renderCore();startVisualLoop();
+    const tick=()=>{if(!playing||!audioCtx)return;const now=audioCtx.currentTime;if(nextNoteTime<now-LATE_RECOVERY_SEC){clockRecoveries++;clockLast=null;nextNoteTime=now+.035;visualQueue=visualQueue.filter(e=>e.time>now-.02);drumVisualQueue=drumVisualQueue.filter(e=>e.time>now-.02);}while(nextNoteTime<now+LOOKAHEAD_SEC){const m=scheduleStep(nextNoteTime),beatDuration=(60/state.bpm)*(4/m.denominator),subInfo=SUBDIVISIONS[state.subdivision]||SUBDIVISIONS[1];nextNoteTime+=beatDuration/subInfo.count;}scheduler=setTimeout(tick,TICK_MS);};tick();renderCore();startVisualLoop();
   }
   function stop(){stopPracticeLog();playing=false;if(scheduler){clearInterval(scheduler);clearTimeout(scheduler);}scheduler=null;cancelFutureMetroSources();scheduledMetroSources=[];cancelAnimationFrame(rafId);stepIndex=0;barIndex=0;playbackChainIndex=0;playbackChainBarCount=0;visualChainIndex=-1;visualChainBarCount=0;visualQueue=[];drumVisualQueue=[];currentBeat=-1;currentDrumStep=-1;elapsed=0;countInEndTime=0;renderCore();updateDrumStepVisual();}
   function startVisualLoop(){
@@ -710,7 +812,7 @@
   function knowledgePractice(item){captureUndo('Knowledge 연습 시작');state.groove.genreEnabled=false;state.playbackMode='metro';state.bpm=item?.bpm||100;state.subdivision=item?.type==='scale'?2:1;state.practice.countInBars=1;persist();renderAll();switchTab('metronome');notify(`${item?.label||'이론'} · ${state.bpm} BPM 연습`);}
   window.BeatronomeBridge={recordKnowledge:knowledgeRecord,toggleKnowledgeFavorite:knowledgeToggleFavorite,startKnowledgePractice:knowledgePractice,isKnowledgeFavorite:id=>(state.library.knowledgeFavorites||[]).some(x=>x.id===id),refreshKnowledgeMemory:renderKnowledgeMemory};
 
-  const APP_VERSION='0.14.3';
+  const APP_VERSION='0.15.1';
   let swRegistration=null;
   let offlinePreparing=false;
   let updateWorker=null;
@@ -775,7 +877,7 @@
       if(status&&!status.ready&&navigator.onLine){await prepareOffline(false);status=await refreshOfflineStatus();}
     }catch(e){console.warn('Beatronome service worker registration failed',e);setOfflineUi(null);setUpdateUi(navigator.onLine?'latest':'offline');}
   }
-  function resetSettings(){if(playing)stop();if(tunerStream)stopTunerMic();const library=state.library;state=deepMerge(defaults,{library});selectedChainIndex=0;selectedGenre='Rock';persist();renderAll();notify('기본값으로 초기화했습니다.');}
+  function resetSettings(){if(playing)stop();if(tunerStream)stopTunerMic();const library=state.library,cloudDeletedPresetIds=state.cloudDeletedPresetIds;state=deepMerge(defaults,{library,cloudDeletedPresetIds});selectedChainIndex=0;selectedGenre='Rock';persist();renderAll();notify('기본값으로 초기화했습니다.');}
 
   for(let i=1;i<=16;i++){const o=document.createElement('option');o.value=o.textContent=i;$('beatsPerBar').appendChild(o);}
   $('beatsPerBar').onchange=e=>{const next=Number(e.target.value);if(playing)stop();captureUndo('박자 변경');setSelectedMeterField('beats',next);renderCore();};
@@ -851,7 +953,11 @@
     setBpm:(value)=>userSetBpm(clamp(Number(value)||state.bpm,BPM_MIN,BPM_MAX),{capture:true}),
     switchTab:(name)=>switchTab(name),
     notify:(message)=>notify(message),
-    getVersion:()=>APP_VERSION
+    getVersion:()=>APP_VERSION,
+    getDebugSnapshot:()=>({version:APP_VERSION,playing,bpm:state.bpm,meter:`${getPlaybackMeter().beats}/${getPlaybackMeter().denominator}`,subdivision:state.subdivision,tab:state.ui.lastTab,tunerActive:!!tunerStream,audioState:audioCtx?.state||'not-created',cloudConnected:cloudSessionValid(),offline:!navigator.onLine}),
+    restoreCloudSafetyBackup:()=>restoreLatestCloudBackup(),
+    getRecoveryCount:()=>load(CLOUD_SAFETY_KEY,[]).length,
+    getTimingStats:()=>getTimingStats()
   };
 
   // Desktop scrolling uses the browser's native wheel/trackpad behavior.
@@ -860,7 +966,7 @@
   $('cloudLogin').onclick=cloudSignIn;$('cloudSignup').onclick=cloudSignUp;$('cloudSyncNow').onclick=()=>syncCloud(false);$('cloudLogout').onclick=cloudLogout;$('cloudAutoSync').onchange=e=>{cloudMeta.autoSync=!!e.target.checked;persistCloudMeta();renderCloudUi();if(cloudMeta.autoSync)scheduleCloudSync(200);};
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){configureIOSAudioSession('playback',true);requestWakeLock();refreshOfflineStatus();checkForAppUpdate();if(cloudSessionValid()&&navigator.onLine)scheduleCloudSync(300);}else{wakeLock=null;}});window.addEventListener('pageshow',()=>{configureIOSAudioSession('playback',true);requestWakeLock();refreshOfflineStatus();checkForAppUpdate();renderCloudUi();if(cloudSessionValid()&&navigator.onLine)scheduleCloudSync(300);});window.addEventListener('online',()=>{refreshOfflineStatus().then(st=>{if(st&&!st.ready)prepareOffline(false);});checkForAppUpdate();if(cloudSessionValid())syncCloud(false);});window.addEventListener('offline',()=>{refreshOfflineStatus();setUpdateUi(updateReady?'ready':'offline');});window.addEventListener('beforeunload',()=>{releaseWakeLock();if(bpmPersistTimer){clearTimeout(bpmPersistTimer);bpmPersistTimer=null;persist();}stopPracticeLog();if(scheduler)clearInterval(scheduler);if(tunerStream)stopTunerMic();if(audioCtx)audioCtx.close();});
 
-  ensureNormalPattern();if(state.meterChainEnabled)ensureChain();renderAll();renderCloudUi();setOfflineUi(null);requestWakeLock();document.addEventListener('pointerdown',requestWakeLock,{once:true,passive:true});restoreResumeSession();const initialTab=document.getElementById(`tab${(state.ui.lastTab||'metronome')[0].toUpperCase()+(state.ui.lastTab||'metronome').slice(1)}`)?state.ui.lastTab:'metronome';switchTab(initialTab);registerOfflineWorker();if(!onboardingDisabled()&&!sessionStorage.getItem('beatronome-onboarding-deferred'))setTimeout(openOnboarding,450);else setTimeout(()=>notify('지난 세션 설정을 복원했습니다.'),350);if(cloudSessionValid()&&navigator.onLine){ensureCloudSession().then(ok=>{renderCloudUi();if(ok)syncCloud(true);});}
+  ensureNormalPattern();if(state.meterChainEnabled)ensureChain();renderAll();renderCloudUi();setOfflineUi(null);requestWakeLock();document.addEventListener('pointerdown',requestWakeLock,{once:true,passive:true});restoreResumeSession();const initialTab=document.getElementById(`tab${(state.ui.lastTab||'metronome')[0].toUpperCase()+(state.ui.lastTab||'metronome').slice(1)}`)?state.ui.lastTab:'metronome';switchTab(initialTab);registerOfflineWorker();if(!onboardingDisabled()&&!sessionStorage.getItem('beatronome-onboarding-deferred'))setTimeout(openOnboarding,450);else if(localStorage.getItem(SETTINGS_KEY))setTimeout(()=>notify('지난 세션 설정을 복원했습니다.'),350);if(cloudSessionValid()&&navigator.onLine){ensureCloudSession().then(ok=>{renderCloudUi();if(ok)syncCloud(true);});}
 })();
 
 

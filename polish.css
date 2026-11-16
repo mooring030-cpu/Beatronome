@@ -1,0 +1,62 @@
+/* Beatronome 0.15.1 – consolidated layout design tokens and UI guardrails.
+   This file deliberately loads after the legacy stylesheet so fixes have one home. */
+:root{--quality-gold:#dfbd75;--quality-teal:#68b7b1;--quality-panel:#101d2a;--quality-line:rgba(223,189,117,.22);--touch-target:44px}
+*,*::before,*::after{box-sizing:border-box}
+#app,main,.tab-page,.card,.settings-sheet,.backing-card{min-width:0;max-width:100%}
+.tab-page:not(.active){display:none!important}
+button,select,input[type=button],.settings-category-nav button{min-height:var(--touch-target)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--quality-gold);outline-offset:2px}
+/* Settings – category choice is consistent on laptop and phone. */
+.settings-category-nav{position:sticky;top:70px;z-index:8;display:flex;gap:7px;padding:6px 0 12px;background:#0d1721;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin}
+.settings-category-nav button{flex:0 0 auto;border:1px solid var(--quality-line);color:#c9d0d7;background:#142331;border-radius:12px;padding:9px 12px;font-weight:650;font-size:13px;white-space:nowrap}
+.settings-category-nav button.active{background:var(--quality-gold);color:#15212a;border-color:var(--quality-gold)}
+.settings-category-panel{display:none;min-width:0}
+.settings-category-panel.active{display:block}
+.settings-category-intro{margin:8px 0 14px;color:#aebbc6;font-size:13px;line-height:1.6}
+.settings-category-panel .settings-item{min-width:0;grid-template-columns:minmax(22px,35px) minmax(0,1fr) auto}
+.settings-category-panel .settings-item>div{min-width:0;overflow-wrap:break-word;word-break:keep-all}
+.settings-category-panel .settings-item>div>span{white-space:normal;line-height:1.6}
+.settings-category-panel .settings-item>select{max-width:100%;width:100%}
+.settings-category-panel .settings-item:has(> select){grid-template-columns:35px minmax(0,1fr)}
+.settings-category-panel .settings-item:has(> select)>select{grid-column:2}
+.settings-category-panel .version-note{font-size:12px;line-height:1.65}
+/* The header is always reachable while the content owns vertical scrolling. */
+.modal-backdrop{isolation:isolate}
+.settings-sheet,.core-settings-sheet{overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
+.settings-sheet>.page-title{position:sticky;top:0;z-index:10;background:#0d1721;border-bottom:1px solid rgba(223,189,117,.10);padding-bottom:12px}
+/* Backing: consistent, compact first screen; A/B waveform touch selection. */
+.backing-wave-wrap{touch-action:pan-y;position:relative;cursor:crosshair;user-select:none}
+.backing-wave-wrap.loop-dragging{outline:2px solid var(--quality-gold);outline-offset:-2px}
+.backing-wave-wrap.loop-dragging::after{content:'A–B 구간 선택';position:absolute;right:8px;top:8px;color:var(--quality-gold);background:#08131dcc;border-radius:8px;padding:4px 7px;font-size:11px;pointer-events:none}
+.backing-recent{border:1px solid var(--quality-line);border-radius:14px;padding:11px;background:rgba(5,14,23,.4)}
+.backing-recent>strong{display:block;color:var(--quality-gold);font-size:12px;letter-spacing:.05em;margin-bottom:7px}
+.backing-recent-list{display:flex;gap:7px;overflow-x:auto;min-width:0}
+.backing-recent-list button{max-width:240px;flex:0 0 auto;border:1px solid var(--quality-line);border-radius:10px;background:#162735;color:#dce3e9;padding:8px 11px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;font-size:12px}
+.backing-loop-tip{color:#a8b6bf;font-size:12px;line-height:1.55;margin:0}
+.backing-explain{padding:9px 12px;border-left:3px solid var(--quality-teal);color:#a8b6bf;font-size:12px;line-height:1.55;background:rgba(104,183,177,.07);border-radius:0 8px 8px 0}
+/* Quality/diagnostics panel */
+.quality-report{display:grid;gap:11px}
+.quality-actions{display:flex;flex-wrap:wrap;gap:9px}
+.quality-actions button{border:1px solid var(--quality-line);border-radius:11px;background:#172838;color:#f0dfba;padding:8px 13px;font-weight:650}
+.quality-actions button.primary{background:var(--quality-gold);color:#0d1721}
+.quality-result{white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;font:12px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;border:1px solid var(--quality-line);border-radius:12px;background:#07131f;color:#d6e4e3;max-height:280px;overflow:auto;padding:12px;min-height:90px}
+.quality-note{color:#aebac4;font-size:12px;line-height:1.6}
+.quality-chip{display:inline-block;background:rgba(104,183,177,.15);border:1px solid rgba(104,183,177,.32);color:#97d5cf;border-radius:9px;padding:5px 8px;font-size:12px}
+@media(max-width:700px){
+  /* Modal content scrolls, never the page underneath. */
+  .settings-sheet,.core-settings-sheet{height:min(90dvh,920px)!important;max-height:90dvh!important;overflow-y:auto!important;touch-action:pan-y!important;scrollbar-gutter:stable}
+  .settings-category-nav{top:76px;padding-top:8px}
+  .settings-category-panel .settings-item{display:grid!important;grid-template-columns:25px minmax(0,1fr) auto!important;align-items:start;gap:10px!important}
+  .settings-category-panel .settings-item>div{grid-column:2;min-width:0!important}
+  .settings-category-panel .settings-item>select{grid-column:2 / -1;width:100%!important;min-width:0!important}
+  .settings-category-panel .settings-item>.switch{grid-column:3;grid-row:1}
+  .settings-category-panel .settings-item.cloud-settings-item>div{grid-column:2 / -1}
+  .settings-category-panel .settings-item>.outline-small{grid-column:2 / -1;justify-self:start}
+  .settings-category-panel .settings-item>.settings-icon{grid-column:1}
+  .quality-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .quality-actions button{min-width:0}
+  .backing-recent-list button{max-width:170px}
+  .backing-loop-panel{display:grid;grid-template-columns:1fr}
+  .backing-loop-buttons button{font-size:11px!important;min-height:44px}
+}
+@media(prefers-reduced-motion:reduce){.settings-sheet,.backing-card,.quality-report{scroll-behavior:auto!important}}

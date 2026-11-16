@@ -2,11 +2,26 @@
   'use strict';
   const $ = id => document.getElementById(id);
   if (!$('backingTrackCard')) return;
-  const STORE_KEY='beatronome-backing-v1';
-  const defaults={source:'local',speed:100,key:0,volume:90,loopA:null,loopB:null,loopOn:false,trackBpm:120,metroTogether:false,markers:{},youtube:{url:'',videoId:'',rate:1,loopA:null,loopB:null,loopOn:false,metroTogether:false},trainer:{speedOn:false,speedStart:70,speedEnd:100,speedStep:5,speedLoops:2,keyOn:false,keyStart:0,keyStep:1,keyLoops:2}};
+  const STORE_KEY='beatronome-backing-v1'; // Keep the existing storage key to preserve prior settings.
+  const defaults={recentFiles:[],fileProfiles:{},source:'local',speed:100,key:0,volume:90,loopA:null,loopB:null,loopOn:false,trackBpm:120,metroTogether:false,markers:{},youtube:{url:'',videoId:'',rate:1,loopA:null,loopB:null,loopOn:false,metroTogether:false},trainer:{speedOn:false,speedStart:70,speedEnd:100,speedStep:5,speedLoops:2,keyOn:false,keyStart:0,keyStep:1,keyLoops:2}};
   const load=()=>{try{return {...defaults,...JSON.parse(localStorage.getItem(STORE_KEY)||'{}'),youtube:{...defaults.youtube,...(JSON.parse(localStorage.getItem(STORE_KEY)||'{}').youtube||{})},trainer:{...defaults.trainer,...(JSON.parse(localStorage.getItem(STORE_KEY)||'{}').trainer||{})}}}catch{return structuredClone(defaults)}};
   let s=load(), localTrackKey='', ytTrackKey=s.youtube?.videoId?`yt:${s.youtube.videoId}`:'', objectUrl='', mediaSource=null, ctx=null, pitch=null, gain=null, decodedBuffer=null, ytPlayer=null, ytTimer=null, localLoopCount=0, keyLoopCount=0, keyTrainerIndex=0, metroStartedByBacking=false, ytMetroStarted=false;
-  const save=()=>localStorage.setItem(STORE_KEY,JSON.stringify(s));
+  function save(){
+    if(localTrackKey){
+      s.fileProfiles=s.fileProfiles||{};
+      s.fileProfiles[localTrackKey]={speed:s.speed,key:s.key,volume:s.volume,loopA:s.loopA,loopB:s.loopB,loopOn:s.loopOn,trackBpm:s.trackBpm};
+    }
+    try{localStorage.setItem(STORE_KEY,JSON.stringify(s));}catch(e){console.warn('Backing preferences not saved',e);}
+  }
+  function renderRecentFiles(){
+    const box=$('backingRecentList'),wrap=$('backingRecent');if(!box||!wrap)return;
+    const list=Array.isArray(s.recentFiles)?s.recentFiles:[];
+    wrap.classList.toggle('hidden',!list.length);box.innerHTML='';
+    list.slice(0,8).forEach(item=>{
+      const b=document.createElement('button');b.type='button';b.textContent=item.name;b.title=`${item.name} · 음원은 기기에서 다시 선택해야 합니다.`;
+      b.onclick=()=>{notify(`'${item.name}' 파일을 다시 선택하세요. 마지막 Speed/Key/Loop가 복원됩니다.`);$('backingFile').click();};box.appendChild(b);
+    });
+  }
   const notify=m=>window.BeatronomeAPI?.notify?.(m);
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const fmt=t=>{t=Math.max(0,Number(t)||0);const h=Math.floor(t/3600),m=Math.floor((t%3600)/60),sec=Math.floor(t%60);return h?`${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`:`${m}:${String(sec).padStart(2,'0')}`};
@@ -29,7 +44,7 @@
   function setKey(v){s.key=clamp(Math.round(v),-12,12);save();applyLocalSettings();}
 
   function drawWave(buffer){decodedBuffer=buffer;const c=$('backingWaveform'),wrap=$('backingWaveWrap'),rect=wrap.getBoundingClientRect(),dpr=window.devicePixelRatio||1,w=Math.max(300,Math.floor(rect.width||600)),h=110;c.width=w*dpr;c.height=h*dpr;c.style.width='100%';c.style.height=h+'px';const g=c.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,w,h);g.strokeStyle='rgba(227,191,115,.75)';g.lineWidth=1;const data=buffer.getChannelData(0),step=Math.max(1,Math.floor(data.length/w)),mid=h/2;g.beginPath();for(let x=0;x<w;x++){let min=1,max=-1,start=x*step,end=Math.min(data.length,start+step);for(let i=start;i<end;i++){const v=data[i];if(v<min)min=v;if(v>max)max=v;}g.moveTo(x,mid+min*mid*.82);g.lineTo(x,mid+max*mid*.82);}g.stroke();$('backingWavePlaceholder').classList.add('hidden');}
-  async function decodeWave(file){try{const ac=new (window.AudioContext||window.webkitAudioContext)();const arr=await file.arrayBuffer();const buf=await ac.decodeAudioData(arr.slice(0));drawWave(buf);await ac.close();}catch(e){console.warn('waveform decode',e);$('backingWavePlaceholder').textContent='파형을 만들 수 없는 형식입니다. 재생과 Loop 기능은 그대로 사용할 수 있습니다.';$('backingWavePlaceholder').classList.remove('hidden');}}
+  async function decodeWave(file){try{if(file.size>32*1024*1024){$('backingWavePlaceholder').textContent='큰 파일은 메모리 보호를 위해 파형 생성만 생략합니다. 재생·Seek·A–B Loop는 사용 가능합니다.';$('backingWavePlaceholder').classList.remove('hidden');return;}const ac=new (window.AudioContext||window.webkitAudioContext)();const arr=await file.arrayBuffer();const buf=await ac.decodeAudioData(arr.slice(0));drawWave(buf);await ac.close();}catch(e){console.warn('waveform decode',e);$('backingWavePlaceholder').textContent='파형을 만들 수 없는 형식입니다. 재생과 Loop 기능은 그대로 사용할 수 있습니다.';$('backingWavePlaceholder').classList.remove('hidden');}}
 
   function renderLocalLoop(){const ok=Number.isFinite(s.loopA)&&Number.isFinite(s.loopB)&&s.loopB>s.loopA+.05;$('backingLoopToggle').disabled=!ok;$('backingLoopToggle').textContent=s.loopOn&&ok?'LOOP ON':'LOOP OFF';$('backingLoopToggle').classList.toggle('active',s.loopOn&&ok);$('backingLoopText').textContent=ok?`${fmt(s.loopA)} → ${fmt(s.loopB)}`:'구간 미설정';const shade=$('backingLoopShade'),dur=$('backingMedia').duration;if(ok&&Number.isFinite(dur)&&dur>0){shade.classList.remove('hidden');shade.style.left=`${s.loopA/dur*100}%`;shade.style.width=`${(s.loopB-s.loopA)/dur*100}%`;}else shade.classList.add('hidden');}
   function cycleTrainer(){
@@ -45,16 +60,53 @@
   function escapeHtml(x){return String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
   function addMarker(mode){const key=mode==='local'?localTrackKey:ytTrackKey,time=mode==='local'?$('backingMedia').currentTime:(ytPlayer?.getCurrentTime?.()||0);if(!key){notify('트랙을 먼저 불러오세요.');return;}const name=(prompt('마커 이름','Marker')||'').trim();if(!name)return;markersFor(key).push({name,time});save();renderMarkers(mode);}
 
-  $('backingFile').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(f);localTrackKey=`file:${f.name}:${f.size}:${f.lastModified}`;const media=$('backingMedia');media.pause();media.src=objectUrl;media.classList.toggle('hidden',!String(f.type).startsWith('video/'));$('backingFileName').textContent=f.name;$('backingFileMeta').textContent=`${(f.size/1024/1024).toFixed(1)} MB · ${f.type||'media'}`;s.loopA=s.loopB=null;s.loopOn=false;save();applyLocalSettings();renderMarkers('local');decodeWave(f);};
+  $('backingFile').onchange=async e=>{
+    const f=e.target.files?.[0];if(!f)return;
+    save(); // Save settings for the previous file before selecting another.
+    if(objectUrl)URL.revokeObjectURL(objectUrl);
+    objectUrl=URL.createObjectURL(f);
+    localTrackKey=`file:${f.name}:${f.size}:${f.lastModified}`;
+    const profile=(s.fileProfiles||{})[localTrackKey]||{};
+    for(const key of ['speed','key','volume','loopA','loopB','loopOn','trackBpm']){
+      if(Object.prototype.hasOwnProperty.call(profile,key))s[key]=profile[key];
+      else if(['loopA','loopB'].includes(key))s[key]=null;
+      else if(key==='loopOn')s[key]=false;
+    }
+    const media=$('backingMedia');media.pause();media.src=objectUrl;
+    media.classList.toggle('hidden',!String(f.type).startsWith('video/'));
+    $('backingFileName').textContent=f.name;
+    $('backingFileMeta').textContent=`${(f.size/1024/1024).toFixed(1)} MB · ${f.type||'media'}`;
+    s.recentFiles=[{key:localTrackKey,name:f.name,at:Date.now()},...(s.recentFiles||[]).filter(x=>x.key!==localTrackKey)].slice(0,8);
+    save();applyLocalSettings();renderRecentFiles();renderMarkers('local');
+    decodeWave(f);
+    $('backingFile').value=''; // Selecting the same file again still fires change.
+  };
   $('backingMedia').onloadedmetadata=()=>{$('backingDuration').textContent=fmt($('backingMedia').duration);renderLocalLoop();};
   $('backingMedia').ontimeupdate=()=>{const m=$('backingMedia'),d=m.duration||0;$('backingCurrentTime').textContent=fmt(m.currentTime);$('backingSeek').value=d?Math.round(m.currentTime/d*1000):0;if(s.loopOn&&Number.isFinite(s.loopA)&&Number.isFinite(s.loopB)&&m.currentTime>=s.loopB-.025){m.currentTime=s.loopA;cycleTrainer();}};
   $('backingMedia').onplay=async()=>{await ensureAudioGraph();$('backingPlay').textContent='Ⅱ PAUSE';if(s.metroTogether&&!window.BeatronomeAPI?.isPlaying?.()){await window.BeatronomeAPI?.start?.();metroStartedByBacking=true;}};
   $('backingMedia').onpause=()=>{$('backingPlay').textContent='▶ PLAY';if(metroStartedByBacking&&window.BeatronomeAPI?.isPlaying?.()){window.BeatronomeAPI.stop();metroStartedByBacking=false;}};
   $('backingMedia').onended=()=>{if(s.trainer.speedOn||s.trainer.keyOn){cycleTrainer();$('backingMedia').currentTime=Number.isFinite(s.loopA)?s.loopA:0;$('backingMedia').play();}};
-  $('backingPlay').onclick=async()=>{const m=$('backingMedia');if(!m.src){notify('파일을 먼저 선택하세요.');return;}await ensureAudioGraph();if(m.paused)m.play().catch(()=>{});else m.pause();};
+  $('backingPlay').onclick=async()=>{const m=$('backingMedia');if(!m.src){notify('파일을 먼저 선택하세요.');return;}await ensureAudioGraph();if(m.paused)m.play().catch(e=>{console.warn(e);notify('파일을 재생할 수 없습니다. 형식과 오디오 권한을 확인하세요.');});else m.pause();};
   $('backingBack5').onclick=()=>{$('backingMedia').currentTime=Math.max(0,$('backingMedia').currentTime-5)};$('backingForward5').onclick=()=>{$('backingMedia').currentTime=Math.min($('backingMedia').duration||1e9,$('backingMedia').currentTime+5)};
   $('backingSeek').oninput=e=>{const m=$('backingMedia');if(m.duration)m.currentTime=Number(e.target.value)/1000*m.duration;};
-  $('backingWaveform').onclick=e=>{const m=$('backingMedia');if(!m.duration)return;const r=e.currentTarget.getBoundingClientRect();m.currentTime=clamp((e.clientX-r.left)/r.width,0,1)*m.duration;};
+  // Tap waveform to seek. Horizontal drag (>12px) selects the A–B range.
+  // Vertical finger movements are left to the browser for normal page scrolling.
+  const wave=$('backingWaveWrap');let waveGesture=null;
+  const waveTime=clientX=>{const m=$('backingMedia'),r=wave.getBoundingClientRect();return clamp((clientX-r.left)/Math.max(1,r.width),0,1)*(m.duration||0);};
+  wave.addEventListener('pointerdown',e=>{
+    if(!Number.isFinite($('backingMedia').duration)||$('backingMedia').duration<=0)return;
+    waveGesture={id:e.pointerId,x:e.clientX,time:waveTime(e.clientX)};
+  });
+  wave.addEventListener('pointerup',e=>{
+    if(!waveGesture||e.pointerId!==waveGesture.id)return;
+    const g=waveGesture;waveGesture=null;wave.classList.remove('loop-dragging');
+    if(Math.abs(e.clientX-g.x)>12){
+      s.loopA=Math.min(g.time,waveTime(e.clientX));s.loopB=Math.max(g.time,waveTime(e.clientX));
+      if(s.loopB-s.loopA>.08){s.loopOn=true;save();renderLocalLoop();notify('파형에서 A–B 반복 구간을 설정했습니다.');}
+    }else{$('backingMedia').currentTime=g.time;}
+  });
+  wave.addEventListener('pointermove',e=>{if(waveGesture&&waveGesture.id===e.pointerId)wave.classList.toggle('loop-dragging',Math.abs(e.clientX-waveGesture.x)>12);});
+  ['pointercancel','lostpointercapture'].forEach(name=>wave.addEventListener(name,()=>{waveGesture=null;wave.classList.remove('loop-dragging');}));
   $('backingSpeed').oninput=e=>setSpeed(e.target.value);$('backingSpeedMinus').onclick=()=>setSpeed(s.speed-5);$('backingSpeedPlus').onclick=()=>setSpeed(s.speed+5);$('backingKey').oninput=e=>setKey(e.target.value);$('backingKeyMinus').onclick=()=>setKey(s.key-1);$('backingKeyPlus').onclick=()=>setKey(s.key+1);$('backingVolume').oninput=e=>{s.volume=clamp(Number(e.target.value),0,100);save();applyLocalSettings();};
   $('backingSetA').onclick=()=>{s.loopA=$('backingMedia').currentTime;if(Number.isFinite(s.loopB)&&s.loopB<=s.loopA)s.loopB=null;save();renderLocalLoop();};$('backingSetB').onclick=()=>{s.loopB=$('backingMedia').currentTime;if(!Number.isFinite(s.loopA))s.loopA=0;if(s.loopB<=s.loopA+.05){notify('B 지점은 A보다 뒤여야 합니다.');s.loopB=null;}save();renderLocalLoop();};$('backingLoopToggle').onclick=()=>{s.loopOn=!s.loopOn;save();renderLocalLoop();};$('backingLoopClear').onclick=()=>{s.loopA=s.loopB=null;s.loopOn=false;save();renderLocalLoop();};
   $('backingMetroTogether').onchange=e=>{s.metroTogether=e.target.checked;save();};$('backingTrackBpm').onchange=e=>{s.trackBpm=clamp(Number(e.target.value)||120,30,300);save();};$('backingApplyBpm').onclick=()=>{s.trackBpm=clamp(Number($('backingTrackBpm').value)||120,30,300);save();window.BeatronomeAPI?.setBpm?.(s.trackBpm);notify(`Beatronome ${s.trackBpm} BPM`);};$('backingAddMarker').onclick=()=>addMarker('local');
@@ -73,6 +125,6 @@
   $('youtubeLoad').onclick=loadYouTube;$('youtubeUrl').value=s.youtube.url||'';$('youtubePlay').onclick=()=>{if(!ytPlayer){notify('YouTube 영상을 먼저 불러오세요.');return;}const st=ytPlayer.getPlayerState();if(st===YT.PlayerState.PLAYING)ytPlayer.pauseVideo();else ytPlayer.playVideo();};$('youtubeBack5').onclick=()=>ytPlayer?.seekTo?.(Math.max(0,(ytPlayer.getCurrentTime?.()||0)-5),true);$('youtubeForward5').onclick=()=>ytPlayer?.seekTo?.((ytPlayer.getCurrentTime?.()||0)+5,true);$('youtubeSeek').oninput=e=>{const d=ytPlayer?.getDuration?.()||0;if(d)ytPlayer.seekTo(Number(e.target.value)/1000*d,true);};document.querySelectorAll('#youtubeSpeedPresets button').forEach(b=>b.onclick=()=>applyYoutubeRate(b.dataset.rate));$('youtubeSetA').onclick=()=>{if(!ytPlayer)return;s.youtube.loopA=ytPlayer.getCurrentTime();if(Number.isFinite(s.youtube.loopB)&&s.youtube.loopB<=s.youtube.loopA)s.youtube.loopB=null;save();renderYoutubeLoop();};$('youtubeSetB').onclick=()=>{if(!ytPlayer)return;s.youtube.loopB=ytPlayer.getCurrentTime();if(!Number.isFinite(s.youtube.loopA))s.youtube.loopA=0;if(s.youtube.loopB<=s.youtube.loopA+.05){notify('B 지점은 A보다 뒤여야 합니다.');s.youtube.loopB=null;}save();renderYoutubeLoop();};$('youtubeLoopToggle').onclick=()=>{s.youtube.loopOn=!s.youtube.loopOn;save();renderYoutubeLoop();};$('youtubeLoopClear').onclick=()=>{s.youtube.loopA=s.youtube.loopB=null;s.youtube.loopOn=false;save();renderYoutubeLoop();};$('youtubeMetroTogether').onchange=e=>{s.youtube.metroTogether=e.target.checked;save();};$('youtubeAddMarker').onclick=()=>addMarker('youtube');
 
   // initialize
-  setSource(s.source||'local');applyLocalSettings();renderMarkers('local');renderYoutubeLoop();renderMarkers('youtube');
+  setSource(s.source||'local');applyLocalSettings();renderRecentFiles();renderMarkers('local');renderYoutubeLoop();renderMarkers('youtube');
   window.addEventListener('beforeunload',()=>{clearInterval(ytTimer);if(objectUrl)URL.revokeObjectURL(objectUrl);try{ctx?.close();}catch{}});
 })();

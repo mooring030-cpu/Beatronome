@@ -1,155 +1,83 @@
-const VERSION = '0.14.3';
+/* Beatronome v0.15.1: version-isolated, offline-first application shell.
+ * Active sessions are never force-reloaded and existing controllers are not claimed.
+ */
+const VERSION = '0.15.1';
 const CACHE = `beatronome-offline-v${VERSION}`;
-
-const BASIC = [];
-for (let bank = 1; bank <= 6; bank++) {
-  for (const role of ['strong', 'weak', 'normal']) {
-    BASIC.push(`./audio/basic/bank${bank}_${role}.wav`);
-  }
-}
-
-const OFFLINE_ASSETS = [
-  './',
-  './index.html',
-  `./styles.css?v=${VERSION}`,
-  `./cloud-config.js?v=${VERSION}`,
-  `./app.js?v=${VERSION}`,
-  `./knowledge.js?v=${VERSION}`,
-  `./pitch-shifter.js?v=${VERSION}`,
-  `./backing.js?v=${VERSION}`,
-  './THIRD_PARTY_NOTICES.txt',
-  `./manifest.webmanifest?v=${VERSION}`,
-  './favicon.png',
-  './apple-touch-icon.png',
-  './icon-192.png',
-  './icon-512.png',
-  './app-artwork.png',
-  ...BASIC,
+const BASIC = Array.from({length:6},(_,i)=>['strong','weak','normal'].map(role=>`./audio/basic/bank${i+1}_${role}.wav`)).flat();
+const SHELL = [
+  './','./index.html',
+  ...['styles.css','polish.css','cloud-config.js','app.js','knowledge.js','pitch-shifter.js','backing.js','quality.js','manifest.webmanifest'].map(n=>`./${n}?v=${VERSION}`),
+  './THIRD_PARTY_NOTICES.txt','./favicon.png','./apple-touch-icon.png',
+  './icon-192.png','./icon-512.png','./app-artwork.png',...BASIC
 ];
-
-async function cacheOne(cache, path) {
-  try {
-    const response = await fetch(new Request(path, { cache: 'no-store' }));
-    if (!response || !response.ok) return false;
-    await cache.put(path, response.clone());
-    return true;
-  } catch (_) {
-    return false;
-  }
+const SHELL_SET = new Set(SHELL.map(p=>new URL(p,self.registration.scope).href));
+async function fetchAsset(path){
+  const r=await fetch(new Request(path,{cache:'no-store'}));
+  if(!r.ok)throw new Error(`Offline asset unavailable: ${path} (${r.status})`);
+  return r;
 }
-
-async function offlineStatus() {
-  const cache = await caches.open(CACHE);
-  let cached = 0;
-  const missing = [];
-  for (const path of OFFLINE_ASSETS) {
-    const match = await cache.match(path);
-    if (match) cached += 1;
-    else missing.push(path);
-  }
-  return {
-    version: VERSION,
-    cache: CACHE,
-    cached,
-    total: OFFLINE_ASSETS.length,
-    ready: cached === OFFLINE_ASSETS.length,
-    missing,
-  };
+async function status(){
+  const cache=await caches.open(CACHE);
+  const missing=[];let cached=0;
+  for(const path of SHELL){if(await cache.match(path))cached++;else missing.push(path);}
+  return {version:VERSION,cache:CACHE,total:SHELL.length,cached,ready:missing.length===0,missing};
 }
-
-async function prepareOffline() {
-  const cache = await caches.open(CACHE);
-  for (const path of OFFLINE_ASSETS) {
-    const existing = await cache.match(path);
-    if (!existing) await cacheOne(cache, path);
-  }
-  return offlineStatus();
+async function precache(missingOnly=false){
+  const cache=await caches.open(CACHE);
+  // Failure propagates on installation: do not activate an incomplete build.
+  await Promise.all(SHELL.map(async path=>{
+    if(missingOnly&&await cache.match(path))return;
+    const response=await fetchAsset(path);
+    await cache.put(path,response);
+  }));
+  return status();
 }
-
-self.addEventListener('install', event => {
-  event.waitUntil((async () => {
-    const cache = await caches.open(CACHE);
-    await Promise.allSettled(OFFLINE_ASSETS.map(path => cacheOne(cache, path)));
-    // Activate the new worker as soon as its cache is ready, but do NOT claim
-    // already-open Beatronome pages. Existing practice/audio sessions therefore
-    // keep their current controller and are never reloaded mid-session. The next
-    // navigation/app launch is controlled by this new worker automatically.
-    await self.skipWaiting();
+self.addEventListener('install',event=>{
+  event.waitUntil((async()=>{await precache();await self.skipWaiting();})());
+});
+self.addEventListener('activate',event=>{
+  // Deliberately no clients.claim(): active musical sessions retain their old UI.
+  // Deliberately keep older version caches until explicit cleanup to avoid mixing
+  // resources or breaking a tab still controlled by an older worker.
+  event.waitUntil(Promise.resolve());
+});
+self.addEventListener('message',event=>{
+  const port=event.ports?.[0],type=event.data?.type;
+  if(type==='GET_OFFLINE_STATUS')event.waitUntil(status().then(r=>port?.postMessage(r)));
+  else if(type==='PREPARE_OFFLINE')event.waitUntil(precache(true).then(r=>port?.postMessage(r)).catch(e=>port?.postMessage({ready:false,error:String(e)})));
+  else if(type==='CLEANUP_OLD_OFFLINE_CACHES')event.waitUntil((async()=>{
+    const names=await caches.keys();const toDelete=names.filter(n=>n.startsWith('beatronome-offline-v')&&n!==CACHE);
+    await Promise.all(toDelete.map(n=>caches.delete(n)));
+    port?.postMessage({deleted:toDelete.length});
   })());
 });
-
-async function cleanupOldCaches() {
-  const keys = await caches.keys();
-  await Promise.all(keys.filter(key => key.startsWith('beatronome-') && key !== CACHE).map(key => caches.delete(key)));
-}
-
-self.addEventListener('activate', event => {
-  event.waitUntil(Promise.resolve());
-  // Intentionally no clients.claim() and no old-cache deletion here.
-  // An already-open Beatronome session can keep using its old controller/cache
-  // without interruption. Old caches are removed only after the next launch is
-  // actually controlled by this new worker.
-});
-
-self.addEventListener('message', event => {
-  const type = event.data?.type;
-  if (type === 'GET_OFFLINE_STATUS') {
-    event.waitUntil((async () => {
-      await cleanupOldCaches();
-      const status = await offlineStatus();
-      event.ports?.[0]?.postMessage(status);
-    })());
-  }
-  if (type === 'PREPARE_OFFLINE') {
-    event.waitUntil(prepareOffline().then(status => event.ports?.[0]?.postMessage(status)));
-  }
-  if (type === 'SKIP_WAITING') self.skipWaiting();
-});
-
-self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
-  const url = new URL(event.request.url);
-  if (url.origin !== self.location.origin) return;
-
-  if (event.request.mode === 'navigate') {
-    event.waitUntil(cleanupOldCaches());
-    event.respondWith((async () => {
-      const cached = await caches.match('./index.html');
-      if (cached) {
-        event.waitUntil(fetch(event.request, { cache: 'no-store' }).then(async response => {
-          if (response?.ok) {
-            const cache = await caches.open(CACHE);
-            await cache.put('./index.html', response.clone());
-          }
-        }).catch(() => {}));
-        return cached;
+self.addEventListener('fetch',event=>{
+  const request=event.request;
+  if(request.method!=='GET')return;
+  const url=new URL(request.url);
+  if(url.origin!==self.location.origin)return;
+  if(request.mode==='navigate'){
+    event.respondWith((async()=>{
+      const cache=await caches.open(CACHE);
+      // Crucial: only our version's index; never global caches.match(), which
+      // could return an older HTML that references nonmatching JS/CSS.
+      const shell=await cache.match('./index.html');
+      if(shell)return shell;
+      try{return await fetch(request,{cache:'no-store'});}catch{
+        return new Response('Beatronome offline files are not ready.',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}});
       }
-      try {
-        const response = await fetch(event.request, { cache: 'no-store' });
-        if (response?.ok) {
-          const cache = await caches.open(CACHE);
-          await cache.put('./index.html', response.clone());
-        }
-        return response;
-      } catch (_) {
-        return new Response('Beatronome offline cache is not ready yet.', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
-      }
-    })());
-    return;
+    })());return;
   }
-
-  event.respondWith((async () => {
-    const cached = await caches.match(event.request);
-    if (cached) return cached;
-    try {
-      const response = await fetch(event.request, { cache: 'no-store' });
-      if (response?.ok) {
-        const cache = await caches.open(CACHE);
-        await cache.put(event.request, response.clone());
-      }
+  event.respondWith((async()=>{
+    const cache=await caches.open(CACHE);
+    const cached=await cache.match(request);
+    if(cached)return cached;
+    try{
+      const response=await fetch(request);
+      if(response.ok&&SHELL_SET.has(url.href))await cache.put(request,response.clone());
       return response;
-    } catch (_) {
-      return new Response('', { status: 504 });
+    }catch{
+      return new Response('',{status:504,statusText:'Offline resource unavailable'});
     }
   })());
 });

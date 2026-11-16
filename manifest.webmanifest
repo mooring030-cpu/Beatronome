@@ -1,6 +1,7 @@
 {
   "name": "Beatronome",
   "short_name": "Beatronome",
+  "id": "/Beatronome/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
