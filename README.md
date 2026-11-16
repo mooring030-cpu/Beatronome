@@ -1,8 +1,17 @@
-# Beatronome v0.14.0 Backing Track Edition
+# Beatronome v0.14.1 Practice UX Edition
 
 프로 뮤지션용 Offline-first PWA. 메트로놈, Groove Engine, 기타/베이스 튜너, Stage Mode, Practice Routine, Set List, Cloud Sync, Music Knowledge에 Backing Track 연습 플레이어를 추가했습니다.
 
-## v0.14.0 핵심
+
+## v0.14.1 Practice UX 정리
+- 하단 `연습`은 Backing Player 전용으로 단순화
+- 자동 연습 루틴 / 세트리스트 / 연습 기록은 별도 `Practice Tools` 화면으로 분리
+- Practice Tools 내부도 `루틴 / 세트리스트 / 기록` 탭으로 분리해 한 번에 하나만 표시
+- Backing Player의 메트로놈 연동 / Track BPM / 볼륨 / 마커 / Speed·12-Key Trainer는 `고급 연습 도구`에 접어서 기본 화면을 짧게 유지
+- 메인 화면의 중복 바로가기 `TRAINING / TUNER / PRESETS` 3개 카드 제거
+- 모바일에서 Speed / Key를 나란히 배치하고 플레이어 컨트롤 간격을 압축해 스크롤량 감소
+
+## v0.14.1 핵심
 
 ### Backing Track · MY FILE
 - MP3/WAV/M4A/AAC/OGG/MP4 등 브라우저가 재생 가능한 로컬 음원·영상

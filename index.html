@@ -8,10 +8,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Beatronome" />
   <title>Beatronome</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=0.14.0" />
+  <link rel="manifest" href="./manifest.webmanifest?v=0.14.1" />
   <link rel="icon" href="./favicon.png" type="image/png" />
   <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
-  <link rel="stylesheet" href="./styles.css?v=0.14.0" />
+  <link rel="stylesheet" href="./styles.css?v=0.14.1" />
 </head>
 <body>
 <div id="app">
@@ -24,7 +24,7 @@
         <div class="beat-hero-head">
           <button class="hero-home-logo" id="homeLogoButton" aria-label="메트로놈 홈" title="Beatronome 홈"><img src="./icon-192.png" alt="Beatronome"></button>
           <div class="beat-hero-copy"><span class="eyebrow">BEAT</span><strong id="visualMeterLabel">4/4</strong><small id="heroSubdivisionLabel">Quarter</small></div>
-          <span class="hero-version">v0.14.0</span>
+          <span class="hero-version">v0.14.1</span>
         </div>
         <div class="top-beat-hint"><span>박자를 눌러</span><b>A 강박</b><i>• 일반</i><em>× 무음</em></div>
         <div class="beat-grid top-beat-grid" id="beatGrid" aria-label="박자 패턴"></div>
@@ -54,7 +54,6 @@
       </section>
       </section>
 
-      <section class="quick-action-strip" id="quickActionStrip"></section>
 
       <section class="core-setting-strip card">
         <button class="core-setting-summary" id="openCoreSettings" aria-label="메트로놈 세부 설정 열기">
@@ -198,8 +197,7 @@
     </section>
 
     <section id="tabPractice" class="tab-page">
-      <div class="page-title"><div><span class="eyebrow">PRACTICE</span><h2>루틴 · 백킹트랙 · 세트리스트</h2></div><span class="page-symbol">▶</span></div>
-
+      <div class="page-title practice-player-title"><div><span class="eyebrow">PRACTICE PLAYER</span><h2>백킹트랙 연습</h2></div><button class="practice-tools-button" id="openPracticeTools"><span>TOOLS</span><small>루틴 · 세트리스트 · 기록</small></button></div>
       <section class="card backing-card" id="backingTrackCard">
         <div class="section-heading backing-heading"><div><span class="eyebrow">BACKING TRACK</span><h2>연습 플레이어</h2><p>내 음원은 속도·키를 독립 조절하고, YouTube는 속도·구간반복으로 연습합니다.</p></div><div class="backing-source-tabs" id="backingSourceTabs"><button class="active" data-source="local">MY FILE</button><button data-source="youtube">YOUTUBE</button></div></div>
 
@@ -220,14 +218,19 @@
             <div class="backing-loop-buttons"><button id="backingSetA">SET A</button><button id="backingSetB">SET B</button><button id="backingLoopToggle" disabled>LOOP OFF</button><button id="backingLoopClear">CLEAR</button></div>
           </div>
 
-          <div class="backing-tools-row"><label><input type="checkbox" id="backingMetroTogether"> 메트로놈 함께 재생</label><label>Track BPM <input id="backingTrackBpm" type="number" min="30" max="300" value="120"></label><button class="outline-small" id="backingApplyBpm">Beatronome BPM에 적용</button><label>볼륨 <input id="backingVolume" type="range" min="0" max="100" value="90"></label></div>
+          <details class="backing-advanced">
+            <summary><span>고급 연습 도구</span><small>메트로놈 · Track BPM · 볼륨 · 마커 · Trainer</small></summary>
+            <div class="backing-advanced-body">
+              <div class="backing-tools-row"><label><input type="checkbox" id="backingMetroTogether"> 메트로놈 함께 재생</label><label>Track BPM <input id="backingTrackBpm" type="number" min="30" max="300" value="120"></label><button class="outline-small" id="backingApplyBpm">Beatronome BPM에 적용</button><label>볼륨 <input id="backingVolume" type="range" min="0" max="100" value="90"></label></div>
 
-          <div class="backing-marker-panel"><div class="section-heading compact"><div><span class="eyebrow">MARKERS</span><h3>연습 위치</h3></div><button class="outline-small" id="backingAddMarker">현재 위치 저장</button></div><div id="backingMarkerList" class="backing-markers"></div></div>
+              <div class="backing-marker-panel"><div class="section-heading compact"><div><span class="eyebrow">MARKERS</span><h3>연습 위치</h3></div><button class="outline-small" id="backingAddMarker">현재 위치 저장</button></div><div id="backingMarkerList" class="backing-markers"></div></div>
 
-          <details class="backing-trainer"><summary>Speed / 12-Key Trainer</summary><div class="backing-trainer-grid">
+              <details class="backing-trainer"><summary>Speed / 12-Key Trainer</summary><div class="backing-trainer-grid">
             <label><span>Speed Trainer</span><input id="speedTrainerEnabled" type="checkbox"></label><label>시작 %<input id="speedTrainerStart" type="number" min="50" max="150" value="70"></label><label>끝 %<input id="speedTrainerEnd" type="number" min="50" max="150" value="100"></label><label>증가 %<input id="speedTrainerStep" type="number" min="1" max="25" value="5"></label><label>구간 반복 횟수<input id="speedTrainerLoops" type="number" min="1" max="16" value="2"></label>
             <label><span>12-Key Trainer</span><input id="keyTrainerEnabled" type="checkbox"></label><label>시작 Key<input id="keyTrainerStart" type="number" min="-12" max="12" value="0"></label><label>증가 반음<input id="keyTrainerStep" type="number" min="1" max="12" value="1"></label><label>Key당 반복<input id="keyTrainerLoops" type="number" min="1" max="16" value="2"></label><button class="outline-small" id="backingTrainerReset">Trainer Reset</button>
           </div><p class="backing-note">A–B Loop가 켜져 있으면 한 구간 반복이 끝날 때마다 Trainer가 진행됩니다. Loop가 없으면 곡 끝에서 다음 단계로 이동합니다.</p></details>
+            </div>
+          </details>
         </div>
 
         <div class="backing-pane hidden" id="backingYoutubePane">
@@ -237,11 +240,26 @@
           <div class="backing-transport"><button id="youtubeBack5">−5s</button><button class="backing-play" id="youtubePlay">▶ PLAY</button><button id="youtubeForward5">+5s</button></div>
           <div class="backing-control-grid youtube-controls"><div class="backing-control"><span>SPEED</span><div class="backing-speed-presets" id="youtubeSpeedPresets"><button data-rate="0.5">50%</button><button data-rate="0.75">75%</button><button data-rate="1">100%</button><button data-rate="1.25">125%</button><button data-rate="1.5">150%</button><button data-rate="2">200%</button></div><small>영상에서 지원하는 재생 속도로 자동 맞춥니다.</small></div><div class="backing-control key-disabled"><span>KEY</span><strong>지원 안 함</strong><small>YouTube 공식 IFrame API는 Key/Pitch 변경을 제공하지 않습니다.</small></div></div>
           <div class="backing-loop-panel"><div><span class="eyebrow">A–B LOOP</span><strong id="youtubeLoopText">구간 미설정</strong></div><div class="backing-loop-buttons"><button id="youtubeSetA">SET A</button><button id="youtubeSetB">SET B</button><button id="youtubeLoopToggle" disabled>LOOP OFF</button><button id="youtubeLoopClear">CLEAR</button></div></div>
-          <div class="backing-tools-row"><label><input type="checkbox" id="youtubeMetroTogether"> 메트로놈 함께 재생</label></div>
-          <div class="backing-marker-panel"><div class="section-heading compact"><div><span class="eyebrow">MARKERS</span><h3>YouTube 연습 위치</h3></div><button class="outline-small" id="youtubeAddMarker">현재 위치 저장</button></div><div id="youtubeMarkerList" class="backing-markers"></div></div>
-          <p class="backing-note">YouTube 모드는 인터넷 연결이 필요합니다. 영상별 지원 속도는 다를 수 있으며 Key 변경은 제공되지 않습니다.</p>
+          <details class="backing-advanced">
+            <summary><span>고급 연습 도구</span><small>메트로놈 · 마커</small></summary>
+            <div class="backing-advanced-body">
+              <div class="backing-tools-row"><label><input type="checkbox" id="youtubeMetroTogether"> 메트로놈 함께 재생</label></div>
+              <div class="backing-marker-panel"><div class="section-heading compact"><div><span class="eyebrow">MARKERS</span><h3>YouTube 연습 위치</h3></div><button class="outline-small" id="youtubeAddMarker">현재 위치 저장</button></div><div id="youtubeMarkerList" class="backing-markers"></div></div>
+              <p class="backing-note">YouTube 모드는 인터넷 연결이 필요합니다. 영상별 지원 속도는 다를 수 있으며 Key 변경은 제공되지 않습니다.</p>
+            </div>
+          </details>
         </div>
       </section>
+    </section>
+
+    <section id="tabPracticeTools" class="tab-page practice-tools-page">
+      <div class="page-title practice-tools-title"><button class="practice-back-button" id="backPracticePlayer">← PLAYER</button><div><span class="eyebrow">PRACTICE TOOLS</span><h2>연습 관리</h2></div></div>
+      <div class="practice-tools-nav" id="practiceToolsNav">
+        <button class="active" data-practice-tool="routine">루틴</button>
+        <button data-practice-tool="setlist">세트리스트</button>
+        <button data-practice-tool="log">기록</button>
+      </div>
+      <div class="practice-tool-panel active" id="practiceToolRoutine">
       <section class="card practice-builder">
         <div class="section-heading"><div><span class="eyebrow">PRACTICE ROUTINE</span><h2>자동 연습 루틴</h2></div><span class="muted">단계별 자동 진행</span></div>
         <div class="practice-add-row"><input id="routineName" placeholder="예: Bass Warm Up"><select id="routineStepMinutes"><option value="1">1분</option><option value="3" selected>3분</option><option value="5">5분</option><option value="10">10분</option><option value="15">15분</option></select><button class="outline-small" id="addRoutineStep">현재 설정 추가</button></div>
@@ -250,6 +268,8 @@
       </section>
       <section class="card saved-practice"><div class="section-heading"><div><span class="eyebrow">MY ROUTINES</span><h2>저장된 루틴</h2></div></div><div id="routineList" class="practice-list"></div></section>
 
+      </div>
+      <div class="practice-tool-panel" id="practiceToolSetlist">
       <section class="card practice-builder setlist-builder">
         <div class="section-heading"><div><span class="eyebrow">SET LIST</span><h2>곡 순서</h2></div><span class="muted">NEXT로 빠른 전환</span></div>
         <div class="practice-add-row setlist-input-row"><input id="setlistName" placeholder="예: 토요일 합주"><input id="songName" placeholder="곡 이름"><input id="songNote" placeholder="메모: Intro 2마디 후 시작"><button class="outline-small" id="addSetlistSong">현재 설정으로 곡 추가</button></div><div class="drag-help">☰ 곡을 길게 누르거나 드래그해 순서를 바꿀 수 있습니다.</div>
@@ -257,7 +277,10 @@
         <button class="primary-small full-button" id="saveSetlist">세트리스트 저장</button>
       </section>
       <section class="card saved-practice"><div class="section-heading"><div><span class="eyebrow">MY SET LISTS</span><h2>저장된 세트리스트</h2></div></div><div id="setlistList" class="practice-list"></div></section>
+      </div>
+      <div class="practice-tool-panel" id="practiceToolLog">
       <section class="card practice-stats-card"><div class="section-heading"><div><span class="eyebrow">PRACTICE LOG</span><h2>연습 기록</h2></div><button class="outline-small" id="clearPracticeLog">기록 초기화</button></div><div class="today-stats" id="todayPracticeStats"></div><div class="week-bars" id="practiceWeekBars"></div></section>
+      </div>
       <section class="card active-session-card hidden" id="activePracticeSession"><div><span class="eyebrow">NOW PRACTICING</span><strong id="activePracticeTitle">—</strong><span id="activePracticeDetail">—</span></div><div class="session-actions"><button id="practicePrev">PREV</button><button id="practiceStop">STOP</button><button id="practiceNext">NEXT</button></div></section>
     </section>
 
@@ -266,6 +289,7 @@
       <div class="more-grid">
         <button class="more-launch card" id="openGlobalSearch"><span>⌕</span><strong>전체 검색</strong><small>기능·프리셋·지식 빠른 검색</small></button>
         <button class="more-launch card" id="moreStageMode"><span>▶</span><strong>Stage Mode</strong><small>공연·합주용 대형 화면</small></button>
+        <button class="more-launch card" id="morePracticeTools"><span>◫</span><strong>Practice Tools</strong><small>루틴 · 세트리스트 · 연습 기록</small></button>
         <button class="more-launch card" data-open-tab="sound"><span>♪</span><strong>클릭 사운드</strong><small>Basic·Digital·볼륨·Boost</small></button>
         <button class="more-launch card" data-open-tab="presets"><span>☆</span><strong>프리셋</strong><small>저장·불러오기·백업</small></button>
         <button class="more-launch card knowledge-launch" data-open-tab="knowledge"><span>♯</span><strong>뮤직 지식</strong><small>코드·스케일·다이아토닉·재즈 레퍼런스</small></button>
@@ -454,14 +478,13 @@
       </div></div>
   <div class="modal-backdrop hidden" id="settingsModal"><div class="settings-sheet"><div class="sheet-handle"></div><div class="page-title"><div><span class="eyebrow">SETTINGS</span><h2>앱 설정</h2></div><button class="icon-button" id="closeSettings">×</button></div><div class="settings-item"><span class="settings-icon">⌂</span><div><strong>PWA 홈 화면 설치</strong><span>브라우저 메뉴에서 ‘홈 화면에 추가’를 선택하면 앱처럼 사용할 수 있습니다.</span></div></div><div class="settings-item"><span class="settings-icon">☀</span><div><strong>화면 자동 꺼짐 방지</strong><span>Beatronome이 화면에 열려 있는 동안 Screen Wake Lock을 유지합니다. 튜너·그루브·연습·지식 화면에서도 화면이 자동으로 꺼지지 않습니다.</span></div></div><div class="settings-item offline-settings"><span class="settings-icon">⇩</span><div><strong id="offlineReadyTitle">오프라인 사용 준비</strong><span id="offlineStatusText">상태를 확인하는 중입니다.</span><div class="offline-progress"><i id="offlineProgressBar"></i></div><small id="offlineConnectionText">네트워크 상태 확인 중</small></div><button class="outline-small" id="prepareOffline">준비하기</button></div><div class="settings-item"><span class="settings-icon">↻</span><div><strong id="appUpdateTitle">앱 업데이트</strong><span id="appUpdateText">새 버전을 자동 확인합니다.</span><small id="appUpdateHint">사용 중에는 화면을 바꾸지 않습니다.</small></div></div><div class="settings-item"><span class="settings-icon">▣</span><div><strong>악보 연습 Mini Mode</strong><span>Beatronome을 작은 컨트롤 화면으로 바꿉니다. 갤럭시에서는 최근 앱 → Beatronome 아이콘 → ‘팝업 화면으로 보기’를 함께 사용하면 PDF 악보 위에 작은 창으로 둘 수 있습니다.</span></div><button class="outline-small" id="settingsMiniMode">열기</button></div><div class="settings-item cloud-settings-item"><span class="settings-icon">☁</span><div class="cloud-settings-copy"><strong>Cloud Sync</strong><span id="cloudStatusText">로그인하면 폰·Mac·태블릿에서 설정과 프리셋을 동기화합니다.</span><small id="cloudLastSync">로컬 저장만 사용 중</small><div id="cloudSignedOut" class="cloud-auth-panel"><input id="cloudEmail" type="email" inputmode="email" autocomplete="email" placeholder="이메일"><input id="cloudPassword" type="password" autocomplete="current-password" placeholder="비밀번호 (6자 이상)"><div class="cloud-auth-actions"><button class="outline-small" id="cloudLogin">로그인</button><button class="outline-small" id="cloudSignup">회원가입</button></div></div><div id="cloudSignedIn" class="cloud-account-panel hidden"><div class="cloud-account-line"><b id="cloudUserEmail">—</b><span id="cloudStateBadge">SYNCED</span></div><label class="cloud-auto-row"><span>자동 동기화</span><input id="cloudAutoSync" type="checkbox" checked></label><div class="cloud-auth-actions"><button class="outline-small" id="cloudSyncNow">지금 동기화</button><button class="outline-small" id="cloudLogout">로그아웃</button></div></div><div id="cloudSetupHint" class="cloud-setup-hint hidden">Supabase에 Beatronome 테이블이 아직 없습니다. ZIP의 <b>supabase_setup.sql</b>을 SQL Editor에서 한 번 실행하세요.</div></div></div><div class="settings-item ui-redundant"><span class="settings-icon">?</span><div><strong>사용 매뉴얼</strong><span>각 기능의 사용법과 추천 연습 방법을 확인합니다.</span></div><button class="outline-small" id="settingsManual">열기</button></div><div class="settings-item pro-settings"><span class="settings-icon">◐</span><div><strong>Theme</strong><span>무대와 연습실에 맞는 다크 테마를 선택합니다.</span></div><select id="themeSelect"><option value="jazz">Jazz Club</option><option value="studio">Studio Dark</option></select></div>
 <div class="settings-item pro-settings"><span class="settings-icon">⚡</span><div><strong>저사양 성능 모드</strong><span>애니메이션·그림자·블러를 줄여 오래된 기기에서 반응성을 우선합니다.</span></div><button class="switch" id="performanceToggle"><i></i></button></div>
-<div class="settings-item pro-settings quick-action-settings"><span class="settings-icon">⌁</span><div><strong>Quick Actions</strong><span>메인 화면에 둘 바로가기 3개를 선택합니다.</span><div class="quick-action-selects"><select id="quickAction1"></select><select id="quickAction2"></select><select id="quickAction3"></select></div></div></div>
-<div class="settings-item pro-settings"><span class="settings-icon">Aa</span><div><strong>Interface Size</strong><span>화면과 글자 크기를 선택합니다.</span></div><select id="interfaceSize"><option value="compact">Compact</option><option value="normal">Normal</option><option value="large">Large</option></select></div><div class="settings-item pro-settings"><span class="settings-icon">☝</span><div><strong>One Hand Mode</strong><span>START·TAP·BPM 조작을 엄지 위치에 고정합니다.</span></div><button class="switch" id="oneHandToggle"><i></i></button></div><div class="settings-item pro-settings"><span class="settings-icon">▶</span><div><strong>Stage 화면 탭 재생</strong><span>Stage Mode의 빈 공간을 탭해 START/STOP 합니다. 공연 중 오조작이 걱정되면 OFF로 두세요.</span></div><button class="switch" id="stageTapToggle"><i></i></button></div><div class="settings-item pro-settings"><span class="settings-icon">◷</span><div><strong>Audio Latency Calibration</strong><span>Bluetooth 사용 시 Visual Beat 표시를 소리에 맞춥니다.</span><div class="latency-setting"><input id="latencyCalibration" type="range" min="-250" max="250" step="5"><output id="latencyCalibrationOut">0 ms</output></div></div></div><div class="settings-item pro-settings"><span class="settings-icon">◎</span><div><strong>처음 사용 안내</strong><span>20초 핵심 안내를 다시 볼 수 있습니다.</span></div><button class="outline-small" id="replayOnboarding">다시 보기</button></div><div class="settings-item"><span class="settings-icon">↺</span><div><strong>현재 설정 초기화</strong><span>프리셋은 유지하고 메트로놈/훈련 설정만 기본값으로 되돌립니다.</span></div><button class="outline-small" id="resetSettings">초기화</button></div><div class="version-note">Beatronome v0.14.0 Backing Track Edition<br>Pure Metronome Mode · Offline-first PWA · 400% Output Boost · Mac Quick Boost · iPhone Playback<br>Basic Sample Click · Guitar/Bass Tuner · Mini Mode<br>Groove Engine · Meter Chain · Training · Jazz UI</div></div></div>
+<div class="settings-item pro-settings"><span class="settings-icon">Aa</span><div><strong>Interface Size</strong><span>화면과 글자 크기를 선택합니다.</span></div><select id="interfaceSize"><option value="compact">Compact</option><option value="normal">Normal</option><option value="large">Large</option></select></div><div class="settings-item pro-settings"><span class="settings-icon">☝</span><div><strong>One Hand Mode</strong><span>START·TAP·BPM 조작을 엄지 위치에 고정합니다.</span></div><button class="switch" id="oneHandToggle"><i></i></button></div><div class="settings-item pro-settings"><span class="settings-icon">▶</span><div><strong>Stage 화면 탭 재생</strong><span>Stage Mode의 빈 공간을 탭해 START/STOP 합니다. 공연 중 오조작이 걱정되면 OFF로 두세요.</span></div><button class="switch" id="stageTapToggle"><i></i></button></div><div class="settings-item pro-settings"><span class="settings-icon">◷</span><div><strong>Audio Latency Calibration</strong><span>Bluetooth 사용 시 Visual Beat 표시를 소리에 맞춥니다.</span><div class="latency-setting"><input id="latencyCalibration" type="range" min="-250" max="250" step="5"><output id="latencyCalibrationOut">0 ms</output></div></div></div><div class="settings-item pro-settings"><span class="settings-icon">◎</span><div><strong>처음 사용 안내</strong><span>20초 핵심 안내를 다시 볼 수 있습니다.</span></div><button class="outline-small" id="replayOnboarding">다시 보기</button></div><div class="settings-item"><span class="settings-icon">↺</span><div><strong>현재 설정 초기화</strong><span>프리셋은 유지하고 메트로놈/훈련 설정만 기본값으로 되돌립니다.</span></div><button class="outline-small" id="resetSettings">초기화</button></div><div class="version-note">Beatronome v0.14.1 Practice UX Edition<br>Pure Metronome Mode · Offline-first PWA · 400% Output Boost · Mac Quick Boost · iPhone Playback<br>Basic Sample Click · Guitar/Bass Tuner · Mini Mode<br>Groove Engine · Meter Chain · Training · Jazz UI</div></div></div>
   <div class="toast hidden" id="toast"></div>
 </div>
-<script src="./cloud-config.js?v=0.14.0"></script>
-<script src="./app.js?v=0.14.0"></script>
-<script src="./pitch-shifter.js?v=0.14.0"></script>
-<script src="./backing.js?v=0.14.0"></script>
-<script src="./knowledge.js?v=0.14.0"></script>
+<script src="./cloud-config.js?v=0.14.1"></script>
+<script src="./app.js?v=0.14.1"></script>
+<script src="./pitch-shifter.js?v=0.14.1"></script>
+<script src="./backing.js?v=0.14.1"></script>
+<script src="./knowledge.js?v=0.14.1"></script>
 </body>
 </html>
