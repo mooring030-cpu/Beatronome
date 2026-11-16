@@ -1,6 +1,28 @@
-# Beatronome v0.15.1 – Stability / UX / Audio / Practice / QA
+# Beatronome v0.16.2 – Design System + Interaction + Performance
 
 기존 v0.14.3을 기반으로 한 **통합 업데이트**입니다. 기존 GitHub Pages `Beatronome` 저장소에 ZIP 안의 파일을 **전체 덮어쓰기**한 뒤 Commit → Push origin 하면 됩니다. 기존 Supabase 테이블 변경은 필요하지 않습니다.
+
+## 이번 v0.16.2 새 개선 사항
+
+### v0.16.0 Design System
+- 기존 Jazz Club/Studio Dark 테마와 오디오 기능을 그대로 유지하면서, Deep Navy·Champagne Gold·Burgundy·Muted Teal 색상 역할을 통일했습니다.
+- 한글은 오프라인에서도 사용할 수 있는 시스템 고딕 폴백, BPM은 tabular numeric, 영문 템포 이름은 Serif 폴백을 적용했습니다. *Pretendard/Inter/DM Serif 자체 폰트를 다운로드하거나 번들에 포함하지 않았으므로 기기별 폴백 차이는 있을 수 있습니다.*
+- 메트로놈은 Hero 콘솔, 그루브는 Bento 구조, 튜너는 넓은 화면에서 Split, Knowledge는 Card Grid, More는 균형 잡힌 카드 그리드로 정리했습니다.
+- 더보기 카드 아이콘은 통일된 선형 SVG로 교체했습니다. 버튼/카드/정보 글자 가독성을 높였습니다.
+
+### v0.16.1 Interaction
+- 하단 탭은 가벼운 Fade Through, 더보기에서 상세 페이지로 이동할 때는 짧은 Push 느낌을 적용했습니다.
+- Bottom Sheet는 나타날 때 약 210ms 가벼운 등장 효과를 적용하고, **손잡이 영역에서만** 아래로 당겨 닫습니다. 시트 본문 스크롤을 가로채지 않습니다.
+- 버튼 Press 피드백을 추가하되 클릭을 막거나 페이지 전체 레이아웃을 다시 계산하지 않도록 했습니다.
+- 기존 BPM 좌우 드래그/ROTATE/±버튼 길게 누르기 및 Beat 짧게/길게 누르기는 그대로 유지합니다.
+- 프리셋을 길게 누르거나 PC에서 오른쪽 클릭하면 **적용·이름 변경·복제·삭제(2회 확인)**을 고를 수 있습니다. 기존 단순 탭은 즉시 적용합니다.
+- Knowledge의 이론/역사 카드에 펼치기 버튼을 넣었습니다. 첫 카드 외에는 모바일에서 접힌 상태로 시작하므로 필요한 내용만 확인할 수 있습니다.
+
+### v0.16.2 Performance/Accessibility
+- `prefers-reduced-motion`과 기존 `저사양 성능 모드`에서 모션을 최소화합니다. Stage 모드는 기존처럼 애니메이션 없이 사용합니다.
+- 모바일 화면에서는 시트/네비게이션 가림과 겹침을 줄이고, PC에서는 기존 BPM 카드가 왼쪽 열에 몰리던 CSS grid 충돌까지 수정했습니다.
+- 기존 오디오 스케줄러, Cloud Sync, 튜너 DSP, Backing Player DSP는 변경하지 않았습니다.
+- `design-v016.css`, `ux-v016.js` 파일을 추가했고, 오프라인 캐시에도 포함했습니다.
 
 ## 버전별 통합 개선 범위
 
@@ -38,16 +60,16 @@
 
 ## 설치 및 사용
 1. ZIP을 풀어서 기존 GitHub Desktop `Beatronome` 폴더의 파일들을 전체 덮어씁니다.
-2. GitHub Desktop → Commit to main (`Beatronome v0.15.1`) → Push origin.
+2. GitHub Desktop → Commit to main (`Beatronome v0.16.2`) → Push origin.
 3. 앱을 사용 중이었다면 연주가 끝난 뒤 탭/PWA 창을 모두 종료하고 다시 실행하세요. **재생 중 강제 업데이트는 하지 않습니다.**
-4. 상단 버전이 `v0.15.1`이면 새 버전입니다.
+4. 상단 버전이 `v0.16.2`이면 새 버전입니다.
 
 ## 한계/주의
 - 현재 파일은 **웹/PWA 배포본**입니다. 과거 제작한 APK/Xcode 프로젝트는 자동으로 업데이트되지 않습니다.
 - 실기기 iPhone/Galaxy의 백그라운드 오디오와 실제 음향 출력 지연은 별도의 장치 테스트가 필요합니다.
 - YouTube는 공식 iframe 플레이어만 제어합니다. Key Shift는 로컬 파일에서만 사용 가능합니다.
 - Cloud Sync의 최초 병합/백업을 개선했지만 여러 기기의 **동시 원자적 편집**은 현재 단일 JSON 행 구조에서 완전히 보장할 수 없습니다. 중요한 프리셋은 백업 파일도 함께 보관하세요.
-- 기존 `styles.css` 전체를 한 번에 제거·재작성하지 않았습니다. 레거시 스타일을 유지한 채 새 변경을 `polish.css`로 분리한 **단계적 구조 개선**입니다.
+- 기존 `styles.css`를 전체 재작성하지 않고 `polish.css` + `design-v016.css`와 `ux-v016.js`에 신규 디자인/상호작용을 분리한 **단계적 구조 개선**입니다.
 - 자체 진단은 브라우저 상태/스케줄러 예약 간격을 확인합니다. 음향 계측장비처럼 하드웨어 출력음을 정확히 측정하지는 않습니다.
 
-자세한 테스트 항목은 `QA_REPORT.md`를 참고하세요.
+기존 v0.15.1 테스트는 `QA_REPORT.md`, 이번 UI/UX 변경의 검증 범위 및 한계는 `QA_V0162.md`를 참고하세요.

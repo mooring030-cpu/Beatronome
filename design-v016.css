@@ -1,0 +1,225 @@
+/* Beatronome v0.16.2 | coherent Jazz/Studio design system.
+   Scoped to presentation; no audio scheduling or BPM timing changes. */
+:root {
+  --bt-bg:#0b111b; --bt-panel:#151e2a; --bt-panel-raised:#192533;
+  --bt-gold:#d8b66b; --bt-gold-ink:#171c22;
+  --bt-teal:#5dada5; --bt-burgundy:#793b53; --bt-danger:#c96975;
+  --bt-ink:#f4f0e8; --bt-muted:#aab5c0; --bt-line:rgba(216,182,107,.20);
+  --bt-rad-lg:24px; --bt-rad:17px; --bt-rad-sm:12px;
+  --bt-ease:cubic-bezier(.2,.75,.2,1); --bt-quick:145ms; --bt-open:210ms;
+  --bt-body:-apple-system,BlinkMacSystemFont,"Pretendard","SUIT","Apple SD Gothic Neo","Noto Sans KR","Segoe UI",Arial,sans-serif;
+  --bt-serif:"DM Serif Display",Georgia,"Times New Roman",serif;
+}
+html{font-size:16px;overscroll-behavior-x:none}
+body{font-family:var(--bt-body)!important;background:var(--bt-bg)!important;color:var(--bt-ink);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button,input,select,textarea{font-family:var(--bt-body)!important}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:disabled{cursor:not-allowed}
+button:not(:disabled):focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--bt-gold)!important;outline-offset:3px}
+main,.tab-page,.card,.settings-sheet,.backing-card,.instrument-console{min-width:0;box-sizing:border-box}
+.tab-page{contain:layout style}
+.card:not(.beat-pattern-hero){border-radius:var(--bt-rad-lg)!important;background:linear-gradient(160deg,var(--bt-panel),#101a25)!important;border:1px solid var(--bt-line)!important;box-shadow:0 8px 30px rgba(0,0,0,.10)!important}
+.page-title h2,.section-heading h2,.page-title h3{font-family:var(--bt-body)!important;font-size:clamp(22px,3.2vw,30px)!important;line-height:1.25;letter-spacing:-.035em;font-weight:750}
+.section-heading h2{font-size:clamp(18px,2.25vw,22px)!important}
+.eyebrow,.quality-chip{color:var(--bt-gold)!important;letter-spacing:.13em;font-size:11px!important;font-weight:750}
+.muted,.groove-tip,.backing-note,.tuner-tip,.theory-footnote{color:var(--bt-muted)!important;line-height:1.65}
+.more-launch,.manual-card,.reference-card,.groove-preset-card,.preset-card,.backing-control,.tuner-hero,.tuner-display{transition:border-color var(--bt-quick) ease,background var(--bt-quick) ease,box-shadow var(--bt-quick) ease}
+.more-launch:hover,.groove-preset-card:hover,.preset-card:hover{border-color:rgba(216,182,107,.52)!important}
+/* Important primary controls: small, recognizable state changes; never animate layout. */
+#playButton,.backing-play,.stage-play{background:var(--bt-burgundy)!important;color:var(--bt-ink)!important;border:1px solid rgba(255,255,255,.18)!important}
+#playButton.playing,.stage-play.playing{background:#93485f!important}
+#playButton:active,.round-control:active,.tap-button:active,.backing-play:active{filter:brightness(1.13)}
+.bpm-drag strong,#bpmValue,#stageBpm,#miniBpm,#focusBpm{font-family:"Inter",var(--bt-body)!important;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;letter-spacing:-.055em}
+/* Hero: one instrument panel, one beat pattern, predictable responsive flow */
+.instrument-console{border-radius:28px!important;background:var(--bt-panel)!important;border:1px solid rgba(216,182,107,.23)!important;box-shadow:0 16px 38px rgba(0,0,0,.22)!important;isolation:isolate}
+.instrument-console>.beat-pattern-hero{background:linear-gradient(145deg,#141f2b,#101925)!important;padding:18px!important;border-bottom:1px solid var(--bt-line)!important}
+.instrument-console>.bpm-card{background:radial-gradient(circle at 90% 0%,rgba(216,182,107,.12),transparent 42%),linear-gradient(145deg,#4d2539,#28202d 62%,#15212e)!important;min-width:0!important}
+.beat-hero-head{gap:10px!important}
+.beat-hero-copy strong{color:var(--bt-gold)!important;font-family:var(--bt-body)!important;font-weight:760}
+.hero-version{color:var(--bt-muted)!important;font-size:11px!important}
+.hero-home-logo{border:1px solid rgba(216,182,107,.28)!important}
+.top-beat-hint{gap:7px!important;color:var(--bt-muted)!important;font-size:11px!important;margin:8px 0 12px}
+.top-beat-hint b,.top-beat-hint i,.top-beat-hint em{font-size:10px!important;padding:4px 7px!important}
+.top-beat-grid .beat-dot{border-radius:15px!important;background:#192637!important;min-height:60px!important;border:1px solid rgba(216,182,107,.24)!important;transition:background var(--bt-quick) ease,border-color var(--bt-quick) ease,box-shadow var(--bt-quick) ease!important}
+.top-beat-grid .beat-dot span{font-size:12px!important;color:#c4cad2}
+.top-beat-grid .beat-dot i{font-size:clamp(19px,3.3vw,27px)!important}
+.top-beat-grid .beat-dot.accent{border-color:rgba(216,182,107,.53)!important;background:rgba(216,182,107,.12)!important}
+.top-beat-grid .beat-dot.normal i{color:var(--bt-teal)!important}
+.top-beat-grid .beat-dot.accent.active{background:var(--bt-gold)!important;border-color:#f2d697!important;box-shadow:0 0 0 2px rgba(216,182,107,.18)!important}
+.top-beat-grid .beat-dot.normal.active{background:var(--bt-teal)!important;border-color:#97cec5!important;box-shadow:0 0 0 2px rgba(93,173,165,.12)!important}
+.bpm-drag strong{font-size:clamp(74px,14vw,124px)!important}
+.tempo-name{font-family:var(--bt-serif)!important;font-weight:600!important;letter-spacing:.14em!important}
+.bpm-hint{font-size:12px!important}
+.tempo-action-row{gap:15px!important}
+.tempo-dial,.inline-play-button{min-width:70px;min-height:70px}
+.bpm-controls{gap:12px!important}
+.bpm-controls button{min-height:52px!important}
+.bpm-controls .tap-button{font-size:19px!important}
+.core-setting-summary{border-radius:var(--bt-rad)!important;min-height:64px;padding:10px 16px!important}
+.core-setting-summary strong{font-size:clamp(13px,3vw,16px)!important}
+.core-setting-summary #coreSettingSub{color:var(--bt-muted)!important;font-size:12px!important}
+/* Bento + split desktop content, responsive to actual available width. */
+#tabGroove.active{gap:14px!important}
+.groove-library,.groove-controls,.sequencer-card{min-width:0}
+.groove-preset-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px!important}
+.groove-preset-card{border-radius:14px!important;padding:14px!important;min-height:80px}
+.groove-preset-card strong{font-size:15px!important}
+.groove-preset-card span{font-size:12px!important;color:var(--bt-muted)!important}
+.genre-scroll button,.segmented button{min-height:42px;font-size:12px!important}
+#sequencer{overflow-x:auto;overscroll-behavior-x:contain}
+#tabTuner.active{gap:14px!important}
+.tuner-note{font-family:"Inter",var(--bt-body)!important;font-weight:750!important;letter-spacing:-.05em}
+.tuner-cents.good{color:var(--bt-teal)!important}
+.tuner-display.in-tune{border-color:rgba(93,173,165,.42)!important}
+.tuner-select-grid label,.tuner-pro-controls label{font-size:12px!important}
+.tuner-string strong{font-family:"Inter",var(--bt-body);font-size:clamp(25px,4vw,35px)!important}
+.tuner-string span{font-size:11px!important;line-height:1.4;word-break:keep-all}
+.tuner-string.active{border-color:var(--bt-teal)!important}
+/* Large text readability for theory/knowledge/manual. */
+.knowledge-hero h3{font-family:var(--bt-body)!important;font-weight:740;font-size:clamp(20px,3vw,27px)!important;letter-spacing:-.03em}
+.knowledge-hero p,.manual-card p,.reference-card p{font-size:clamp(12px,1.7vw,14px)!important;line-height:1.7!important}
+.ref-head h3{font-family:var(--bt-body)!important;font-weight:720!important;font-size:clamp(17px,2vw,21px)!important}
+.ref-head p,.knowledge-source p,.theory-result p{font-size:12px!important}
+.manual-card h3{font-family:var(--bt-body)!important;font-size:17px!important;font-weight:740}
+.manual-card span{font-size:12px!important;line-height:1.55}
+.reference-card{position:relative;min-width:0}
+.ref-head{min-width:0;gap:10px!important;align-items:center!important}
+.ref-head>div{min-width:0;flex:1}
+.ref-head .ref-expand-toggle{margin-left:auto;flex:0 0 38px;width:38px;min-height:38px!important;border:1px solid var(--bt-line);border-radius:11px;background:#202b38;color:var(--bt-gold);font-size:23px;display:grid;place-items:center;padding:0;line-height:1}
+.reference-card.is-collapsed>.ref-head{margin-bottom:0!important}
+.reference-card.is-collapsed>:not(.ref-head){display:none!important}
+.ref-lines p,.tension-grid span,.timeline-row p,.musician-card p,.ii-v-i small{font-size:clamp(11px,1.6vw,13px)!important;line-height:1.6!important}
+.signature-row small,.mode-table small,.formula-list small,.diatonic-chord small{font-size:11px!important}
+.signature-row span,.mode-table strong,.formula-list span,.tension-grid span{font-size:12px!important}
+.musician-card h4{font-family:var(--bt-body)!important;font-size:16px!important}
+.musician-card b,.musician-card>span{font-size:11px!important}
+.knowledge-nav button,.musician-filters button{font-size:11px!important}
+.note-value-grid strong,.note-value-grid span,.theory-picker label{font-size:11px!important}
+/* More screen is a compact card grid, not a long settings index. */
+.more-grid{gap:12px!important}
+.more-launch{border-radius:20px!important;min-height:124px!important;padding:17px!important;gap:6px!important}
+.more-launch>span{color:var(--bt-gold)!important}
+.more-launch strong{font-size:15px!important;font-weight:740}
+.more-launch small{font-size:12px!important;color:var(--bt-muted)!important;line-height:1.5}
+/* Form controls: consistent hit-area and contrast. */
+input:not([type=range]):not([type=checkbox]),select,textarea{background:#0e1926!important;color:var(--bt-ink)!important;border:1px solid rgba(216,182,107,.22)!important;border-radius:12px!important;font-size:16px!important;min-width:0}
+input[type=range]{accent-color:var(--bt-gold)}
+.settings-sheet .settings-item>div>span{font-size:13px!important;line-height:1.6!important;word-break:keep-all}
+.settings-sheet .settings-item>div>strong{font-size:15px!important}
+.settings-category-nav{background:#101925!important;border-bottom:1px solid var(--bt-line);scrollbar-width:none}
+.settings-category-nav button{font-size:12px!important}
+.settings-category-nav button.active{background:var(--bt-gold)!important;color:var(--bt-gold-ink)!important}
+.settings-sheet>.page-title{background:#101925!important}
+.settings-sheet{background:#101925!important;scrollbar-gutter:stable}
+/* Sheet drag is bound solely to handle, leaving inner touch-scrolling native. */
+.settings-sheet>.sheet-handle{touch-action:none;cursor:grab;position:sticky;top:0;z-index:12}
+.settings-sheet>.sheet-handle:active{cursor:grabbing}
+.modal-backdrop:not(.hidden) .settings-sheet{animation:btSheetIn var(--bt-open) var(--bt-ease) both}
+.modal-backdrop:not(.hidden){animation:btBackdropIn 170ms ease both}
+@keyframes btSheetIn{from{opacity:.92;transform:translate3d(0,24px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+@keyframes btBackdropIn{from{opacity:0}to{opacity:1}}
+/* A subtle fade on page navigation, never animating scroll/height. */
+.tab-page.bt-enter{animation:btTabIn 160ms var(--bt-ease) both}
+.tab-page.bt-enter.bt-child{animation:btChildIn 170ms var(--bt-ease) both}
+@keyframes btTabIn{from{opacity:.62}to{opacity:1}}
+@keyframes btChildIn{from{opacity:.65;transform:translate3d(9px,0,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+/* Apply feedback to interactive controls without causing reflow. */
+button.bt-pressed:not(.beat-dot):not(.seq-step){filter:brightness(1.12)!important}
+.preset-main,.groove-preset-card,.reference-card .ref-expand-toggle,.manual-card{touch-action:pan-y}
+.preset-context-backdrop{position:fixed;inset:0;z-index:5100;display:grid;align-items:end;justify-items:center;background:rgba(2,6,13,.70);padding:16px 12px max(16px,env(safe-area-inset-bottom))}
+.preset-context-backdrop.hidden{display:none!important}
+.preset-context-panel{width:min(100%,440px);padding:18px;border:1px solid var(--bt-line);border-radius:24px;background:#152331;display:grid;gap:10px;box-shadow:0 12px 40px rgba(0,0,0,.36);animation:btSheetIn 210ms var(--bt-ease) both}
+.preset-context-panel>h3{margin:0;font-size:19px;color:var(--bt-gold)}
+.preset-context-panel>p{margin:0;color:var(--bt-muted);font-size:12px}
+.preset-context-panel>input{padding:12px}
+.preset-context-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.preset-context-actions>button,.preset-context-close{padding:11px 10px;border:1px solid var(--bt-line);background:#1c2b39;color:var(--bt-ink);border-radius:12px;font-weight:700;font-size:13px}
+.preset-context-actions .bt-gold{background:var(--bt-gold);color:var(--bt-gold-ink)}
+.preset-context-actions .bt-danger{color:#ffd3d7;border-color:rgba(201,105,117,.4)}
+.preset-context-close{background:transparent}
+/* Stage mode is intentionally motion-free for real-time use. */
+.stage-overlay,.stage-overlay *{animation:none!important;transition:none!important;backdrop-filter:none!important}
+.stage-lamps .stage-beat{border-radius:14px!important;min-width:0}
+.stage-bpm strong{color:var(--bt-gold)!important}
+.stage-note{font-size:13px!important;color:var(--bt-muted)!important}
+/* GPU-light mode and user motion preference */
+body.performance-ui *,body.performance-ui *::before,body.performance-ui *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+body.performance-ui .card,body.performance-ui .instrument-console{box-shadow:none!important;backdrop-filter:none!important}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+/* Responsive: phone-first content, adequate tap targets and no horizontal page shift. */
+@media(max-width:700px){
+  body{font-size:14px}
+  main{padding:0 10px 100px!important}
+  .instrument-console{margin-left:0!important;margin-right:0!important;border-radius:22px!important;max-width:100%!important}
+  .instrument-console>.beat-pattern-hero{padding:14px 12px!important;min-width:0!important}
+  .instrument-console>.bpm-card{margin:0!important;padding:14px 12px 16px!important;border-radius:0!important}
+  .top-beat-grid{gap:6px!important}
+  .top-beat-grid .beat-dot{min-height:56px!important;border-radius:13px!important;padding:6px 2px}
+  .top-beat-hint{font-size:10px!important}
+  .bpm-drag strong{font-size:clamp(70px,21vw,116px)!important}
+  .bpm-hint{font-size:11px!important}
+  .tempo-action-row{gap:16px!important}
+  .tempo-dial,.inline-play-button{width:76px!important;height:76px!important}
+  .round-control{min-width:56px}
+  .core-setting-summary{padding:13px!important}
+  .card:not(.beat-pattern-hero){border-radius:19px!important}
+  .knowledge-panel.active,.knowledge-panel.search-show{grid-template-columns:minmax(0,1fr)!important}
+  .knowledge-panel .reference-card,.knowledge-panel .knowledge-tool{padding:15px!important}
+  .note-value-grid{grid-template-columns:repeat(auto-fit,minmax(52px,1fr))!important}
+  .mode-table>div{grid-template-columns:24px minmax(75px,.7fr) minmax(0,1fr)!important;gap:5px}.mode-table>div>small{grid-column:2/-1}
+  .formula-list>div{grid-template-columns:minmax(90px,.5fr) minmax(0,1fr)!important}.formula-list>div>small{grid-column:1/-1}
+  .signature-table{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .tuner-strings{scroll-snap-type:x proximity}
+  .tuner-string{scroll-snap-align:start}
+  .settings-sheet{scrollbar-gutter:auto}
+  .settings-sheet .settings-item{grid-template-columns:29px minmax(0,1fr) auto!important}
+  .settings-sheet .settings-item:has(>select){grid-template-columns:29px minmax(0,1fr)!important}
+  .settings-sheet .settings-item>select{grid-column:2/-1!important;width:100%!important}
+  .page-title h2{font-size:24px!important}
+  .more-launch{min-height:126px!important;padding:14px!important}
+  .more-launch strong{font-size:14px!important}
+  .more-launch small{font-size:11px!important}
+  .bottom-nav button small{font-size:11px!important}
+}
+@media(min-width:701px) and (max-width:1099px){
+  #tabGroove.active{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #tabGroove>.sequencer-card{grid-column:1/-1}
+  #tabTuner.active{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #tabTuner>.tuner-strings-card,#tabTuner>.custom-tuning-card{grid-column:1/-1}
+  #tabMore.active .more-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(min-width:1100px){
+  .instrument-console{grid-template-columns:minmax(300px,.85fr) minmax(400px,1.15fr)!important}
+  .instrument-console>.beat-pattern-hero{padding:20px!important}
+  .instrument-console>.bpm-card{padding:26px!important}
+  .knowledge-panel.active[data-knowledge-content=lab],.knowledge-panel.search-show[data-knowledge-content=lab]{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  .knowledge-panel.active[data-knowledge-content=basics],.knowledge-panel.active[data-knowledge-content=harmony],.knowledge-panel.active[data-knowledge-content=jazz]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+body.bt-preset-open{overflow:hidden!important;touch-action:none}
+.preset-context-panel{touch-action:auto}
+@media(max-width:430px){
+  .top-beat-hint{gap:4px!important}
+  .top-beat-hint b,.top-beat-hint i,.top-beat-hint em{font-size:9px!important;padding:3px 5px!important}
+  .more-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .more-launch{padding:13px!important;min-height:115px!important}
+  .knowledge-nav{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+}
+/* Legacy v0.13 assigned BPM to grid row 2 / column 1. Explicit placement
+   prevents a blank second desktop column after design system migration. */
+@media(min-width:900px){
+  .instrument-console{display:grid!important;grid-template-columns:minmax(0,.90fr) minmax(0,1.10fr)!important;align-items:stretch!important}
+  .instrument-console>.beat-pattern-hero{grid-column:1!important;grid-row:1!important;align-self:stretch!important;border-right:1px solid var(--bt-line)!important;border-bottom:0!important}
+  .instrument-console>.bpm-card{grid-column:2!important;grid-row:1!important;align-self:stretch!important;min-height:0!important}
+}
+@media(min-width:900px) and (max-width:1130px){
+  .instrument-console{grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr)!important}
+}
+/* In legacy CSS bottom-nav carries z-index:900 even on desktop. Overlays must
+   remain above it at all viewport widths, not just mobile. */
+.modal-backdrop:not(.hidden){z-index:1300!important}
+body.overlay-open .bottom-nav{pointer-events:none!important;visibility:hidden!important}
+.search-overlay:not(.hidden),.onboarding-overlay:not(.hidden){z-index:1400!important}
+.quick-preset-strip.empty{display:none!important}
+body.overlay-open{overflow:hidden!important}
+.more-launch>.bt-menu-icon{width:29px;height:29px;display:grid;place-items:center}
+.more-launch>.bt-menu-icon svg{width:26px;height:26px}

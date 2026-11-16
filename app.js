@@ -204,7 +204,7 @@
   let playbackChainIndex=0,playbackChainBarCount=0,visualChainIndex=-1,visualChainBarCount=0;
   let audioCtx=null,master=null,limiter=null,noiseCache=null,scheduler=null,nextNoteTime=0,stepIndex=0,barIndex=0,startTime=0,sessionBaseBpm=state.bpm,tempoDir=1;
   let scheduledMetroSources=[];
-  // v0.15.1 timing telemetry: reports Web Audio scheduling intervals only.
+  // v0.16.2 timing telemetry: reports Web Audio scheduling intervals only.
   // This cannot measure physical speaker/Bluetooth latency.
   let clockLast=null,clockChecks=0,clockErrorSum=0,clockErrorMax=0,clockRecoveries=0;
   function trackScheduledClock(time,interval){
@@ -229,7 +229,7 @@
   function cloudConfig(){const c=window.BEATRONOME_SUPABASE||{};return{url:String(c.url||'').replace(/\/$/,''),key:String(c.anonKey||'')}}
   function cloudConfigured(){const c=cloudConfig();return /^https:\/\//.test(c.url)&&!!c.key;}
   function cloudSessionValid(){return !!cloudMeta.session?.access_token&&!!cloudMeta.session?.user?.id;}
-  // v0.15.1: non-destructive cloud merge and local recovery snapshots. No credentials in backups.
+  // v0.16.2: non-destructive cloud merge and local recovery snapshots. No credentials in backups.
   const CLOUD_SAFETY_KEY='beatronome-cloud-recovery-v1';
   function cloudSafetyBackup(reason){
     try{
@@ -442,7 +442,7 @@
 
   function renderVisualBeat(){const meter=getSelectedMeter(),containers=[$('visualBeatLamps'),$('focusLamps')].filter(Boolean),subInfo=SUBDIVISIONS[state.subdivision]||SUBDIVISIONS[1];if($('visualMeterLabel'))$('visualMeterLabel').textContent=`${meter.beats}/${meter.denominator}`;if($('heroSubdivisionLabel'))$('heroSubdivisionLabel').textContent=subInfo.label;if($('focusMeter'))$('focusMeter').textContent=`${meter.beats}/${meter.denominator}`;containers.forEach(c=>{c.innerHTML='';c.style.setProperty('--hero-columns',String(Math.min(meter.beats,8)));for(let i=0;i<meter.beats;i++){const x=document.createElement('i');x.className=`visual-lamp ${i===0?'accent':'normal'}${playing&&currentBeat===i?' on':''}`;x.textContent=String(i+1);x.setAttribute('aria-label',`${i+1}박`);c.appendChild(x);}});}
   function renderVisualBeatActive(){[$('visualBeatLamps'),$('focusLamps')].filter(Boolean).forEach(c=>Array.from(c.children).forEach((x,i)=>x.classList.toggle('on',playing&&currentBeat===i)));}
-  function renderQuickPresets(){const wrap=$('quickPresetList');if(!wrap)return;const strip=wrap.closest('.quick-preset-strip');wrap.innerHTML='';strip?.classList.toggle('empty',!presets.length);if(!presets.length){wrap.innerHTML='<span class="quick-preset-empty">저장된 프리셋 없음</span>';return;}presets.slice(0,3).forEach((p,i)=>{const b=document.createElement('button');b.textContent=`${i+1}. ${p.name}`;b.onclick=()=>loadPreset(p);wrap.appendChild(b);});}
+  function renderQuickPresets(){const wrap=$('quickPresetList');if(!wrap)return;const strip=wrap.closest('.quick-preset-strip');wrap.innerHTML='';strip?.classList.toggle('empty',!presets.length);if(!presets.length){wrap.innerHTML='<span class="quick-preset-empty">저장된 프리셋 없음</span>';return;}presets.slice(0,3).forEach((p,i)=>{const b=document.createElement('button');b.dataset.presetId=p.id;b.textContent=`${i+1}. ${p.name}`;b.onclick=()=>loadPreset(p);wrap.appendChild(b);});}
   function renderUiExtras(){document.body.classList.toggle('simple-ui',state.practice.simpleMode);document.body.classList.toggle('one-hand-mode',state.ui.oneHand);document.body.dataset.theme=state.ui.theme;document.body.classList.toggle('performance-ui',state.ui.performanceMode);document.body.classList.remove('ui-compact','ui-large');if(state.ui.interfaceSize==='compact')document.body.classList.add('ui-compact');if(state.ui.interfaceSize==='large')document.body.classList.add('ui-large');if($('toggleSimpleMode'))$('toggleSimpleMode').textContent=state.practice.simpleMode?'고급 기능 펼치기':'고급 기능 접기';if($('countInBars'))$('countInBars').value=state.practice.countInBars;if($('flashToggle'))$('flashToggle').classList.toggle('on',state.practice.flash);if($('vibrateToggle'))$('vibrateToggle').classList.toggle('on',state.practice.vibrate);if($('focusBpm'))$('focusBpm').textContent=state.bpm;if($('focusPlay'))$('focusPlay').textContent=playing?'Ⅱ STOP':'▶ START';if($('focusOverlay'))$('focusOverlay').classList.toggle('playing',playing);if($('bpmLock')){$('bpmLock').textContent=state.ui.bpmLocked?'LOCKED':'UNLOCKED';$('bpmLock').classList.toggle('locked',state.ui.bpmLocked);}if($('interfaceSize'))$('interfaceSize').value=state.ui.interfaceSize;if($('themeSelect'))$('themeSelect').value=state.ui.theme;if($('performanceToggle'))$('performanceToggle').classList.toggle('on',state.ui.performanceMode);renderQuickActions();renderCoreSettingSummary();if($('oneHandToggle'))$('oneHandToggle').classList.toggle('on',state.ui.oneHand);if($('stageTapToggle'))$('stageTapToggle').classList.toggle('on',state.ui.stageTapPlay);if($('oneHandDock'))$('oneHandDock').classList.toggle('hidden',!state.ui.oneHand);if($('oneHandPlay'))$('oneHandPlay').textContent=playing?'Ⅱ':'▶';if($('oneHandLock'))$('oneHandLock').classList.toggle('locked',state.ui.bpmLocked);if($('latencyCalibration')){$('latencyCalibration').value=state.ui.audioLatencyMs;$('latencyCalibrationOut').textContent=`${state.ui.audioLatencyMs>0?'+':''}${state.ui.audioLatencyMs} ms`;}if(stageMode)renderStage();renderVisualBeat();renderQuickPresets();if($('quickSoundSelect')){$('quickSoundSelect').value=state.sound;}$$('[data-core-tab]').forEach(b=>b.classList.toggle('selected',document.querySelector(`#tab${b.dataset.coreTab[0].toUpperCase()+b.dataset.coreTab.slice(1)}`)?.classList.contains('active')));}
   function renderTraining(){
     const t=state.training;$$('[data-toggle]').forEach(btn=>{const k=btn.dataset.toggle;btn.classList.toggle('on',!!t[k]);const body=document.querySelector(`[data-body="${k}"]`);if(body)body.classList.toggle('hidden',!t[k]);btn.closest('.training-row')?.classList.toggle('enabled',!!t[k]);});
@@ -588,7 +588,7 @@
 
   function renderPresets(){
     renderQuickPresets();const list=$('presetList');list.innerHTML='';if(!presets.length){list.innerHTML='<div class="empty-state"><div class="big">☆</div><strong>아직 저장된 프리셋이 없습니다.</strong><span>Meter Chain · Training · Groove 패턴까지 함께 저장됩니다.</span></div>';return;}
-    presets.forEach(p=>{const n=deepMerge(defaults,p),a=document.createElement('article');a.className='preset-card card';const detail=n.meterChainEnabled&&n.meterChain.length?n.meterChain.slice(0,4).map(m=>`${m.beats}/${m.denominator}${m.repeatBars>1?`×${m.repeatBars}`:''}`).join(' → ')+(n.meterChain.length>4?' → …':''):`${n.beatsPerBar}/${n.denominator}`;const grooveText=n.groove.genreEnabled===false?'Metronome Only':`${n.groove.genre}/${n.groove.selectedName||'Custom'} · ${n.playbackMode.toUpperCase()}`;a.innerHTML=`<button class="preset-main"><div class="preset-bpm">${n.bpm}<small>BPM</small></div><div class="preset-copy"><strong>${escapeHtml(p.name)}${cloudSessionValid()?'<i class="preset-cloud">☁</i>':''}</strong><span>${detail} · ${grooveText}</span></div></button><button class="danger-icon">×</button>`;a.querySelector('.preset-main').onclick=()=>loadPreset(p);a.querySelector('.danger-icon').onclick=()=>{cloudDeletePreset(p.id);presets=presets.filter(x=>x.id!==p.id);persistPresets();renderPresets();};list.appendChild(a);});
+    presets.forEach(p=>{const n=deepMerge(defaults,p),a=document.createElement('article');a.className='preset-card card';a.dataset.presetId=p.id;const detail=n.meterChainEnabled&&n.meterChain.length?n.meterChain.slice(0,4).map(m=>`${m.beats}/${m.denominator}${m.repeatBars>1?`×${m.repeatBars}`:''}`).join(' → ')+(n.meterChain.length>4?' → …':''):`${n.beatsPerBar}/${n.denominator}`;const grooveText=n.groove.genreEnabled===false?'Metronome Only':`${n.groove.genre}/${n.groove.selectedName||'Custom'} · ${n.playbackMode.toUpperCase()}`;a.innerHTML=`<button class="preset-main"><div class="preset-bpm">${n.bpm}<small>BPM</small></div><div class="preset-copy"><strong>${escapeHtml(p.name)}${cloudSessionValid()?'<i class="preset-cloud">☁</i>':''}</strong><span>${detail} · ${grooveText}</span></div></button><button class="danger-icon">×</button>`;a.querySelector('.preset-main').onclick=()=>loadPreset(p);a.querySelector('.danger-icon').onclick=()=>{if(!window.confirm(`프리셋 '${p.name}'을(를) 삭제할까요?`))return;cloudDeletePreset(p.id);presets=presets.filter(x=>x.id!==p.id);persistPresets();renderPresets();};list.appendChild(a);});
   }
   function renderAll(){renderCore();renderTraining();renderSound();renderGroove();renderTuner();renderPresets();renderPractice();renderUiExtras();renderKnowledgeMemory();}
 
@@ -812,7 +812,7 @@
   function knowledgePractice(item){captureUndo('Knowledge 연습 시작');state.groove.genreEnabled=false;state.playbackMode='metro';state.bpm=item?.bpm||100;state.subdivision=item?.type==='scale'?2:1;state.practice.countInBars=1;persist();renderAll();switchTab('metronome');notify(`${item?.label||'이론'} · ${state.bpm} BPM 연습`);}
   window.BeatronomeBridge={recordKnowledge:knowledgeRecord,toggleKnowledgeFavorite:knowledgeToggleFavorite,startKnowledgePractice:knowledgePractice,isKnowledgeFavorite:id=>(state.library.knowledgeFavorites||[]).some(x=>x.id===id),refreshKnowledgeMemory:renderKnowledgeMemory};
 
-  const APP_VERSION='0.15.1';
+  const APP_VERSION='0.16.2';
   let swRegistration=null;
   let offlinePreparing=false;
   let updateWorker=null;
@@ -957,7 +957,14 @@
     getDebugSnapshot:()=>({version:APP_VERSION,playing,bpm:state.bpm,meter:`${getPlaybackMeter().beats}/${getPlaybackMeter().denominator}`,subdivision:state.subdivision,tab:state.ui.lastTab,tunerActive:!!tunerStream,audioState:audioCtx?.state||'not-created',cloudConnected:cloudSessionValid(),offline:!navigator.onLine}),
     restoreCloudSafetyBackup:()=>restoreLatestCloudBackup(),
     getRecoveryCount:()=>load(CLOUD_SAFETY_KEY,[]).length,
-    getTimingStats:()=>getTimingStats()
+    getTimingStats:()=>getTimingStats(),
+    // Stable operations for v0.16 preset context sheet. Data stays in the original
+    // local-first / cloud-sync stores, not duplicated in the UI layer.
+    listPresetSummaries:()=>presets.map(p=>({id:p.id,name:p.name})),
+    loadPresetById:(id)=>{const item=presets.find(p=>p.id===id);if(!item)return false;loadPreset(item);return true;},
+    renamePresetById:(id,newName)=>{const item=presets.find(p=>p.id===id),name=String(newName||'').trim();if(!item||!name)return false;item.name=name;item.updatedAt=Date.now();persistPresets();renderPresets();notify('프리셋 이름을 변경했습니다.');return true;},
+    duplicatePresetById:(id)=>{const src=presets.find(p=>p.id===id);if(!src)return false;const now=Date.now();presets.unshift({...JSON.parse(JSON.stringify(src)),id:uid(),name:`${src.name} 복사본`,savedAt:now,updatedAt:now});persistPresets();renderPresets();notify('프리셋을 복제했습니다.');return true;},
+    deletePresetById:(id)=>{const before=presets.length;presets=presets.filter(p=>p.id!==id);if(presets.length===before)return false;cloudDeletePreset(id);persistPresets();renderPresets();notify('프리셋을 삭제했습니다.');return true;}
   };
 
   // Desktop scrolling uses the browser's native wheel/trackpad behavior.
