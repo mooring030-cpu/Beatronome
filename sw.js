@@ -1,4 +1,4 @@
-const VERSION = '0.13.0';
+const VERSION = '0.14.0';
 const CACHE = `beatronome-offline-v${VERSION}`;
 
 const BASIC = [];
@@ -15,6 +15,9 @@ const OFFLINE_ASSETS = [
   `./cloud-config.js?v=${VERSION}`,
   `./app.js?v=${VERSION}`,
   `./knowledge.js?v=${VERSION}`,
+  `./pitch-shifter.js?v=${VERSION}`,
+  `./backing.js?v=${VERSION}`,
+  './THIRD_PARTY_NOTICES.txt',
   `./manifest.webmanifest?v=${VERSION}`,
   './favicon.png',
   './apple-touch-icon.png',

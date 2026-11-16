@@ -1,43 +1,36 @@
-# Beatronome v0.13.0 Polish Edition
+# Beatronome v0.14.0 Backing Track Edition
 
-## 수정 사항
-- 8분/16분/3연음 등 모든 subdivision에서 다운비트와 업비트 강약 계층을 강제로 통일
-  - 1박 accent > 다른 downbeat > upbeat/subdivision
-- Basic 녹음 샘플의 bank별 레벨 차이가 있어도 업비트가 더 튀지 않도록 역할별 gain 보정
-- 기타/베이스 튜너를 octave-aware 방식으로 변경
-  - 개방현뿐 아니라 같은 줄의 12프렛(+1 octave), 24프렛(+2 octave) 같은 음을 같은 줄로 인식
-  - 악기 모드에서는 음이름(pitch class)을 크게 표시하고 실제 주파수/cents는 그대로 표시
-- v0.12.6 캐시/버전 갱신
+프로 뮤지션용 Offline-first PWA. 메트로놈, Groove Engine, 기타/베이스 튜너, Stage Mode, Practice Routine, Set List, Cloud Sync, Music Knowledge에 Backing Track 연습 플레이어를 추가했습니다.
 
+## v0.14.0 핵심
 
-## v0.12.6
-- 모바일/PC 모두 박자 패턴(A/•/×)을 화면 최상단으로 이동
-- 중복되던 단순 1·2·3·4 Visual Beat 행 제거
-- 상단 박자 버튼이 현재 박자 점등과 강박/일반/무음 편집을 동시에 담당
-- 재생 중에도 박자 강약 패턴 변경 시 메트로놈을 멈추지 않음
+### Backing Track · MY FILE
+- MP3/WAV/M4A/AAC/OGG/MP4 등 브라우저가 재생 가능한 로컬 음원·영상
+- Speed 50~150% (브라우저 pitch-preserve 사용)
+- Key -12~+12 semitone 독립 조절 (Web Audio pitch shifter)
+- A-B Loop / ±5초 이동 / Seek / 볼륨
+- 파형 표시(디코딩 가능한 파일)
+- Marker 저장
+- Beatronome 메트로놈 함께 재생
+- Track BPM을 Beatronome BPM으로 적용
+- Speed Trainer: 반복 횟수마다 자동 속도 증가/감소
+- 12-Key Trainer: 반복 횟수마다 자동 전조
+- 로컬 파일은 업로드하지 않으며 해당 기기에서만 재생
 
+### Backing Track · YOUTUBE
+- YouTube URL 로드
+- 공식 IFrame Player API 기반 재생/정지/Seek/±5초
+- 지원 playback rate 선택
+- A-B Loop / Marker
+- 메트로놈 함께 재생
+- YouTube 공식 API 제한으로 Key/Pitch 변경은 지원하지 않음
+- 인터넷 연결 필요
 
-## v0.12.6
-- START/STOP 버튼을 별도 하단 카드에서 제거했습니다.
-- ROTATE 다이얼 옆에 START/STOP을 배치했습니다.
-- 모바일/PC 모두 동일한 조작 순서를 사용합니다.
-- BPM 카드 아래 세로 공간을 줄였습니다.
+## 사용
+GitHub Pages에 전체 파일을 업로드하고 `index.html`을 실행합니다. 기존 Beatronome 저장소에 덮어쓰기 후 Commit/Push 하면 됩니다.
 
+## 오프라인
+앱 본체와 Basic 클릭음, Backing Track 처리 코드는 Service Worker에 캐시됩니다. 사용자가 선택한 로컬 미디어 파일 자체는 브라우저 보안상 앱 캐시에 자동 복제하지 않습니다. YouTube는 온라인 연결이 필요합니다.
 
-## v0.12.6 Always Awake
-- 앱이 화면에 열려 있는 동안 Screen Wake Lock을 항상 요청합니다.
-- 메트로놈 재생 여부와 무관하게 튜너/그루브/연습/지식/설정에서도 화면 자동 꺼짐을 방지합니다.
-- 앱이 백그라운드/비가시 상태가 되면 OS가 Wake Lock을 해제할 수 있으며, 다시 화면으로 돌아오면 자동 재요청합니다.
-
-
-## v0.13.0 Polish Edition
-- Instrument Console: Beat Pattern + BPM + transport를 하나의 장비형 UI로 통합
-- Beat 버튼: 짧게 누르면 상태 순환, 길게 누르면 Accent/Normal/Mute 메뉴
-- 재생 상태를 CSS 기반의 가벼운 테두리 Pulse로 표시
-- 색상 역할 고정: Gold=선택/Accent, Teal=Normal/정상, Burgundy=재생/Training, Red=삭제/오류
-- 메트로놈 세부 설정을 한 줄 요약 + Bottom Sheet로 압축
-- 사용자 지정 Quick Actions 3개
-- 기타/베이스 튜너의 줄 표시 강화, 12/24프렛 표기
-- Stage Mode에 실제 A/•/× 패턴 표시와 한 줄 메모
-- Jazz Club / Studio Dark 테마
-- 저사양 성능 모드
+## Third-party
+`THIRD_PARTY_NOTICES.txt` 참고. 로컬 Key Shift의 delay/crossfade 처리 코어는 Chris Wilson의 Jungle 예제를 기반으로 합니다.

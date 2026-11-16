@@ -684,7 +684,7 @@
   function restoreResumeSession(){const r=state.practice.resumeSession;if(!r)return;const list=r.type==='routine'?state.library.routines:state.library.setlists,item=list.find(x=>x.id===r.id);if(!item)return;const max=(r.type==='routine'?item.steps:item.songs).length-1;activePractice={type:r.type,item,index:clamp(Number(r.index)||0,0,Math.max(0,max))};renderActivePractice();notify('지난 연습 세션을 복원했습니다.');}
 
   function renderGlobalSearch(q=''){const box=$('globalSearchResults');if(!box)return;const query=q.trim().toLowerCase();const items=[
-    ['메트로놈','BPM · 박자 · Training','metronome'],['그루브','Jazz · Rock · Funk · Drum','groove'],['튜너','기타 · 베이스 · Drop tuning','tuner'],['연습','Routine · Set List · 기록','practice'],['뮤직 지식','코드 · 스케일 · 재즈','knowledge'],['매뉴얼','기능 사용법','manual'],['클릭 사운드','Basic · Digital · Boost','sound'],['프리셋','저장된 설정','presets']
+    ['메트로놈','BPM · 박자 · Training','metronome'],['그루브','Jazz · Rock · Funk · Drum','groove'],['튜너','기타 · 베이스 · Drop tuning','tuner'],['연습','Routine · Backing Track · Set List · 기록','practice'],['백킹트랙','Speed · Key · A-B Loop · YouTube','practice'],['뮤직 지식','코드 · 스케일 · 재즈','knowledge'],['매뉴얼','기능 사용법','manual'],['클릭 사운드','Basic · Digital · Boost','sound'],['프리셋','저장된 설정','presets']
   ];presets.forEach((p,i)=>items.push([p.name,`${p.bpm} BPM · Preset`,()=>loadPreset(p)]));state.library.routines.forEach(r=>items.push([r.name,`${r.steps.length}단계 · Routine`,()=>startRoutine(r)]));state.library.setlists.forEach(r=>items.push([r.name,`${r.songs.length}곡 · Set List`,()=>startSetlist(r)]));const filtered=items.filter(x=>!query||(x[0]+' '+x[1]).toLowerCase().includes(query)).slice(0,18);box.innerHTML='';filtered.forEach(([title,sub,action])=>{const b=document.createElement('button');b.innerHTML=`<strong>${escapeHtml(title)}</strong><span>${escapeHtml(sub)}</span>`;b.onclick=()=>{closeGlobalSearch();if(typeof action==='function')action();else switchTab(action);};box.appendChild(b);});if(query&&filtered.length<8){const b=document.createElement('button');b.innerHTML=`<strong>뮤직 지식에서 “${escapeHtml(q)}” 검색</strong><span>코드·스케일·뮤지션·이론 검색</span>`;b.onclick=()=>{closeGlobalSearch();switchTab('knowledge');setTimeout(()=>{if($('knowledgeSearch')){$('knowledgeSearch').value=q;$('knowledgeSearch').dispatchEvent(new Event('input'));}},40);};box.appendChild(b);}}
   function openGlobalSearch(){if(!$('globalSearchOverlay'))return;$('globalSearchOverlay').classList.remove('hidden');$('globalSearchInput').value='';renderGlobalSearch('');setTimeout(()=>$('globalSearchInput').focus(),40);}
   function closeGlobalSearch(){$('globalSearchOverlay')?.classList.add('hidden');}
@@ -710,7 +710,7 @@
   function knowledgePractice(item){captureUndo('Knowledge 연습 시작');state.groove.genreEnabled=false;state.playbackMode='metro';state.bpm=item?.bpm||100;state.subdivision=item?.type==='scale'?2:1;state.practice.countInBars=1;persist();renderAll();switchTab('metronome');notify(`${item?.label||'이론'} · ${state.bpm} BPM 연습`);}
   window.BeatronomeBridge={recordKnowledge:knowledgeRecord,toggleKnowledgeFavorite:knowledgeToggleFavorite,startKnowledgePractice:knowledgePractice,isKnowledgeFavorite:id=>(state.library.knowledgeFavorites||[]).some(x=>x.id===id),refreshKnowledgeMemory:renderKnowledgeMemory};
 
-  const APP_VERSION='0.13.0';
+  const APP_VERSION='0.14.0';
   let swRegistration=null;
   let offlinePreparing=false;
   let updateWorker=null;
@@ -842,6 +842,17 @@
   $('clearPracticeLog').onclick=()=>{if(confirm('연습 기록을 모두 지울까요?')){state.library.practiceLogs={};persist();renderPracticeStats();}};$('exportBackup').onclick=exportBackup;$('importBackupButton').onclick=()=>$('importBackupFile').click();$('importBackupFile').onchange=e=>{const f=e.target.files?.[0];if(f)importBackupFile(f);e.target.value='';};
   if($('cloudTopBadge'))$('cloudTopBadge').onclick=()=>{$('settingsModal').classList.remove('hidden');refreshOfflineStatus();renderCloudUi();};
   $('homeLogoButton').onclick=()=>{closeGlobalSearch();if(stageMode)setStageMode(false);if(focusMode)setFocusMode(false);$('settingsModal')?.classList.add('hidden');switchTab('metronome');window.scrollTo({top:0,left:0,behavior:'auto'});};
+
+  window.BeatronomeAPI={
+    isPlaying:()=>playing,
+    start:()=>start(),
+    stop:()=>stop(),
+    getBpm:()=>state.bpm,
+    setBpm:(value)=>userSetBpm(clamp(Number(value)||state.bpm,BPM_MIN,BPM_MAX),{capture:true}),
+    switchTab:(name)=>switchTab(name),
+    notify:(message)=>notify(message),
+    getVersion:()=>APP_VERSION
+  };
 
   // Desktop scrolling uses the browser's native wheel/trackpad behavior.
   document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openGlobalSearch();return;}if(e.key==='Escape'){closeGlobalSearch();if(stageMode)setStageMode(false);return;}if(e.target?.matches('input,textarea,select')||e.metaKey||e.ctrlKey||e.altKey)return;const k=e.key.toLowerCase();if(e.code==='Space'){e.preventDefault();playing?stop():start();}else if(e.key==='ArrowUp'){e.preventDefault();userSetBpm(state.bpm+(e.shiftKey?5:1),{capture:true});}else if(e.key==='ArrowDown'){e.preventDefault();userSetBpm(state.bpm-(e.shiftKey?5:1),{capture:true});}else if(k==='t'){e.preventDefault();handleTapTempo();}else if(k==='m'){e.preventDefault();toggleMiniMute();}else if(k==='f'){e.preventDefault();setFocusMode(!focusMode);}else if(k==='l'){e.preventDefault();toggleBpmLock();}else if(k==='s'){e.preventDefault();setStageMode(!stageMode);}else if(/^[1-9]$/.test(e.key)){const p=presets[Number(e.key)-1];if(p)loadPreset(p);}});
