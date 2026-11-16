@@ -1,3 +1,7 @@
+# Beatronome v0.16.3 — Responsive Layout Fix
+
+See `V0163_FIX_NOTES.md` for changes and QA scope.
+
 # Beatronome v0.16.2 – Design System + Interaction + Performance
 
 기존 v0.14.3을 기반으로 한 **통합 업데이트**입니다. 기존 GitHub Pages `Beatronome` 저장소에 ZIP 안의 파일을 **전체 덮어쓰기**한 뒤 Commit → Push origin 하면 됩니다. 기존 Supabase 테이블 변경은 필요하지 않습니다.

@@ -1,4 +1,4 @@
-/* Beatronome v0.16.2 – settings navigation, diagnostics and recovery.
+/* Beatronome v0.16.3 – settings navigation, diagnostics and recovery.
    No credential values are collected or included in diagnostics. */
 (() => {
   'use strict';
@@ -54,7 +54,7 @@
 
   const panel=panels.get('app');
   const block=document.createElement('div');block.className='card quality-report';block.id='qualityCenter';
-  block.innerHTML=`<div class="section-heading"><div><span class="eyebrow">QUALITY CENTER</span><h3>상태 진단 · 문제 보고</h3></div><span class="quality-chip">v0.16.2</span></div>
+  block.innerHTML=`<div class="section-heading"><div><span class="eyebrow">QUALITY CENTER</span><h3>상태 진단 · 문제 보고</h3></div><span class="quality-chip">v0.16.3</span></div>
     <p class="quality-note">메트로놈·튜너·연습 중 발생한 문제를 확인합니다. 진단 결과에는 비밀번호, 로그인 토큰, 저장한 곡명 및 프리셋 내용이 포함되지 않습니다.</p>
     <div class="quality-actions"><button type="button" id="qualityRun" class="primary">상태 진단</button><button type="button" id="qualityAudio">클릭 간격 듣기</button><button type="button" id="qualityCopy">결과 복사</button><button type="button" id="qualityDownload">진단 파일 저장</button></div>
     <pre class="quality-result" id="qualityResult" aria-live="polite">[상태 진단]을 눌러 현재 기기와 앱 상태를 확인하세요.</pre>
@@ -115,6 +115,6 @@
     }catch(e){try{await ctx.close();}catch{}window.BeatronomeAPI?.notify?.('오디오 테스트에 실패했습니다.');}
   };
   // Navigation convenience for diagnosis from More menu. No duplicate bottom tab.
-  const moreGrid=document.querySelector('#tabMore .more-menu-grid')||document.querySelector('#tabMore');
+  const moreGrid=document.querySelector('#tabMore .more-grid');
   if(moreGrid){const b=document.createElement('button');b.className='more-launch card';b.type='button';b.innerHTML='<span>◉</span><strong>앱 상태 진단</strong><small>스크롤·오디오·오프라인 상태</small>';b.onclick=()=>{overlay.classList.remove('hidden');select('app');setTimeout(()=>block.scrollIntoView({block:'nearest',behavior:'auto'}),80);};moreGrid.appendChild(b);}
 })();
