@@ -1,0 +1,99 @@
+/* Beatronome v0.16.5 — reference-card action layout and small-screen safety.
+ * Favorite and expand are in the same normal-flow header action row.
+ */
+.reference-card>.ref-head{
+  display:grid!important;
+  grid-template-columns:36px minmax(0,1fr) auto;
+  align-items:center!important;
+  column-gap:10px!important;
+  row-gap:8px;
+  min-width:0;
+}
+.reference-card>.ref-head>span{min-width:0;flex:none}
+.reference-card>.ref-head>div:not(.ref-head-actions){min-width:0;max-width:100%;flex:none!important}
+.reference-card>.ref-head h3{
+  margin:0!important;
+  max-width:100%;
+  overflow-wrap:break-word;
+  word-break:keep-all;
+  line-height:1.32!important;
+}
+.reference-card>.ref-head p{margin:5px 0 0!important;line-height:1.45!important;overflow-wrap:break-word;word-break:keep-all}
+.reference-card .ref-head-actions{
+  display:flex!important;
+  flex:0 0 auto!important;
+  align-items:center;
+  justify-content:flex-end;
+  gap:7px;
+  min-width:0;
+  position:static!important;
+}
+.reference-card .ref-head-actions>.reference-favorite,
+.reference-card .ref-head-actions>.ref-expand-toggle{
+  position:static!important;
+  inset:auto!important;
+  transform:none;
+  margin:0!important;
+  flex:0 0 42px!important;
+  width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center;
+  border:1px solid rgba(216,182,107,.28)!important;
+  border-radius:12px!important;
+  font-size:23px!important;
+  font-weight:500!important;
+  line-height:1!important;
+  background:#172330!important;
+  color:#d8b66b!important;
+  box-shadow:none!important;
+  appearance:none;
+  -webkit-appearance:none;
+  touch-action:manipulation;
+}
+.reference-card .ref-head-actions>.reference-favorite{
+  border-radius:12px!important;
+  color:#d8b66b!important;
+}
+.reference-card .ref-head-actions>.reference-favorite[aria-pressed=true]{
+  background:rgba(216,182,107,.20)!important;
+  border-color:rgba(216,182,107,.55)!important;
+}
+.reference-card .ref-head-actions>.ref-expand-toggle{
+  background:#22313f!important;
+}
+.reference-card .ref-head-actions>button:focus-visible{outline:2px solid #d8b66b!important;outline-offset:2px}
+/* Parent's collapsed selector hides only the reference body, not header actions. */
+.reference-card.is-collapsed>.ref-head{margin-bottom:0!important}
+@media(max-width:390px){
+  .reference-card>.ref-head{grid-template-columns:34px minmax(0,1fr) auto;gap:7px!important}
+  .reference-card .ref-head-actions{gap:5px}
+  .reference-card .ref-head-actions>button{flex-basis:40px!important;width:40px!important;height:42px!important}
+  .reference-card>.ref-head h3{font-size:clamp(15px,4.4vw,19px)!important}
+}
+
+/* Additional QA finding: between tablet and narrow desktop sizes the legacy
+ * tuner layout placed STRINGS across both columns but still left DISPLAY
+ * spanning that same row. Give each region an explicit, non-overlapping row. */
+@media (min-width:701px) and (max-width:1099px) {
+  #tabTuner.active{
+    grid-template-areas:
+      "title title"
+      "hero display"
+      "strings strings"
+      "custom custom" !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    align-items:start !important;
+  }
+  #tabTuner>.tuner-display{
+    height:auto!important;
+    align-self:stretch;
+    grid-row:auto;
+  }
+  #tabTuner>.tuner-strings-card{
+    grid-area:strings!important;
+    grid-column:1 / -1!important;
+  }
+}

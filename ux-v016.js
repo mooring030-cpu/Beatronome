@@ -1,4 +1,4 @@
-/* Beatronome v0.16.4 - UX behaviors. Core audio/state is owned by app.js.
+/* Beatronome v0.16.5 - UX behaviors. Core audio/state is owned by app.js.
    This layer intentionally does not intercept ordinary scrolling, wheel or beat timing. */
 (() => {
   'use strict';
@@ -99,15 +99,22 @@
     panel.querySelectorAll('.reference-card').forEach((card,index)=>{
       const head=card.querySelector(':scope > .ref-head');
       if(!head || head.querySelector('.ref-expand-toggle'))return;
+      let actions=head.querySelector(':scope > .ref-head-actions');
+      if(!actions){actions=document.createElement('div');actions.className='ref-head-actions';head.appendChild(actions);}
       const toggle=document.createElement('button');
       toggle.type='button';toggle.className='ref-expand-toggle';
-      toggle.setAttribute('aria-label','정보 카드 내용 펼치기/접기');
       toggle.textContent='−';
-      head.appendChild(toggle);
+      actions.appendChild(toggle);
       // Default: first reference is visible on small screens; others concise.
       if(window.matchMedia('(max-width:700px)').matches && index!==0)card.classList.add('is-collapsed');
-      const sync=()=>{const open=!card.classList.contains('is-collapsed');toggle.textContent=open?'−':'+';toggle.setAttribute('aria-expanded',String(open));};
-      toggle.addEventListener('click',()=>{card.classList.toggle('is-collapsed');sync();});
+      const sync=()=>{
+        const open=!card.classList.contains('is-collapsed');
+        toggle.textContent=open?'−':'+';
+        toggle.setAttribute('aria-expanded',String(open));
+        toggle.setAttribute('aria-label',`${head.querySelector('h3')?.textContent||'정보 카드'} ${open?'접기':'펼치기'}`);
+        toggle.title=open?'내용 접기':'내용 펼치기';
+      };
+      toggle.addEventListener('click',e=>{e.stopPropagation();card.classList.toggle('is-collapsed');sync();});
       sync();
     });
   }
@@ -187,5 +194,5 @@
     if(!id)return;e.preventDefault();open(id,btn);
   });
   // Expose diagnostics-friendly, non-sensitive UI status.
-  window.BeatronomeUX={version:'0.16.4',getState:()=>({motionEnabled:motionOK(),selectedTab:activeId,presetMenuOpen:!backdrop.classList.contains('hidden')})};
+  window.BeatronomeUX={version:'0.16.5',getState:()=>({motionEnabled:motionOK(),selectedTab:activeId,presetMenuOpen:!backdrop.classList.contains('hidden')})};
 })();

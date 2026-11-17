@@ -204,7 +204,7 @@
   let playbackChainIndex=0,playbackChainBarCount=0,visualChainIndex=-1,visualChainBarCount=0;
   let audioCtx=null,master=null,limiter=null,noiseCache=null,scheduler=null,nextNoteTime=0,stepIndex=0,barIndex=0,startTime=0,sessionBaseBpm=state.bpm,tempoDir=1;
   let scheduledMetroSources=[];
-  // v0.16.4 timing telemetry: reports Web Audio scheduling intervals only.
+  // v0.16.5 timing telemetry: reports Web Audio scheduling intervals only.
   // This cannot measure physical speaker/Bluetooth latency.
   let clockLast=null,clockChecks=0,clockErrorSum=0,clockErrorMax=0,clockRecoveries=0;
   function trackScheduledClock(time,interval){
@@ -229,7 +229,7 @@
   function cloudConfig(){const c=window.BEATRONOME_SUPABASE||{};return{url:String(c.url||'').replace(/\/$/,''),key:String(c.anonKey||'')}}
   function cloudConfigured(){const c=cloudConfig();return /^https:\/\//.test(c.url)&&!!c.key;}
   function cloudSessionValid(){return !!cloudMeta.session?.access_token&&!!cloudMeta.session?.user?.id;}
-  // v0.16.4: non-destructive cloud merge and local recovery snapshots. No credentials in backups.
+  // v0.16.5: non-destructive cloud merge and local recovery snapshots. No credentials in backups.
   const CLOUD_SAFETY_KEY='beatronome-cloud-recovery-v1';
   function cloudSafetyBackup(reason){
     try{
@@ -812,7 +812,7 @@
   function knowledgePractice(item){captureUndo('Knowledge 연습 시작');state.groove.genreEnabled=false;state.playbackMode='metro';state.bpm=item?.bpm||100;state.subdivision=item?.type==='scale'?2:1;state.practice.countInBars=1;persist();renderAll();switchTab('metronome');notify(`${item?.label||'이론'} · ${state.bpm} BPM 연습`);}
   window.BeatronomeBridge={recordKnowledge:knowledgeRecord,toggleKnowledgeFavorite:knowledgeToggleFavorite,startKnowledgePractice:knowledgePractice,isKnowledgeFavorite:id=>(state.library.knowledgeFavorites||[]).some(x=>x.id===id),refreshKnowledgeMemory:renderKnowledgeMemory};
 
-  const APP_VERSION='0.16.4';
+  const APP_VERSION='0.16.5';
   let swRegistration=null;
   let offlinePreparing=false;
   let updateWorker=null;

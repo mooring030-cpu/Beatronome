@@ -135,7 +135,17 @@
     $$('[data-knowledge-panel]').forEach(b=>b.onclick=()=>setPanel(b.dataset.knowledgePanel));
     $('knowledgeSearch').oninput=applySearch;$('clearKnowledgeSearch').onclick=()=>{$('knowledgeSearch').value='';applySearch();$('knowledgeSearch').focus();};
     $('musicianFilters').querySelectorAll('[data-inst]').forEach(b=>b.onclick=()=>{$('musicianFilters').querySelectorAll('[data-inst]').forEach(x=>x.classList.toggle('selected',x===b));renderMusicians(b.dataset.inst);applySearch();});
-    renderChord();renderScale();renderDiatonic();renderStatic();$$('.reference-card').forEach(card=>{const title=card.querySelector('h3')?.textContent?.trim();if(!title)return;const item={id:`ref:${title}`,label:title,type:'reference',panel:card.closest('[data-knowledge-content]')?.dataset.knowledgeContent||'basics'};const b=document.createElement('button');b.className='reference-favorite';b.textContent=window.BeatronomeBridge?.isKnowledgeFavorite(item.id)?'★':'☆';b.title='즐겨찾기';b.onclick=e=>{e.stopPropagation();window.BeatronomeBridge?.toggleKnowledgeFavorite(item);b.textContent=window.BeatronomeBridge?.isKnowledgeFavorite(item.id)?'★':'☆';};card.appendChild(b);card.addEventListener('click',()=>window.BeatronomeBridge?.recordKnowledge(item));});window.BeatronomeBridge?.refreshKnowledgeMemory?.();
+    renderChord();renderScale();renderDiatonic();renderStatic();$$('.reference-card').forEach(card=>{const title=card.querySelector('h3')?.textContent?.trim();if(!title)return;const item={id:`ref:${title}`,label:title,type:'reference',panel:card.closest('[data-knowledge-content]')?.dataset.knowledgeContent||'basics'};const head=card.querySelector(':scope > .ref-head');
+      if(!head)return;
+      let actions=head.querySelector(':scope > .ref-head-actions');
+      if(!actions){actions=document.createElement('div');actions.className='ref-head-actions';head.appendChild(actions);}
+      const b=document.createElement('button');
+      b.type='button';b.className='reference-favorite';
+      b.title='즐겨찾기';b.setAttribute('aria-label',`${title} 즐겨찾기`);
+      const syncFavorite=()=>{const saved=!!window.BeatronomeBridge?.isKnowledgeFavorite(item.id);b.textContent=saved?'★':'☆';b.setAttribute('aria-pressed',String(saved));};
+      b.onclick=e=>{e.stopPropagation();window.BeatronomeBridge?.toggleKnowledgeFavorite(item);syncFavorite();};
+      actions.appendChild(b);syncFavorite();
+      card.addEventListener('click',()=>window.BeatronomeBridge?.recordKnowledge(item));});window.BeatronomeBridge?.refreshKnowledgeMemory?.();
   }
   init();
 })();
