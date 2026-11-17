@@ -136,7 +136,7 @@
       instruments: makeDefaultDrums()
     },
     tuner:{instrument:'electric',tuning:'standard',referenceA:440,custom:{},displayMode:'normal',sensitivity:'normal',noiseGate:8},
-    practice:{simpleMode:true,countInBars:0,flash:false,vibrate:false,resumeSession:null},
+    practice:{simpleMode:true,trainingExpanded:true,countInBars:0,flash:false,vibrate:false,resumeSession:null},
     ui:{bpmLocked:false,oneHand:false,stageTapPlay:false,interfaceSize:'normal',audioLatencyMs:0,lastTab:'metronome',theme:'jazz',performanceMode:false,quickActions:['training','tuner','presets']},
     library:{routines:[],setlists:[],knowledgeFavorites:[],knowledgeRecent:[],practiceLogs:{}},
     training:{
@@ -181,7 +181,14 @@
     merged.subdivision=SUBDIVISIONS[Number(merged.subdivision)]?Number(merged.subdivision):1;
     merged.tuner.instrument=TUNER_INSTRUMENTS[merged.tuner.instrument]?merged.tuner.instrument:'electric';
     merged.tuner.referenceA=clamp(Number(merged.tuner.referenceA)||440,430,450);
-    merged.practice.simpleMode=merged.practice.simpleMode!==false;merged.practice.countInBars=[0,1,2,4].includes(Number(merged.practice.countInBars))?Number(merged.practice.countInBars):0;merged.practice.flash=!!merged.practice.flash;merged.practice.vibrate=!!merged.practice.vibrate;merged.tuner.displayMode=['normal','strobe'].includes(merged.tuner.displayMode)?merged.tuner.displayMode:'normal';merged.tuner.sensitivity=['low','normal','high'].includes(merged.tuner.sensitivity)?merged.tuner.sensitivity:'normal';merged.tuner.noiseGate=clamp(Number(merged.tuner.noiseGate)||8,1,30);merged.ui.bpmLocked=!!merged.ui.bpmLocked;merged.ui.oneHand=!!merged.ui.oneHand;merged.ui.stageTapPlay=!!merged.ui.stageTapPlay;merged.ui.interfaceSize=['compact','normal','large'].includes(merged.ui.interfaceSize)?merged.ui.interfaceSize:'normal';merged.ui.audioLatencyMs=clamp(Number(merged.ui.audioLatencyMs)||0,-250,250);merged.ui.lastTab=String(merged.ui.lastTab||'metronome');merged.ui.theme=['jazz','studio'].includes(merged.ui.theme)?merged.ui.theme:'jazz';merged.ui.performanceMode=!!merged.ui.performanceMode;const qaAllowed=['training','timer','randomMute','tuner','presets','stage','countIn','groove','knowledge','sound','practice'];merged.ui.quickActions=Array.isArray(merged.ui.quickActions)?merged.ui.quickActions.filter(x=>qaAllowed.includes(x)).slice(0,3):['training','tuner','presets'];while(merged.ui.quickActions.length<3)merged.ui.quickActions.push(['training','tuner','presets'][merged.ui.quickActions.length]);
+    merged.practice.simpleMode=merged.practice.simpleMode!==false;merged.practice.trainingExpanded=merged.practice.trainingExpanded!==false;merged.practice.countInBars=[0,1,2,4].includes(Number(merged.practice.countInBars))?Number(merged.practice.countInBars):0;merged.practice.flash=!!merged.practice.flash;merged.practice.vibrate=!!merged.practice.vibrate;merged.tuner.displayMode=['normal','strobe'].includes(merged.tuner.displayMode)?merged.tuner.displayMode:'normal';merged.tuner.sensitivity=['low','normal','high'].includes(merged.tuner.sensitivity)?merged.tuner.sensitivity:'normal';merged.tuner.noiseGate=clamp(Number(merged.tuner.noiseGate)||8,1,30);merged.ui.bpmLocked=!!merged.ui.bpmLocked;merged.ui.oneHand=!!merged.ui.oneHand;merged.ui.stageTapPlay=!!merged.ui.stageTapPlay;merged.ui.interfaceSize=['compact','normal','large'].includes(merged.ui.interfaceSize)?merged.ui.interfaceSize:'normal';merged.ui.audioLatencyMs=clamp(Number(merged.ui.audioLatencyMs)||0,-250,250);merged.ui.lastTab=String(merged.ui.lastTab||'metronome');merged.ui.theme=['jazz','studio'].includes(merged.ui.theme)?merged.ui.theme:'jazz';merged.ui.performanceMode=!!merged.ui.performanceMode;const qaAllowed=['training','timer','randomMute','tuner','presets','stage','countIn','groove','knowledge','sound','practice'];merged.ui.quickActions=Array.isArray(merged.ui.quickActions)?merged.ui.quickActions.filter(x=>qaAllowed.includes(x)).slice(0,3):['training','tuner','presets'];while(merged.ui.quickActions.length<3)merged.ui.quickActions.push(['training','tuner','presets'][merged.ui.quickActions.length]);
+    // A collapsed training pane must never leave an invisible Internal Clock running.
+    // Normalize old saved states, imported presets and cloud-synced settings alike.
+    const training=merged.training;
+    for(const key of ['randomMuteEnabled','internalEnabled','autoTempoEnabled','timerEnabled','gradualEnabled'])training[key]=training[key]===true;
+    training.soundBars=clamp(Math.round(Number(training.soundBars)||4),1,16);
+    training.muteBars=clamp(Math.round(Number(training.muteBars)||2),1,16);
+    if(merged.practice.simpleMode||!merged.practice.trainingExpanded)training.internalEnabled=false;
     const fallback=makeDefaultDrums();
     const source=merged.groove.instruments||{};
     merged.groove.instruments={};
@@ -193,18 +200,22 @@
   if(localStorage.getItem(SETTINGS_KEY)) saved=load(SETTINGS_KEY,{});
   else { for(const k of OLD_SETTINGS_KEYS){ if(localStorage.getItem(k)){saved=load(k,{});break;} } }
   let state=deepMerge(defaults,saved);
+  // Repair legacy persisted states once so next launches and cloud snapshots agree.
+  if(saved?.training?.internalEnabled===true&&state.training.internalEnabled===false){
+    try{localStorage.setItem(SETTINGS_KEY,JSON.stringify(state));}catch(e){console.warn('Legacy setting repair deferred',e);}
+  }
   let presets=[];
   if(localStorage.getItem(PRESETS_KEY)) presets=load(PRESETS_KEY,[]);
   else { for(const k of OLD_PRESETS_KEYS){ if(localStorage.getItem(k)){presets=load(k,[]);break;} } }
 
   let cloudMeta=load(CLOUD_META_KEY,{session:null,lastSyncedAt:0,lastRemoteUpdatedAt:0,localChangedAt:0,dirty:false,autoSync:true});
-  let cloudSyncTimer=null,cloudBusy=false,cloudApplyingRemote=false,cloudLastError='';
+  let cloudSyncTimer=null,cloudBusy=false,cloudApplyingRemote=false,cloudLastError='',localRevision=0;
 
-  let playing=false,currentBeat=-1,currentDrumStep=-1,elapsed=0,trainingExpanded=true,selectedChainIndex=0;
+  let playing=false,currentBeat=-1,currentDrumStep=-1,elapsed=0,trainingExpanded=state.practice.trainingExpanded,selectedChainIndex=0;
   let playbackChainIndex=0,playbackChainBarCount=0,visualChainIndex=-1,visualChainBarCount=0;
   let audioCtx=null,master=null,limiter=null,noiseCache=null,scheduler=null,nextNoteTime=0,stepIndex=0,barIndex=0,startTime=0,sessionBaseBpm=state.bpm,tempoDir=1;
   let scheduledMetroSources=[];
-  // v0.16.5 timing telemetry: reports Web Audio scheduling intervals only.
+  // v0.16.6 timing telemetry: reports Web Audio scheduling intervals only.
   // This cannot measure physical speaker/Bluetooth latency.
   let clockLast=null,clockChecks=0,clockErrorSum=0,clockErrorMax=0,clockRecoveries=0;
   function trackScheduledClock(time,interval){
@@ -229,7 +240,7 @@
   function cloudConfig(){const c=window.BEATRONOME_SUPABASE||{};return{url:String(c.url||'').replace(/\/$/,''),key:String(c.anonKey||'')}}
   function cloudConfigured(){const c=cloudConfig();return /^https:\/\//.test(c.url)&&!!c.key;}
   function cloudSessionValid(){return !!cloudMeta.session?.access_token&&!!cloudMeta.session?.user?.id;}
-  // v0.16.5: non-destructive cloud merge and local recovery snapshots. No credentials in backups.
+  // v0.16.6: non-destructive cloud merge and local recovery snapshots. No credentials in backups.
   const CLOUD_SAFETY_KEY='beatronome-cloud-recovery-v1';
   function cloudSafetyBackup(reason){
     try{
@@ -260,6 +271,7 @@
     const merged=mergeCloudPresets(presets,remote?.presets,state.cloudDeletedPresetIds,remoteSettings.cloudDeletedPresetIds);
     cloudApplyingRemote=true;
     state=deepMerge(defaults,chooseLocalSettings?state:remoteSettings);
+    trainingExpanded=state.practice.trainingExpanded;
     state.cloudDeletedPresetIds=merged.tombstones;
     presets=merged.presets;
     localStorage.setItem(SETTINGS_KEY,JSON.stringify(state));
@@ -279,11 +291,11 @@
     const item=load(CLOUD_SAFETY_KEY,[])[0];if(!item)return false;
     if(!confirm('이 기기에 남은 최신 동기화 전 백업을 복원할까요? 현재 설정은 별도로 백업됩니다.'))return false;
     cloudSafetyBackup('백업 복원 직전');
-    cloudApplyingRemote=true;state=deepMerge(defaults,item.settings);presets=Array.isArray(item.presets)?item.presets:[];
+    cloudApplyingRemote=true;state=deepMerge(defaults,item.settings);trainingExpanded=state.practice.trainingExpanded;presets=Array.isArray(item.presets)?item.presets:[];
     localStorage.setItem(SETTINGS_KEY,JSON.stringify(state));localStorage.setItem(PRESETS_KEY,JSON.stringify(presets));
     cloudApplyingRemote=false;cloudMarkLocalChange();renderAll();return true;
   }
-  function cloudMarkLocalChange(){cloudMeta.localChangedAt=Date.now();cloudMeta.dirty=true;persistCloudMeta();renderCloudUi();if(cloudMeta.autoSync)scheduleCloudSync();}
+  function cloudMarkLocalChange(){localRevision++;cloudMeta.localChangedAt=Date.now();cloudMeta.dirty=true;persistCloudMeta();renderCloudUi();if(cloudMeta.autoSync)scheduleCloudSync();}
   function scheduleCloudSync(delay=1600){clearTimeout(cloudSyncTimer);if(!cloudSessionValid()||!navigator.onLine||!cloudMeta.autoSync)return;cloudSyncTimer=setTimeout(()=>syncCloud(false).catch(()=>{}),delay);}
   function cloudSetSession(session){if(session?.access_token){const expiresIn=Number(session.expires_in)||3600;cloudMeta.session={access_token:session.access_token,refresh_token:session.refresh_token||cloudMeta.session?.refresh_token||'',expires_at:Date.now()+expiresIn*1000,user:session.user||cloudMeta.session?.user||null};}else cloudMeta.session=null;persistCloudMeta();renderCloudUi();}
   async function cloudRaw(path,{method='GET',body,token,headers={}}={}){const c=cloudConfig();const res=await fetch(c.url+path,{method,headers:{apikey:c.key,'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{}) ,...headers},body:body===undefined?undefined:JSON.stringify(body)});let data=null;const text=await res.text();if(text){try{data=JSON.parse(text)}catch{data=text}}if(!res.ok){const err=new Error(data?.msg||data?.message||data?.error_description||data?.hint||`Cloud error ${res.status}`);err.status=res.status;err.data=data;throw err;}return data;}
@@ -296,19 +308,22 @@
   async function cloudLogout(){clearTimeout(cloudSyncTimer);try{if(cloudSessionValid()&&navigator.onLine)await cloudApi('/auth/v1/logout',{method:'POST'});}catch{}cloudSetSession(null);cloudMeta.lastSyncedAt=0;cloudMeta.lastRemoteUpdatedAt=0;cloudMeta.dirty=false;persistCloudMeta();cloudLastError='';renderCloudUi();notify('로그아웃했습니다. 로컬 설정은 그대로 유지됩니다.');}
   async function cloudFetchRemote(){const uid=cloudMeta.session.user.id;const q=`/rest/v1/beatronome_sync?user_id=eq.${encodeURIComponent(uid)}&select=user_id,settings,presets,updated_at&limit=1`;const rows=await cloudApi(q);return Array.isArray(rows)&&rows.length?rows[0]:null;}
   async function cloudUploadLocal(){const uid=cloudMeta.session.user.id;const rows=await cloudApi('/rest/v1/beatronome_sync?on_conflict=user_id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=representation'},body:{user_id:uid,settings:state,presets}});return Array.isArray(rows)?rows[0]:rows;}
-  function applyCloudRemote(remote){cloudApplyingRemote=true;state=deepMerge(defaults,remote?.settings||{});presets=Array.isArray(remote?.presets)?remote.presets:[];localStorage.setItem(SETTINGS_KEY,JSON.stringify(state));localStorage.setItem(PRESETS_KEY,JSON.stringify(presets));cloudApplyingRemote=false;selectedChainIndex=0;selectedGenre=state.groove.genre||'Rock';ensureNormalPattern();if(state.meterChainEnabled)ensureChain();renderAll();}
+  function applyCloudRemote(remote){cloudApplyingRemote=true;state=deepMerge(defaults,remote?.settings||{});trainingExpanded=state.practice.trainingExpanded;presets=Array.isArray(remote?.presets)?remote.presets:[];localStorage.setItem(SETTINGS_KEY,JSON.stringify(state));localStorage.setItem(PRESETS_KEY,JSON.stringify(presets));cloudApplyingRemote=false;selectedChainIndex=0;selectedGenre=state.groove.genre||'Rock';ensureNormalPattern();if(state.meterChainEnabled)ensureChain();renderAll();}
   async function syncCloud(initial=false){
     if(cloudBusy||!cloudSessionValid())return;
     if(!navigator.onLine){cloudLastError='오프라인 · 변경사항은 기기에 저장됨';renderCloudUi();return;}
     cloudBusy=true;cloudLastError='';renderCloudUi();
+    const syncStartRevision=localRevision;
+    let syncSucceeded=false;
     try{
       let remote=await cloudFetchRemote();
-      if(!remote){cloudSafetyBackup('최초 클라우드 업로드 전');remote=await cloudUploadLocal();cloudMeta.dirty=false;}
+      const changedDuringFetch=localRevision!==syncStartRevision;
+      if(!remote){cloudSafetyBackup('최초 클라우드 업로드 전');remote=await cloudUploadLocal();cloudMeta.dirty=localRevision!==syncStartRevision;}
       else {
         const remoteTime=Date.parse(remote.updated_at)||0;
         const firstSync=!cloudMeta.lastSyncedAt;
         const remoteChanged=remoteTime>(cloudMeta.lastRemoteUpdatedAt||0);
-        const localDirty=!!cloudMeta.dirty;
+        const localDirty=!!cloudMeta.dirty||changedDuringFetch;
         if(firstSync||remoteChanged||localDirty){
           // On first sign-in NEVER throw away local presets; merge by stable IDs.
           // If a device has unsynced edits, retain its settings; all other presets
@@ -316,14 +331,15 @@
           const chooseLocal=localDirty&&(!firstSync||cloudMeta.localChangedAt>0);
           const mergedChanged=cloudSaveMerged(remote,chooseLocal);
           if(firstSync||localDirty||(remoteChanged&&mergedChanged)){remote=await cloudUploadLocal();}
-          cloudMeta.dirty=false;
+          cloudMeta.dirty=localRevision!==syncStartRevision;
           if(firstSync&&chooseLocal)notify('기기 설정과 클라우드 프리셋을 안전하게 병합했습니다.');
         }
       }
       cloudMeta.lastSyncedAt=Date.now();cloudMeta.lastRemoteUpdatedAt=Date.parse(remote?.updated_at)||Date.now();persistCloudMeta();renderPresets();
-      if(!initial)notify('클라우드 동기화 완료');
+      syncSucceeded=true;
+      if(!initial)notify(cloudMeta.dirty?'클라우드에 추가 변경사항을 전송합니다.':'클라우드 동기화 완료');
     }catch(e){cloudLastError=cloudFriendlyError(e);console.warn('Beatronome cloud sync failed',e);if(!initial&&cloudLastError!=='SETUP_REQUIRED')notify(cloudLastError);}
-    finally{cloudBusy=false;renderCloudUi();}
+    finally{cloudBusy=false;renderCloudUi();if(syncSucceeded&&cloudMeta.dirty&&cloudMeta.autoSync)scheduleCloudSync(1200);}
   }
   function renderCloudUi(){setTimeout(()=>{const t=$('cloudTopBadge');if(t){t.className='cloud-top '+(cloudBusy?'syncing':cloudSessionValid()?(cloudMeta.dirty?'dirty':'synced'):'');t.title=cloudSessionValid()?(cloudMeta.dirty?'Cloud: 로컬 변경 있음':'Cloud: 동기화 완료'):'Cloud: 로그인 안 됨';}},0);if(!$('cloudStatusText'))return;const signed=cloudSessionValid(),out=$('cloudSignedOut'),inn=$('cloudSignedIn'),status=$('cloudStatusText'),last=$('cloudLastSync'),badge=$('cloudStateBadge'),hint=$('cloudSetupHint');out.classList.toggle('hidden',signed);inn.classList.toggle('hidden',!signed);hint.classList.toggle('hidden',cloudLastError!=='SETUP_REQUIRED');if(!cloudConfigured()){status.textContent='Cloud 프로젝트 설정이 필요합니다.';last.textContent='cloud-config.js를 확인하세요.';return;}if(!signed){status.textContent='로그인하면 폰·Mac·태블릿에서 설정과 프리셋을 동기화합니다.';last.textContent='로그인하지 않아도 로컬/오프라인 사용 가능';return;}$('cloudUserEmail').textContent=cloudMeta.session.user?.email||'Beatronome User';$('cloudAutoSync').checked=cloudMeta.autoSync!==false;let text='모든 설정 동기화 완료',cls='';if(cloudBusy){text='동기화 중…';cls='syncing';}else if(!navigator.onLine){text='오프라인';cls='dirty';}else if(cloudMeta.dirty){text='기기 변경사항 저장됨';cls='dirty';}if(cloudLastError&&cloudLastError!=='SETUP_REQUIRED')text=cloudLastError;status.textContent=text;badge.textContent=cloudBusy?'SYNCING':cloudMeta.dirty?'LOCAL':'SYNCED';badge.className=cls;last.textContent=cloudMeta.lastSyncedAt?`마지막 동기화 ${new Date(cloudMeta.lastSyncedAt).toLocaleString('ko-KR')}`:'아직 동기화되지 않음';}
 
@@ -334,7 +350,7 @@
   };
   function openTrainingTarget(kind){
     if(state.practice.simpleMode){state.practice.simpleMode=false;persist();renderUiExtras();}
-    trainingExpanded=true;renderTraining();
+    trainingExpanded=true;state.practice.trainingExpanded=true;persist();renderTraining();
     const panel=document.querySelector('.training-panel');panel?.scrollIntoView({behavior:state.ui.performanceMode?'auto':'smooth',block:'start'});
     if(kind==='timer'){const sw=document.querySelector('[data-toggle="timerEnabled"]');if(sw&&!state.training.timerEnabled)sw.click();}
     if(kind==='randomMute'){const sw=document.querySelector('[data-toggle="randomMuteEnabled"]');if(sw&&!state.training.randomMuteEnabled)sw.click();}
@@ -357,7 +373,7 @@
     state.ui.quickActions.forEach(id=>{const meta=QUICK_ACTIONS[id]||[id,id],b=document.createElement('button');b.className='quick-action-button';b.innerHTML=`<span>${meta[0]}</span><strong>${meta[1]}</strong>`;b.onclick=()=>runQuickAction(id);wrap.appendChild(b);});
     ['quickAction1','quickAction2','quickAction3'].forEach((sid,idx)=>{const sel=$(sid);if(!sel)return;const value=state.ui.quickActions[idx];if(!sel.options.length){Object.entries(QUICK_ACTIONS).forEach(([k,v])=>{const o=document.createElement('option');o.value=k;o.textContent=v[1];sel.appendChild(o);});}sel.value=value;});
   }
-  function renderCoreSettingSummary(){const m=getSelectedMeter(),sub=(SUBDIVISIONS[state.subdivision]||SUBDIVISIONS[1]).label,sound=SOUND_LABELS[state.sound]||state.sound;if($('coreSettingSummary'))$('coreSettingSummary').textContent=`${m.beats}/${m.denominator} · ${sub} · ${sound}`;if($('coreSettingSub'))$('coreSettingSub').textContent=`Count-in ${state.practice.countInBars?state.practice.countInBars+'마디':'OFF'}${state.meterChainEnabled?' · Meter Chain':''}`;}
+  function renderCoreSettingSummary(){const m=getSelectedMeter(),sub=(SUBDIVISIONS[state.subdivision]||SUBDIVISIONS[1]).label,sound=SOUND_LABELS[state.sound]||state.sound;if($('coreSettingSummary'))$('coreSettingSummary').textContent=`${m.beats}/${m.denominator} · ${sub} · ${sound}`;if($('coreSettingSub'))$('coreSettingSub').textContent=`Count-in ${state.practice.countInBars?state.practice.countInBars+'마디':'OFF'}${state.meterChainEnabled?' · Meter Chain':''}${state.training.internalEnabled?' · Internal ON':''}`;}
   function fmtTime(sec){sec=Math.max(0,Math.floor(sec));return `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`;}
   function tempoName(b){return b<60?'LARGO':b<76?'ADAGIO':b<108?'ANDANTE':b<120?'MODERATO':b<168?'ALLEGRO':'PRESTO';}
   function notify(msg){$('toast').textContent=msg;$('toast').classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.add('hidden'),1800);}
@@ -367,7 +383,7 @@
   function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
   function setRangeStyle(el,min,max,val){const pct=(val-min)/(max-min)*100;el.style.setProperty('--pct',`${pct}%`);}
   function snapshotState(){const copy=JSON.parse(JSON.stringify(state));delete copy.library;delete copy.cloudDeletedPresetIds;return copy;}
-  function applySnapshot(snapshot,{capture=false,label='설정 불러오기'}={}){if(capture)captureUndo(label);const library=state.library,cloudDeletedPresetIds=state.cloudDeletedPresetIds,uiPractice={...state.practice},ui={...state.ui};state=deepMerge(defaults,{...snapshot,library});state.library=library;state.cloudDeletedPresetIds=cloudDeletedPresetIds;state.practice.simpleMode=uiPractice.simpleMode;state.practice.resumeSession=uiPractice.resumeSession||null;state.ui={...state.ui,interfaceSize:ui.interfaceSize,oneHand:ui.oneHand,stageTapPlay:ui.stageTapPlay,audioLatencyMs:ui.audioLatencyMs,lastTab:ui.lastTab,bpmLocked:ui.bpmLocked};persist();selectedChainIndex=0;selectedGenre=state.groove.genre||'Rock';ensureNormalPattern();if(state.meterChainEnabled)ensureChain();renderAll();}
+  function applySnapshot(snapshot,{capture=false,label='설정 불러오기'}={}){if(capture)captureUndo(label);const library=state.library,cloudDeletedPresetIds=state.cloudDeletedPresetIds,uiPractice={...state.practice},ui={...state.ui};state=deepMerge(defaults,{...snapshot,library});state.library=library;state.cloudDeletedPresetIds=cloudDeletedPresetIds;state.practice.simpleMode=uiPractice.simpleMode;state.practice.trainingExpanded=trainingExpanded;state.training.internalEnabled=state.training.internalEnabled&&!state.practice.simpleMode&&trainingExpanded;state.practice.resumeSession=uiPractice.resumeSession||null;state.ui={...state.ui,interfaceSize:ui.interfaceSize,oneHand:ui.oneHand,stageTapPlay:ui.stageTapPlay,audioLatencyMs:ui.audioLatencyMs,lastTab:ui.lastTab,bpmLocked:ui.bpmLocked};persist();selectedChainIndex=0;selectedGenre=state.groove.genre||'Rock';ensureNormalPattern();if(state.meterChainEnabled)ensureChain();renderAll();}
   function saveCurrentPreset(name){const clean=(name||'').trim()||`Preset ${presets.length+1}`;presets.unshift({id:uid(),name:clean,...snapshotState(),savedAt:Date.now(),updatedAt:Date.now()});persistPresets();renderPresets();renderQuickPresets();notify('프리셋을 저장했습니다.');return presets[0];}
   function quickSaveCurrent(){const suggested=`${state.bpm} BPM · ${getSelectedMeter().beats}/${getSelectedMeter().denominator}`;const name=window.prompt('프리셋 이름을 입력하세요.',suggested);if(name!==null)saveCurrentPreset(name);}
   function pulseBeat(){if(state.practice.flash){document.body.classList.remove('beat-flash');void document.body.offsetWidth;document.body.classList.add('beat-flash');setTimeout(()=>document.body.classList.remove('beat-flash'),130);}if(state.practice.vibrate&&navigator.vibrate){try{navigator.vibrate(currentBeat===0?18:8);}catch{}}}
@@ -382,6 +398,10 @@
   function setSelectedMeterField(key,value){
     if(state.meterChainEnabled){ensureChain();const m=state.meterChain[selectedChainIndex];if(key==='beats'){m.beats=clamp(Number(value),1,16);m.pattern=normalizePattern(m.pattern,m.beats);}else m.denominator=Number(value);}
     else {if(key==='beats'){state.beatsPerBar=clamp(Number(value),1,16);ensureNormalPattern();}else state.denominator=Number(value);}persist();
+  }
+  function flushPendingBpmSave(){
+    if(!bpmPersistTimer)return;
+    clearTimeout(bpmPersistTimer);bpmPersistTimer=null;persist();
   }
   function persistBpmSoon(){clearTimeout(bpmPersistTimer);bpmPersistTimer=setTimeout(()=>{bpmPersistTimer=null;persist();},180);}
   function updateBpmUiOnly(){
@@ -398,7 +418,31 @@
   }
   function setBpm(v){const next=clamp(Math.round(v),BPM_MIN,BPM_MAX);if(next===state.bpm)return;state.bpm=next;persistBpmSoon();updateBpmUiOnly();}
   function userSetBpm(v,{capture=false}={}){if(state.ui.bpmLocked){notify('BPM Lock이 켜져 있습니다.');return false;}setBpm(v);return true;}
-  function setTraining(key,value){state.training[key]=value;persist();renderTraining();renderCore();}
+  function setTraining(key,value){
+    if(key==='internalEnabled'&&value){
+      // A setting must not be ON while hidden. Explicit activation reveals its controls.
+      state.practice.simpleMode=false;
+      state.practice.trainingExpanded=true;
+      trainingExpanded=true;
+    }
+    state.training[key]=value;
+    persist();renderTraining();renderUiExtras();renderCore();
+  }
+  function setTrainingPaneOpen(open){
+    trainingExpanded=!!open;
+    state.practice.trainingExpanded=trainingExpanded;
+    const hiddenClockWasOn=!trainingExpanded&&state.training.internalEnabled;
+    if(hiddenClockWasOn)state.training.internalEnabled=false;
+    persist();renderTraining();renderCore();
+    if(hiddenClockWasOn)notify('Internal Clock OFF · 훈련 창을 접어 자동 해제했습니다.');
+  }
+  function setAdvancedFeaturesVisible(show){
+    state.practice.simpleMode=!show;
+    const hiddenClockWasOn=!show&&state.training.internalEnabled;
+    if(hiddenClockWasOn)state.training.internalEnabled=false;
+    persist();renderUiExtras();renderTraining();renderCore();
+    if(hiddenClockWasOn)notify('Internal Clock OFF · 고급 기능을 접어 자동 해제했습니다.');
+  }
 
   function updateSessionStatus(){let txt='READY';if(playing){if(audioCtx&&countInEndTime>audioCtx.currentTime)txt='COUNT-IN';else{const remain=Math.max(0,state.training.timerMinutes*60-elapsed);txt=state.training.timerEnabled?`남은 ${fmtTime(remain)}`:`연습 ${fmtTime(elapsed)}`;}}if(activePractice?.type==='routine'&&playing&&routineDeadline&&audioCtx){const r=Math.max(0,routineDeadline-audioCtx.currentTime);txt=`루틴 ${activePractice.index+1}/${activePractice.item.steps.length} · ${fmtTime(r)}`;}$('sessionStatus').textContent=txt;if($('miniTimer'))$('miniTimer').textContent=txt;if($('focusStatus'))$('focusStatus').textContent=txt;}
   function updateActiveBeat(){document.querySelectorAll('.beat-dot').forEach((el,i)=>el.classList.toggle('active',playing&&currentBeat===i));renderVisualBeatActive();if(stageMode)updateStageBeat();}
@@ -445,12 +489,12 @@
   function renderQuickPresets(){const wrap=$('quickPresetList');if(!wrap)return;const strip=wrap.closest('.quick-preset-strip');wrap.innerHTML='';strip?.classList.toggle('empty',!presets.length);if(!presets.length){wrap.innerHTML='<span class="quick-preset-empty">저장된 프리셋 없음</span>';return;}presets.slice(0,3).forEach((p,i)=>{const b=document.createElement('button');b.dataset.presetId=p.id;b.textContent=`${i+1}. ${p.name}`;b.onclick=()=>loadPreset(p);wrap.appendChild(b);});}
   function renderUiExtras(){document.body.classList.toggle('simple-ui',state.practice.simpleMode);document.body.classList.toggle('one-hand-mode',state.ui.oneHand);document.body.dataset.theme=state.ui.theme;document.body.classList.toggle('performance-ui',state.ui.performanceMode);document.body.classList.remove('ui-compact','ui-large');if(state.ui.interfaceSize==='compact')document.body.classList.add('ui-compact');if(state.ui.interfaceSize==='large')document.body.classList.add('ui-large');if($('toggleSimpleMode'))$('toggleSimpleMode').textContent=state.practice.simpleMode?'고급 기능 펼치기':'고급 기능 접기';if($('countInBars'))$('countInBars').value=state.practice.countInBars;if($('flashToggle'))$('flashToggle').classList.toggle('on',state.practice.flash);if($('vibrateToggle'))$('vibrateToggle').classList.toggle('on',state.practice.vibrate);if($('focusBpm'))$('focusBpm').textContent=state.bpm;if($('focusPlay'))$('focusPlay').textContent=playing?'Ⅱ STOP':'▶ START';if($('focusOverlay'))$('focusOverlay').classList.toggle('playing',playing);if($('bpmLock')){$('bpmLock').textContent=state.ui.bpmLocked?'LOCKED':'UNLOCKED';$('bpmLock').classList.toggle('locked',state.ui.bpmLocked);}if($('interfaceSize'))$('interfaceSize').value=state.ui.interfaceSize;if($('themeSelect'))$('themeSelect').value=state.ui.theme;if($('performanceToggle'))$('performanceToggle').classList.toggle('on',state.ui.performanceMode);renderQuickActions();renderCoreSettingSummary();if($('oneHandToggle'))$('oneHandToggle').classList.toggle('on',state.ui.oneHand);if($('stageTapToggle'))$('stageTapToggle').classList.toggle('on',state.ui.stageTapPlay);if($('oneHandDock'))$('oneHandDock').classList.toggle('hidden',!state.ui.oneHand);if($('oneHandPlay'))$('oneHandPlay').textContent=playing?'Ⅱ':'▶';if($('oneHandLock'))$('oneHandLock').classList.toggle('locked',state.ui.bpmLocked);if($('latencyCalibration')){$('latencyCalibration').value=state.ui.audioLatencyMs;$('latencyCalibrationOut').textContent=`${state.ui.audioLatencyMs>0?'+':''}${state.ui.audioLatencyMs} ms`;}if(stageMode)renderStage();renderVisualBeat();renderQuickPresets();if($('quickSoundSelect')){$('quickSoundSelect').value=state.sound;}$$('[data-core-tab]').forEach(b=>b.classList.toggle('selected',document.querySelector(`#tab${b.dataset.coreTab[0].toUpperCase()+b.dataset.coreTab.slice(1)}`)?.classList.contains('active')));}
   function renderTraining(){
-    const t=state.training;$$('[data-toggle]').forEach(btn=>{const k=btn.dataset.toggle;btn.classList.toggle('on',!!t[k]);const body=document.querySelector(`[data-body="${k}"]`);if(body)body.classList.toggle('hidden',!t[k]);btn.closest('.training-row')?.classList.toggle('enabled',!!t[k]);});
+    const t=state.training;$$('[data-toggle]').forEach(btn=>{const k=btn.dataset.toggle;btn.classList.toggle('on',!!t[k]);btn.setAttribute('aria-pressed',String(!!t[k]));btn.setAttribute('aria-label',`${btn.closest('.training-row')?.querySelector('.training-row-copy strong')?.textContent||k} ${t[k]?'켜짐':'꺼짐'}`);const body=document.querySelector(`[data-body="${k}"]`);if(body)body.classList.toggle('hidden',!t[k]);btn.closest('.training-row')?.classList.toggle('enabled',!!t[k]);});
     $('randomMute').value=t.randomMute;$('randomMuteOut').textContent=`${t.randomMute}%`;setRangeStyle($('randomMute'),0,90,t.randomMute);
     $('gradualTarget').value=t.gradualTarget;$('gradualTargetOut').textContent=`${t.gradualTarget}% 목표`;setRangeStyle($('gradualTarget'),10,100,t.gradualTarget);
     $$('#tempoMode button').forEach(b=>b.classList.toggle('selected',b.dataset.mode===t.tempoMode));$$('#gradualSeconds button').forEach(b=>b.classList.toggle('selected',Number(b.dataset.sec)===t.gradualSeconds));$$('#timerMinutes button').forEach(b=>b.classList.toggle('selected',Number(b.dataset.min)===t.timerMinutes));
     const vals={soundBars:t.soundBars,muteBars:t.muteBars,tempoStep:t.tempoStep,everyBars:t.everyBars,targetBpm:t.targetBpm};$$('.stepper').forEach(s=>{const k=s.dataset.stepper;s.querySelector('[data-value]').textContent=k==='everyBars'?`${vals[k]}마디`:k==='tempoStep'?`${t.tempoMode==='down'?'-':'+'}${vals[k]}`:vals[k];});
-    const count=['randomMuteEnabled','internalEnabled','autoTempoEnabled','timerEnabled','gradualEnabled'].filter(k=>t[k]).length;$('trainingCount').textContent=count;$('trainingCount').classList.toggle('hidden',count===0);$('trainingList').classList.toggle('hidden',!trainingExpanded);$('trainingChevron').textContent=trainingExpanded?'⌃':'⌄';
+    const count=['randomMuteEnabled','internalEnabled','autoTempoEnabled','timerEnabled','gradualEnabled'].filter(k=>t[k]).length;$('trainingCount').textContent=count;$('trainingCount').classList.toggle('hidden',count===0);$('trainingList').classList.toggle('hidden',!trainingExpanded);$('trainingToggle').setAttribute('aria-expanded',String(trainingExpanded));$('trainingChevron').textContent=trainingExpanded?'⌃':'⌄';
   }
   function renderSound(){
     const g=$('soundGrid');g.innerHTML='';Object.entries(SOUND_LABELS).forEach(([key,label])=>{const b=document.createElement('button');b.dataset.sound=key;b.className=`sound-card card ${state.sound===key?'selected':''}`;b.innerHTML=`<span class="sound-symbol">${key==='basic'?'◉':'♪'}</span><strong>${label}</strong><span>${state.sound===key?'✓ 사용 중':key==='basic'?'녹음 샘플 · 강/약/일반':'미리듣기'}</span>`;b.onclick=async()=>{state.sound=key;persist();renderSound();renderCore();await ensureAudio();if(key==='basic')await loadBasicSamples();synthClick(audioCtx.currentTime+.03,key,true,state.volume,'strong',SUBDIVISIONS[state.subdivision]?.bank||1);};g.appendChild(b);});$('volume').value=Math.round(state.volume*100);$('volumeOut').textContent=`${Math.round(state.volume*100)}%`;setRangeStyle($('volume'),10,100,Math.round(state.volume*100));if($('outputBoost')){$('outputBoost').value=Math.round(state.outputBoost*100);$('outputBoostOut').textContent=`${Math.round(state.outputBoost*100)}%${state.outputBoost>=2.5?' ⚠':''}`;setRangeStyle($('outputBoost'),50,400,Math.round(state.outputBoost*100));$$('#boostPresets [data-boost]').forEach(b=>b.classList.toggle('selected',Number(b.dataset.boost)===state.outputBoost));}
@@ -765,7 +809,7 @@
   async function stepActivePractice(dir){if(!activePractice)return;const arr=activePractice.type==='routine'?activePractice.item.steps:activePractice.item.songs;const n=activePractice.index+dir;if(n<0||n>=arr.length){if(dir>0&&activePractice.type==='routine'){stop();notify('연습 루틴을 완료했습니다.');activePractice=null;routineDeadline=0;state.practice.resumeSession=null;persist();renderActivePractice();}return;}activePractice.index=n;saveResumeSession();if(activePractice.type==='routine')await runRoutineStep();else{if(playing)stop();applySnapshot(arr[n].snapshot,{capture:true,label:'곡 전환'});renderActivePractice();switchTab('metronome');}}
   function stopPracticeSession(){if(playing)stop();activePractice=null;routineDeadline=0;state.practice.resumeSession=null;persist();renderActivePractice();notify('연습 세션을 종료했습니다.');}
   function exportBackup(){const data={app:'Beatronome',version:APP_VERSION,exportedAt:new Date().toISOString(),settings:state,presets};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Beatronome_Backup_${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500);notify('백업 파일을 만들었습니다.');}
-  async function importBackupFile(file){try{const data=JSON.parse(await file.text());if(data.app!=='Beatronome'||!data.settings)throw new Error('invalid');if(playing)stop();state=deepMerge(defaults,data.settings);presets=Array.isArray(data.presets)?data.presets:[];localStorage.setItem(SETTINGS_KEY,JSON.stringify(state));localStorage.setItem(PRESETS_KEY,JSON.stringify(presets));cloudMarkLocalChange();renderAll();notify('백업을 복원했습니다.');}catch{notify('Beatronome 백업 파일을 확인해주세요.');}}
+  async function importBackupFile(file){try{const data=JSON.parse(await file.text());if(data.app!=='Beatronome'||!data.settings)throw new Error('invalid');if(playing)stop();state=deepMerge(defaults,data.settings);trainingExpanded=state.practice.trainingExpanded;presets=Array.isArray(data.presets)?data.presets:[];localStorage.setItem(SETTINGS_KEY,JSON.stringify(state));localStorage.setItem(PRESETS_KEY,JSON.stringify(presets));cloudMarkLocalChange();renderAll();notify('백업을 복원했습니다.');}catch{notify('Beatronome 백업 파일을 확인해주세요.');}}
   function setFocusMode(on){focusMode=!!on;$('focusOverlay')?.classList.toggle('hidden',!focusMode);renderUiExtras();if(on){try{$('focusOverlay').requestFullscreen?.();}catch{}}else{try{if(document.fullscreenElement)document.exitFullscreen?.();}catch{}}}
   function handleTapTempo(){if(state.ui.bpmLocked){notify('BPM Lock이 켜져 있습니다.');return;}const now=performance.now();tapTimes=tapTimes.filter(t=>now-t<2600);tapTimes.push(now);tapTimes=tapTimes.slice(-8);if(tapTimes.length===2)captureUndo('Tap Tempo');if($('tapHint'))$('tapHint').textContent=`${tapTimes.length}회 탭`;if(tapTimes.length>=2){const ints=tapTimes.slice(1).map((t,i)=>t-tapTimes[i]);const sorted=[...ints].sort((a,b)=>a-b),median=sorted[Math.floor(sorted.length/2)];const good=ints.filter(x=>Math.abs(x-median)/median<.22);const use=good.length?good:ints;let total=0,weight=0;use.forEach((x,i)=>{const w=i+1;total+=x*w;weight+=w;});userSetBpm(60000/(total/weight));}clearTimeout(handleTapTempo._t);handleTapTempo._t=setTimeout(()=>{tapTimes=[];if($('tapHint'))$('tapHint').textContent='4회 정도 탭';},2600);}
 
@@ -812,7 +856,7 @@
   function knowledgePractice(item){captureUndo('Knowledge 연습 시작');state.groove.genreEnabled=false;state.playbackMode='metro';state.bpm=item?.bpm||100;state.subdivision=item?.type==='scale'?2:1;state.practice.countInBars=1;persist();renderAll();switchTab('metronome');notify(`${item?.label||'이론'} · ${state.bpm} BPM 연습`);}
   window.BeatronomeBridge={recordKnowledge:knowledgeRecord,toggleKnowledgeFavorite:knowledgeToggleFavorite,startKnowledgePractice:knowledgePractice,isKnowledgeFavorite:id=>(state.library.knowledgeFavorites||[]).some(x=>x.id===id),refreshKnowledgeMemory:renderKnowledgeMemory};
 
-  const APP_VERSION='0.16.5';
+  const APP_VERSION='0.16.6';
   let swRegistration=null;
   let offlinePreparing=false;
   let updateWorker=null;
@@ -877,7 +921,7 @@
       if(status&&!status.ready&&navigator.onLine){await prepareOffline(false);status=await refreshOfflineStatus();}
     }catch(e){console.warn('Beatronome service worker registration failed',e);setOfflineUi(null);setUpdateUi(navigator.onLine?'latest':'offline');}
   }
-  function resetSettings(){if(playing)stop();if(tunerStream)stopTunerMic();const library=state.library,cloudDeletedPresetIds=state.cloudDeletedPresetIds;state=deepMerge(defaults,{library,cloudDeletedPresetIds});selectedChainIndex=0;selectedGenre='Rock';persist();renderAll();notify('기본값으로 초기화했습니다.');}
+  function resetSettings(){if(playing)stop();if(tunerStream)stopTunerMic();const library=state.library,cloudDeletedPresetIds=state.cloudDeletedPresetIds;state=deepMerge(defaults,{library,cloudDeletedPresetIds});trainingExpanded=state.practice.trainingExpanded;selectedChainIndex=0;selectedGenre='Rock';persist();renderAll();notify('기본값으로 초기화했습니다.');}
 
   for(let i=1;i<=16;i++){const o=document.createElement('option');o.value=o.textContent=i;$('beatsPerBar').appendChild(o);}
   $('beatsPerBar').onchange=e=>{const next=Number(e.target.value);if(playing)stop();captureUndo('박자 변경');setSelectedMeterField('beats',next);renderCore();};
@@ -893,7 +937,7 @@
   $('bpmDrag').onpointerdown=e=>{if(state.ui.bpmLocked){notify('BPM Lock이 켜져 있습니다.');return;}const mobile=window.matchMedia('(max-width: 700px)').matches;drag={x:e.clientX,y:e.clientY,bpm:state.bpm,mobile,mode:null,undo:false};if(!mobile)$('bpmDrag').setPointerCapture?.(e.pointerId);};$('bpmDrag').onpointermove=e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(drag.mobile){if(!drag.mode){if(Math.abs(dy)>Math.abs(dx)&&Math.abs(dy)>5)return;if(Math.abs(dx)<8)return;drag.mode='horizontal';if(!drag.undo){drag.undo=true;}}if(drag.mode!=='horizontal')return;userSetBpm(drag.bpm+Math.round(dx/6));}else{if(!drag.undo){drag.undo=true;}userSetBpm(drag.bpm+Math.round((dx-dy*.65)/6));}};$('bpmDrag').onpointerup=$('bpmDrag').onpointercancel=()=>{if(drag?.undo&&bpmPersistTimer){clearTimeout(bpmPersistTimer);bpmPersistTimer=null;persist();}drag=null;};$('bpmDrag').onwheel=e=>{if(!e.altKey)return;e.preventDefault();userSetBpm(state.bpm+(e.deltaY<0?1:-1),{capture:true});};
   function dialToBpm(e){const r=$('tempoDial').getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let deg=Math.atan2(e.clientY-cy,e.clientX-cx)*180/Math.PI+90;if(deg>180)deg-=360;deg=clamp(deg,-135,135);userSetBpm(BPM_MIN+(deg+135)/270*(BPM_MAX-BPM_MIN));}
   $('tempoDial').onpointerdown=e=>{if(state.ui.bpmLocked){notify('BPM Lock이 켜져 있습니다.');return;}const mobile=window.matchMedia('(max-width: 700px)').matches;if(mobile){dialDragging={mobile:true,x:e.clientX,y:e.clientY,bpm:state.bpm,active:false};}else{dialDragging={mobile:false,active:true};$('tempoDial').setPointerCapture?.(e.pointerId);dialToBpm(e);}};$('tempoDial').onpointermove=e=>{if(!dialDragging)return;if(dialDragging.mobile){const dx=e.clientX-dialDragging.x,dy=e.clientY-dialDragging.y;if(!dialDragging.active){if(Math.abs(dy)>Math.abs(dx)&&Math.abs(dy)>5)return;if(Math.abs(dx)<8)return;dialDragging.active=true;}userSetBpm(dialDragging.bpm+Math.round(dx/3));}else dialToBpm(e);};$('tempoDial').onpointerup=$('tempoDial').onpointercancel=()=>{dialDragging=false;if(bpmPersistTimer){clearTimeout(bpmPersistTimer);bpmPersistTimer=null;persist();}};
-  $('trainingToggle').onclick=()=>{trainingExpanded=!trainingExpanded;renderTraining();};$$('[data-toggle]').forEach(btn=>btn.onclick=()=>setTraining(btn.dataset.toggle,!state.training[btn.dataset.toggle]));$('randomMute').oninput=e=>setTraining('randomMute',Number(e.target.value));$('gradualTarget').oninput=e=>setTraining('gradualTarget',Number(e.target.value));$('volume').oninput=e=>{state.volume=Number(e.target.value)/100;persist();renderSound();};$('outputBoost').oninput=e=>{state.outputBoost=Number(e.target.value)/100;persist();applyOutputBoost();renderSound();};$$('#boostPresets [data-boost]').forEach(btn=>btn.onclick=()=>{state.outputBoost=clamp(Number(btn.dataset.boost),.5,4);persist();applyOutputBoost();renderSound();notify(`전체 출력 ${Math.round(state.outputBoost*100)}%`);});
+  $('trainingToggle').onclick=()=>setTrainingPaneOpen(!trainingExpanded);$$('[data-toggle]').forEach(btn=>btn.onclick=()=>setTraining(btn.dataset.toggle,!state.training[btn.dataset.toggle]));$('randomMute').oninput=e=>setTraining('randomMute',Number(e.target.value));$('gradualTarget').oninput=e=>setTraining('gradualTarget',Number(e.target.value));$('volume').oninput=e=>{state.volume=Number(e.target.value)/100;persist();renderSound();};$('outputBoost').oninput=e=>{state.outputBoost=Number(e.target.value)/100;persist();applyOutputBoost();renderSound();};$$('#boostPresets [data-boost]').forEach(btn=>btn.onclick=()=>{state.outputBoost=clamp(Number(btn.dataset.boost),.5,4);persist();applyOutputBoost();renderSound();notify(`전체 출력 ${Math.round(state.outputBoost*100)}%`);});
   $$('.stepper').forEach(s=>s.querySelectorAll('[data-step]').forEach(btn=>btn.onclick=()=>{const k=s.dataset.stepper,delta=Number(btn.dataset.step),bounds={soundBars:[1,16],muteBars:[1,16],tempoStep:[1,20],everyBars:[1,16],targetBpm:[30,300]}[k];setTraining(k,clamp(state.training[k]+delta,bounds[0],bounds[1]));}));
   $$('#tempoMode button').forEach(b=>b.onclick=()=>setTraining('tempoMode',b.dataset.mode));$$('#gradualSeconds button').forEach(b=>b.onclick=()=>setTraining('gradualSeconds',Number(b.dataset.sec)));$$('#timerMinutes button').forEach(b=>b.onclick=()=>setTraining('timerMinutes',Number(b.dataset.min)));
 
@@ -927,7 +971,7 @@
   Object.entries(SOUND_LABELS).forEach(([k,v])=>{const o=document.createElement('option');o.value=k;o.textContent=v;$('quickSoundSelect')?.appendChild(o);});
   $('quickSoundSelect').onchange=e=>{state.sound=e.target.value;persist();renderAll();};
   $('countInBars').onchange=e=>{state.practice.countInBars=Number(e.target.value);persist();renderUiExtras();};
-  $('toggleSimpleMode').onclick=()=>{state.practice.simpleMode=!state.practice.simpleMode;persist();renderUiExtras();};
+  $('toggleSimpleMode').onclick=()=>setAdvancedFeaturesVisible(state.practice.simpleMode);
   $('flashToggle').onclick=()=>{state.practice.flash=!state.practice.flash;persist();renderUiExtras();};
   $('vibrateToggle').onclick=()=>{state.practice.vibrate=!state.practice.vibrate;persist();renderUiExtras();};
   ['focusModeButton','transportFocus'].forEach(id=>{const el=$(id);if(el)el.onclick=()=>setFocusMode(true);});$('closeFocus').onclick=()=>setFocusMode(false);$('focusPlay').onclick=()=>playing?stop():start();$('focusTap').onclick=handleTapTempo;$('focusMinus').onclick=()=>userSetBpm(state.bpm-1,{capture:true});$('focusPlus').onclick=()=>userSetBpm(state.bpm+1,{capture:true});
@@ -958,6 +1002,7 @@
     restoreCloudSafetyBackup:()=>restoreLatestCloudBackup(),
     getRecoveryCount:()=>load(CLOUD_SAFETY_KEY,[]).length,
     getTimingStats:()=>getTimingStats(),
+    getPracticeState:()=>({simpleMode:state.practice.simpleMode,trainingExpanded,training:{...state.training},bpm:state.bpm,subdivision:state.subdivision}),
     // Stable operations for v0.16 preset context sheet. Data stays in the original
     // local-first / cloud-sync stores, not duplicated in the UI layer.
     listPresetSummaries:()=>presets.map(p=>({id:p.id,name:p.name})),
@@ -971,7 +1016,7 @@
   document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openGlobalSearch();return;}if(e.key==='Escape'){closeGlobalSearch();if(stageMode)setStageMode(false);return;}if(e.target?.matches('input,textarea,select')||e.metaKey||e.ctrlKey||e.altKey)return;const k=e.key.toLowerCase();if(e.code==='Space'){e.preventDefault();playing?stop():start();}else if(e.key==='ArrowUp'){e.preventDefault();userSetBpm(state.bpm+(e.shiftKey?5:1),{capture:true});}else if(e.key==='ArrowDown'){e.preventDefault();userSetBpm(state.bpm-(e.shiftKey?5:1),{capture:true});}else if(k==='t'){e.preventDefault();handleTapTempo();}else if(k==='m'){e.preventDefault();toggleMiniMute();}else if(k==='f'){e.preventDefault();setFocusMode(!focusMode);}else if(k==='l'){e.preventDefault();toggleBpmLock();}else if(k==='s'){e.preventDefault();setStageMode(!stageMode);}else if(/^[1-9]$/.test(e.key)){const p=presets[Number(e.key)-1];if(p)loadPreset(p);}});
   $$('.bottom-nav button').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));$('savePreset').onclick=savePreset;if($('openSettings'))$('openSettings').onclick=()=>{$('settingsModal').classList.remove('hidden');refreshOfflineStatus();renderCloudUi();};$('closeSettings').onclick=()=>$('settingsModal').classList.add('hidden');$('settingsModal').onclick=e=>{if(e.target===$('settingsModal'))$('settingsModal').classList.add('hidden');};$('resetSettings').onclick=resetSettings;$('prepareOffline').onclick=()=>{if(offlinePreparing)return;if($('prepareOffline').textContent==='다시 확인')refreshOfflineStatus();else prepareOffline(true);};
   $('cloudLogin').onclick=cloudSignIn;$('cloudSignup').onclick=cloudSignUp;$('cloudSyncNow').onclick=()=>syncCloud(false);$('cloudLogout').onclick=cloudLogout;$('cloudAutoSync').onchange=e=>{cloudMeta.autoSync=!!e.target.checked;persistCloudMeta();renderCloudUi();if(cloudMeta.autoSync)scheduleCloudSync(200);};
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){configureIOSAudioSession('playback',true);requestWakeLock();refreshOfflineStatus();checkForAppUpdate();if(cloudSessionValid()&&navigator.onLine)scheduleCloudSync(300);}else{wakeLock=null;}});window.addEventListener('pageshow',()=>{configureIOSAudioSession('playback',true);requestWakeLock();refreshOfflineStatus();checkForAppUpdate();renderCloudUi();if(cloudSessionValid()&&navigator.onLine)scheduleCloudSync(300);});window.addEventListener('online',()=>{refreshOfflineStatus().then(st=>{if(st&&!st.ready)prepareOffline(false);});checkForAppUpdate();if(cloudSessionValid())syncCloud(false);});window.addEventListener('offline',()=>{refreshOfflineStatus();setUpdateUi(updateReady?'ready':'offline');});window.addEventListener('beforeunload',()=>{releaseWakeLock();if(bpmPersistTimer){clearTimeout(bpmPersistTimer);bpmPersistTimer=null;persist();}stopPracticeLog();if(scheduler)clearInterval(scheduler);if(tunerStream)stopTunerMic();if(audioCtx)audioCtx.close();});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){configureIOSAudioSession('playback',true);requestWakeLock();refreshOfflineStatus();checkForAppUpdate();if(cloudSessionValid()&&navigator.onLine)scheduleCloudSync(300);}else{flushPendingBpmSave();wakeLock=null;}});window.addEventListener('pagehide',flushPendingBpmSave);window.addEventListener('pageshow',()=>{configureIOSAudioSession('playback',true);requestWakeLock();refreshOfflineStatus();checkForAppUpdate();renderCloudUi();if(cloudSessionValid()&&navigator.onLine)scheduleCloudSync(300);});window.addEventListener('online',()=>{refreshOfflineStatus().then(st=>{if(st&&!st.ready)prepareOffline(false);});checkForAppUpdate();if(cloudSessionValid())syncCloud(false);});window.addEventListener('offline',()=>{refreshOfflineStatus();setUpdateUi(updateReady?'ready':'offline');});window.addEventListener('beforeunload',()=>{releaseWakeLock();flushPendingBpmSave();stopPracticeLog();if(scheduler)clearInterval(scheduler);if(tunerStream)stopTunerMic();if(audioCtx)audioCtx.close();});
 
   ensureNormalPattern();if(state.meterChainEnabled)ensureChain();renderAll();renderCloudUi();setOfflineUi(null);requestWakeLock();document.addEventListener('pointerdown',requestWakeLock,{once:true,passive:true});restoreResumeSession();const initialTab=document.getElementById(`tab${(state.ui.lastTab||'metronome')[0].toUpperCase()+(state.ui.lastTab||'metronome').slice(1)}`)?state.ui.lastTab:'metronome';switchTab(initialTab);registerOfflineWorker();if(!onboardingDisabled()&&!sessionStorage.getItem('beatronome-onboarding-deferred'))setTimeout(openOnboarding,450);else if(localStorage.getItem(SETTINGS_KEY))setTimeout(()=>notify('지난 세션 설정을 복원했습니다.'),350);if(cloudSessionValid()&&navigator.onLine){ensureCloudSession().then(ok=>{renderCloudUi();if(ok)syncCloud(true);});}
 })();

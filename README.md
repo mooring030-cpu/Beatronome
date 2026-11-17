@@ -77,3 +77,12 @@ See `V0163_FIX_NOTES.md` for changes and QA scope.
 - 자체 진단은 브라우저 상태/스케줄러 예약 간격을 확인합니다. 음향 계측장비처럼 하드웨어 출력음을 정확히 측정하지는 않습니다.
 
 기존 v0.15.1 테스트는 `QA_REPORT.md`, 이번 UI/UX 변경의 검증 범위 및 한계는 `QA_V0162.md`를 참고하세요.
+
+
+## v0.16.6 — Recent chip / Internal Clock consistency / save & live-state checks
+- Recent knowledge chips now have explicit dark background, readable text, wrap and focus states.
+- Training panel expansion is saved locally (`practice.trainingExpanded`).
+- Collapsing Training OR hiding Advanced features turns **Internal Clock** OFF, saves immediately, and maintains selected sound/mute bar counts. Re-opening never silently re-enables it.
+- Legacy saved settings, presets, cloud merges are sanitized so hidden Internal Clock cannot become active.
+- Diagnostics bridge adds `getPracticeState()` without leaking secrets.
+- Auto sync preserves edits made while a cloud request is in flight; reschedules any remaining dirty changes.
