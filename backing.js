@@ -5,7 +5,7 @@
   const STORE_KEY='beatronome-backing-v1'; // Keep the existing storage key to preserve prior settings.
   const defaults={recentFiles:[],fileProfiles:{},source:'local',speed:100,key:0,volume:90,loopA:null,loopB:null,loopOn:false,trackBpm:120,metroTogether:false,localSyncOffsetMs:0,markers:{},youtube:{url:'',videoId:'',rate:1,loopA:null,loopB:null,loopOn:false,metroTogether:false,syncOffsetMs:0},trainer:{speedOn:false,speedStart:70,speedEnd:100,speedStep:5,speedLoops:2,keyOn:false,keyStart:0,keyStep:1,keyLoops:2}};
   const load=()=>{try{return {...defaults,...JSON.parse(localStorage.getItem(STORE_KEY)||'{}'),youtube:{...defaults.youtube,...(JSON.parse(localStorage.getItem(STORE_KEY)||'{}').youtube||{})},trainer:{...defaults.trainer,...(JSON.parse(localStorage.getItem(STORE_KEY)||'{}').trainer||{})}}}catch{return structuredClone(defaults)}};
-  let s=load(), localTrackKey='', ytTrackKey=s.youtube?.videoId?`yt:${s.youtube.videoId}`:'', objectUrl='', mediaSource=null, ctx=null, pitch=null, gain=null, decodedBuffer=null, activeLocalFile=null, stemTracks=[], stemClipStart=0, stemClipEnd=0, originalGain=null, stemMixActive=false, ytPlayer=null, ytTimer=null, localLoopCount=0, keyLoopCount=0, keyTrainerIndex=0, metroStartedByBacking=false, ytMetroStarted=false, ytMetroStarting=null, ytLoadGeneration=0, ytMetroToken=0;
+  let s=load(), localTrackKey='', ytTrackKey=s.youtube?.videoId?`yt:${s.youtube.videoId}`:'', objectUrl='', mediaSource=null, ctx=null, pitch=null, gain=null, decodedBuffer=null, ytPlayer=null, ytTimer=null, localLoopCount=0, keyLoopCount=0, keyTrainerIndex=0, metroStartedByBacking=false, ytMetroStarted=false, ytMetroStarting=null, ytLoadGeneration=0, ytMetroToken=0;
   function save(){
     if(localTrackKey){
       s.fileProfiles=s.fileProfiles||{};
@@ -33,7 +33,7 @@
   document.querySelectorAll('#backingSourceTabs button').forEach(b=>b.onclick=()=>setSource(b.dataset.source));
 
   async function ensureAudioGraph(){
-    if(!ctx){ctx=new (window.AudioContext||window.webkitAudioContext)();gain=ctx.createGain();gain.gain.value=s.volume/100;pitch=window.createBeatPitchShift?.(ctx);if(!pitch)throw new Error('Pitch engine unavailable');mediaSource=ctx.createMediaElementSource($('backingMedia'));originalGain=ctx.createGain();mediaSource.connect(originalGain);originalGain.connect(pitch.input);pitch.output.connect(gain);gain.connect(ctx.destination);}
+    if(!ctx){ctx=new (window.AudioContext||window.webkitAudioContext)();gain=ctx.createGain();gain.gain.value=s.volume/100;pitch=window.createBeatPitchShift?.(ctx);if(!pitch)throw new Error('Pitch engine unavailable');mediaSource=ctx.createMediaElementSource($('backingMedia'));mediaSource.connect(pitch.input);pitch.output.connect(gain);gain.connect(ctx.destination);}
     if(ctx.state==='suspended'||ctx.state==='interrupted')await ctx.resume();
     pitch.setSemitones(s.key); gain.gain.setTargetAtTime(s.volume/100,ctx.currentTime,.01);
   }
@@ -42,7 +42,7 @@
     const media=$('backingMedia'); media.playbackRate=s.speed/100; try{media.preservesPitch=true;media.webkitPreservesPitch=true;}catch{}
     if($('backingVolumeValue'))$('backingVolumeValue').textContent=`${s.volume}%`;
     $('backingSpeed').value=s.speed;$('backingSpeedValue').textContent=`${s.speed}%`;$('backingKey').value=s.key;$('backingKeyValue').textContent=`${s.key>0?'+':''}${s.key} st`;$('backingVolume').value=s.volume;$('backingTrackBpm').value=s.trackBpm;$('backingMetroTogether').checked=!!s.metroTogether;
-    if(pitch)pitch.setSemitones(s.key);if(gain&&ctx)gain.gain.setTargetAtTime(s.volume/100,ctx.currentTime,.01);syncStemSettings();renderLocalLoop();renderMarkers('local');renderTrainer();
+    if(pitch)pitch.setSemitones(s.key);if(gain&&ctx)gain.gain.setTargetAtTime(s.volume/100,ctx.currentTime,.01);renderLocalLoop();renderMarkers('local');renderTrainer();
   }
   function setSpeed(v){s.speed=clamp(Math.round(v),50,150);save();applyLocalSettings();}
   function setKey(v){s.key=clamp(Math.round(v),-12,12);save();applyLocalSettings();}
@@ -67,7 +67,7 @@
   $('backingFile').onchange=async e=>{
     const f=e.target.files?.[0];if(!f)return;
     save(); // Save settings for the previous file before selecting another.
-    clearStemTracks(); activeLocalFile=f;
+    
     document.dispatchEvent(new CustomEvent('beatronome:local-file-change',{detail:{name:f.name}}));
     if(objectUrl)URL.revokeObjectURL(objectUrl);
     objectUrl=URL.createObjectURL(f);
@@ -88,10 +88,9 @@
     $('backingFile').value=''; // Selecting the same file again still fires change.
   };
   $('backingMedia').onloadedmetadata=()=>{$('backingDuration').textContent=fmt($('backingMedia').duration);renderLocalLoop();};
-  $('backingMedia').ontimeupdate=()=>{const m=$('backingMedia'),d=m.duration||0;$('backingCurrentTime').textContent=fmt(m.currentTime);$('backingSeek').value=d?Math.round(m.currentTime/d*1000):0;syncStemPosition();if(s.loopOn&&Number.isFinite(s.loopA)&&Number.isFinite(s.loopB)&&m.currentTime>=s.loopB-.025){m.currentTime=s.loopA;cycleTrainer();}};
-  $('backingMedia').onplay=()=>{$('backingPlay').textContent='Ⅱ PAUSE';syncStemPosition();};
-  $('backingMedia').onpause=()=>{$('backingPlay').textContent='▶ PLAY';pauseStemTracks();if(metroStartedByBacking&&window.BeatronomeAPI?.isPlaying?.()){window.BeatronomeAPI.stop();metroStartedByBacking=false;}};
-  $('backingMedia').addEventListener('seeked',syncStemPosition);
+  $('backingMedia').ontimeupdate=()=>{const m=$('backingMedia'),d=m.duration||0;$('backingCurrentTime').textContent=fmt(m.currentTime);$('backingSeek').value=d?Math.round(m.currentTime/d*1000):0;if(s.loopOn&&Number.isFinite(s.loopA)&&Number.isFinite(s.loopB)&&m.currentTime>=s.loopB-.025){m.currentTime=s.loopA;cycleTrainer();}};
+  $('backingMedia').onplay=()=>{$('backingPlay').textContent='Ⅱ PAUSE';};
+  $('backingMedia').onpause=()=>{$('backingPlay').textContent='▶ PLAY';if(metroStartedByBacking&&window.BeatronomeAPI?.isPlaying?.()){window.BeatronomeAPI.stop();metroStartedByBacking=false;}};
   $('backingMedia').onended=()=>{if(s.trainer.speedOn||s.trainer.keyOn){cycleTrainer();$('backingMedia').currentTime=Number.isFinite(s.loopA)?s.loopA:0;$('backingMedia').play().catch(()=>notify('재생을 다시 눌러주세요.'));}};
   // iOS user activation is transient. Invoke both MediaElement.play and
   // WebAudio metronome.start BEFORE the first await, inside the click event.
@@ -103,9 +102,7 @@
     const didStart=withMetro&&!metro?.isPlaying?.();
     const metroPromise=didStart?metro?.start?.():Promise.resolve(true);
     const mediaPromise=m.play();
-    // Start all stem elements while the user-activation token is still valid on iOS.
-    const stemPromises=playStemTracksInUserGesture();
-    return Promise.all([Promise.resolve(graphPromise),Promise.resolve(metroPromise),Promise.resolve(mediaPromise),...stemPromises]).then(([,ok])=>{
+    return Promise.all([Promise.resolve(graphPromise),Promise.resolve(metroPromise),Promise.resolve(mediaPromise)]).then(([,ok])=>{
       if(didStart&&ok)metroStartedByBacking=true;
       if(withMetro&&!ok)notify('영상/메트로놈 중 하나가 차단되었습니다. 소리 복구를 확인하세요.');
       return true;
@@ -523,92 +520,7 @@
       return true;
     }
   };
-  // STEM MIXER bridge. The master media element remains the sole transport
-  // clock; decoded stems have independent WebAudio gains but share the existing
-  // pitch and master volume. Never connect or inspect YouTube iframe audio.
-  function syncStemSettings(){
-    for(const tr of stemTracks){
-      tr.el.playbackRate=s.speed/100;
-      try{tr.el.preservesPitch=true;tr.el.webkitPreservesPitch=true;}catch{}
-      if(tr.node&&ctx)tr.node.gain.setTargetAtTime(tr.volume/100,ctx.currentTime,.012);
-    }
-  }
-  function pauseStemTracks(){for(const tr of stemTracks)tr.el.pause();}
-  function syncStemPosition(){
-    if(!stemTracks.length)return;
-    const m=$('backingMedia'),time=Number(m.currentTime)||0;
-    const inRange=stemMixActive&&time>=stemClipStart&&time<stemClipEnd-.005;
-    if(originalGain&&ctx)originalGain.gain.setTargetAtTime(inRange?0:1,ctx.currentTime,.012);
-    if(!inRange){pauseStemTracks();return;}
-    const rel=Math.max(0,time-stemClipStart);
-    for(const tr of stemTracks){
-      if(Math.abs((tr.el.currentTime||0)-rel)>.13){
-        try{tr.el.currentTime=rel;}catch(e){console.warn('Stem seek deferred',e);}
-      }
-      if(m.paused){tr.el.pause();}
-      else if(tr.el.paused){tr.el.play().catch(e=>{
-        console.warn('Stem playback blocked',e);
-        stemMixActive=false;
-        if(originalGain&&ctx)originalGain.gain.setValueAtTime(1,ctx.currentTime);
-        pauseStemTracks();notify('악기 분리 재생이 차단되어 원본으로 자동 전환했습니다.');
-      });}
-    }
-  }
-  function playStemTracksInUserGesture(){
-    if(!stemMixActive||!stemTracks.length)return [];
-    const m=$('backingMedia'),t=m.currentTime;
-    if(t<stemClipStart||t>=stemClipEnd)return [];
-    for(const tr of stemTracks){try{tr.el.currentTime=Math.max(0,t-stemClipStart);}catch{}}
-    return stemTracks.map(tr=>tr.el.play().catch(e=>{
-      console.warn('Stem play rejected',e);
-      stemMixActive=false;
-      if(originalGain&&ctx)originalGain.gain.value=1;
-      pauseStemTracks(); notify('악기 믹서가 차단되어 원본 재생으로 복귀했습니다.');
-    }));
-  }
-  function clearStemTracks(){
-    if(originalGain&&ctx)originalGain.gain.value=1;
-    for(const tr of stemTracks){
-      tr.el.pause();try{tr.source?.disconnect();tr.node?.disconnect();}catch{}
-      URL.revokeObjectURL(tr.url);
-    }
-    stemTracks=[];stemMixActive=false;stemClipStart=0;stemClipEnd=0;
-  }
-  async function installStemTracks({tracks,start=0,end,file=null}){
-    if(file&&activeLocalFile!==file)throw new Error('다른 원본 파일을 선택했습니다.');
-    const m=$('backingMedia');if(!activeLocalFile||!m.src)throw new Error('원본 파일을 먼저 선택해 주세요.');
-    if(!Array.isArray(tracks)||tracks.length<2||tracks.length>6)throw new Error('악기 파일을 2~6개 선택하세요.');
-    if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)throw new Error('잘못된 분리 구간');
-    await ensureAudioGraph();
-    if(file&&activeLocalFile!==file)throw new Error('다른 원본 파일을 선택했습니다.');
-    clearStemTracks();
-    // Video source must not leak into the mixer; only blob URLs from user files.
-    try{
-      for(const t of tracks){
-        if(!(t.blob instanceof Blob))throw new Error('음원 데이터 형식 오류');
-        const url=URL.createObjectURL(t.blob);
-        const el=document.createElement('audio');el.preload='auto';el.src=url;el.playsInline=true;
-        const source=ctx.createMediaElementSource(el),node=ctx.createGain();
-        source.connect(node);node.connect(pitch.input);
-        stemTracks.push({name:t.name,url,el,source,node,volume:100});
-      }
-      stemClipStart=start;stemClipEnd=end;stemMixActive=true;syncStemSettings();syncStemPosition();
-    }catch(e){clearStemTracks();throw e;}
-    return stemTracks.map(t=>({name:t.name,volume:t.volume}));
-  }
-  function setStemLevel(index,volume){
-    const t=stemTracks[index];if(!t)return;
-    t.volume=clamp(Number(volume)||0,0,200);syncStemSettings();
-  }
-  window.BeatronomeStemBridge={
-    getSelectedFile:()=>activeLocalFile,
-    getPlaybackSnapshot:()=>({active:stemMixActive,originGain:originalGain?.gain.value??1,stems:stemTracks.map(t=>({name:t.name,paused:t.el.paused,time:t.el.currentTime}))}),
-    getMedia:()=>$('backingMedia'),
-    install:installStemTracks,clear:clearStemTracks,
-    setLevel:setStemLevel,getTracks:()=>stemTracks.map(t=>({name:t.name,volume:t.volume})),
-    isActive:()=>stemMixActive
-  };
   // initialize
   setSource(s.source||'local');applyLocalSettings();renderRecentFiles();renderMarkers('local');renderYoutubeLoop();renderMarkers('youtube');syncYouTubeClearButton();
-  window.addEventListener('beforeunload',()=>{stopYoutubeMetro();clearInterval(ytTimer);clearTimeout(youtubeRateTimer);clearTimeout(youtubeRateStatusTimer);clearStemTracks();if(objectUrl)URL.revokeObjectURL(objectUrl);try{ctx?.close();}catch{}});
+  window.addEventListener('beforeunload',()=>{stopYoutubeMetro();clearInterval(ytTimer);clearTimeout(youtubeRateTimer);clearTimeout(youtubeRateStatusTimer);if(objectUrl)URL.revokeObjectURL(objectUrl);try{ctx?.close();}catch{}});
 })();

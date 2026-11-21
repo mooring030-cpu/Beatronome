@@ -54,7 +54,7 @@
 
   const panel=panels.get('app');
   const block=document.createElement('div');block.className='card quality-report';block.id='qualityCenter';
-  block.innerHTML=`<div class="section-heading"><div><span class="eyebrow">QUALITY CENTER</span><h3>상태 진단 · 문제 보고</h3></div><span class="quality-chip">v${window.BeatronomeAPI?.getVersion?.()||'0.17.2'}</span></div>
+  block.innerHTML=`<div class="section-heading"><div><span class="eyebrow">QUALITY CENTER</span><h3>상태 진단 · 문제 보고</h3></div><span class="quality-chip">v${window.BeatronomeAPI?.getVersion?.()||'0.17.4'}</span></div>
     <p class="quality-note">메트로놈·튜너·연습 중 발생한 문제를 확인합니다. 진단 결과에는 비밀번호, 로그인 토큰, 저장한 곡명 및 프리셋 내용이 포함되지 않습니다.</p>
     <div class="quality-actions"><button type="button" id="qualityRun" class="primary">상태 진단</button><button type="button" id="qualityAudio">클릭 간격 듣기</button><button type="button" id="qualityCopy">결과 복사</button><button type="button" id="qualityDownload">진단 파일 저장</button></div>
     <pre class="quality-result" id="qualityResult" aria-live="polite">[상태 진단]을 눌러 현재 기기와 앱 상태를 확인하세요.</pre>

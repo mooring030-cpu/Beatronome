@@ -1,27 +1,14 @@
-## v0.17.2 릴리스 필수 항목
+# v0.17.4 배포 체크리스트
 
-- [x] 앱/Manifest/서비스워커 캐시 v0.17.2 일치
-- [x] JS 문법, HTML ID 중복 및 CSS 파싱/Basic WAV 18개 점검
-- [x] Node 9 + 19 회귀 검증 및 Chromium 5개 화면 폭 상호작용 검증
-- [x] YouTube/MY FILE STOP 버튼 메트로놈만 중단하는지 모의 테스트
-- [x] Meter Chain → QUICK SETUP 표시 order 컴퓨티드 스타일 확인
-- [x] CDN 모델 실패 시 원본 유지·Worker 종료·재시도 버튼 해제 모의 테스트
-- [ ] **실제 136MB AI 모델 다운로드/3분 음원 전체 추론 성공 검증**
-- [ ] **iPhone/iPad/실 YouTube/Supabase/장시간 실기기 테스트**
-- [ ] GitHub Pages 배포 후 PWA 새 버전 재실행 및 오프라인 기본 소리 확인
+- [x] AI STEM MIXER HTML/JS/Worker/Backend 제거
+- [x] 기존 MY FILE 음악 볼륨과 핵심 재생 UI 보존
+- [x] PWA 새 버전/캐시 등록 반영, AI 파일 캐시 제거
+- [x] JS·CSS·HTML·기본 WAV·파일 SHA256 검사
+- [x] Node 및 Chromium UI·오디오 자동 QA
+- [ ] GitHub 저장소에서 `stem-separation.js`, `stem-worker.js`, `fix-v0173.css`, `AI_BACKEND/` **수동 삭제**
+- [ ] GitHub Pages 배포 후 v0.17.4 표시 확인
+- [ ] iPhone/iPad에서 앱 종료/재시작 후 메트로놈/음악/볼륨 동작 확인
+- [ ] 실제 YouTube 영상과 메트로놈 함께 재생/클릭만 끄기 확인
+- [ ] 실 Supabase 2기기 동기화 테스트
 
-# v0.17.1 배포 전 체크리스트
-
-| 항목 | 상태 |
-|---|---|
-| Node 정적/회귀 및 모의 API 검사 | 통과 19건 |
-| Chromium DOM 기능 회귀 | 통과 18건 |
-| Chromium 2~6 stem WAV 가져오기/볼륨/MUTE/원본복귀/파일교체 | 통과 12건 |
-| 320/390/768/1366px 가로스크롤·필수 UI | 통과 |
-| JS 구문/HTML ID/CSS/PWA 파일/18개 WAV | 출고 시 VERIFY_RELEASE.py로 최종 검증 |
-| 외부 YouTube Premium 광고 없는 재생 | **미검증·앱에서 광고 제거 불가** |
-| 실제 136MB Demucs-6s ONNX 모델 추론 | **미검증(실험적)** |
-| Safari/iOS/PWA 배터리·메모리 안정성 | **미검증** |
-| GitHub Pages 배포 | 사용자 배포 필요 |
-
-앱 전체 테스트 통과/실서비스 인증을 의미하지 않음.
+※ 실기기/외부 서비스 확인 전에는 완전한 무결함 출시로 보고하지 않습니다.

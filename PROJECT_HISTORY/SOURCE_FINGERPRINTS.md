@@ -1,16 +1,9 @@
-# Beatronome v0.17.2 - 배포 소스 SHA-256
+# Beatronome v0.17.4 — 소스 체크섬
 
-아래 값은 실제 릴리스 후보 파일을 기준으로 기록합니다. `BUILD_FINGERPRINTS.json` 및 `VERIFY_RELEASE.py`에서도 동일성을 검사합니다.
+- `index.html`: `d06abff220720c2b63b6a518aef8cdb609142c6d358a0bcf38d9170a1d5dfe0c`
+- `app.js`: `044fc5903a016a4beed305210834326fe5f3e442b4f31d8c51be9a2042de8bc3`
+- `backing.js`: `ed1bcebf06b3d4bd051b36ece05d803788c950ea8b9abb127f76c718502028dc`
+- `sw.js`: `c8c172d14f86d5a6e17b52fd6c18e071b549a576b46277371a4079a399fa8ea0`
+- `beatronome.bundle.css`: `c528b1d6c0d3ee82c90b76b23500b7b07e22ef14232e0f699a0ef9e7a6f78498`
 
-- `index.html`: `c64e6c0e7c799bede1036ff896d625c0b35683517b2715f57eff4c3f5076f60c`
-- `app.js`: `2865dda1859c150d2134d9e84c4ea68a5087a18037a5c6266c3921ad38cb95b6`
-- `backing.js`: `5bca05c9fc49e4619d806615909b078fd57726c2185152c5aad5f3001653cd08`
-- `stem-separation.js`: `b21facd4f29b84f4433490945b60eef29d9babe76ee7681ef9da90b078c2d0a5`
-- `stem-worker.js`: `7e4bd86ea1221d57611ada23770e657b168d772e57bae986694ceee6a8a25f46`
-- `beatronome.bundle.css`: `7b70ac2cbc887ca3701d50df670c16351cf745f201e9092cc04d13013a22b23c`
-- `fix-v0172.css`: `b1211b7f9e6875033226657879248dd095c1be54163a7e056afad429129c8627`
-- `sw.js`: `d6b3a61fe12c58238f055e41193c52b2e99ad12d5666fa2af14b0c198b06f659`
-- `README.md`: `35bb343d01c6f57cce0d099a1bb0c74c262c78a659858211d2150e2ca51ab27b`
-- `QA_V0172.md`: `efb1eb057b675e7aee13c2dd283acaa50f8e776258fe7c3a2ddaad58bea58373`
-- `VERIFY_RELEASE.py`: `0bd6a75642e1b248710fe6f37d88e7e3ac83b006b818fd49af27e26487f0a1e0`
-- `PROJECT_HISTORY/CHANGELOG.md`: `a1d510100c363e2a9de89f76550d1935b11c93a82c4b0dc22dd53024c39343ad`
+실제 릴리스 전체 파일 해시는 루트 `BUILD_FINGERPRINTS.json` 참조. AI 분리 관련 스크립트/서버는 포함하지 않습니다.

@@ -194,5 +194,5 @@
     if(!id)return;e.preventDefault();open(id,btn);
   });
   // Expose diagnostics-friendly, non-sensitive UI status.
-  window.BeatronomeUX={version:window.BeatronomeAPI?.getVersion?.()||'0.17.2',getState:()=>({motionEnabled:motionOK(),selectedTab:activeId,presetMenuOpen:!backdrop.classList.contains('hidden')})};
+  window.BeatronomeUX={version:window.BeatronomeAPI?.getVersion?.()||'0.17.4',getState:()=>({motionEnabled:motionOK(),selectedTab:activeId,presetMenuOpen:!backdrop.classList.contains('hidden')})};
 })();

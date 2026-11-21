@@ -1,8 +1,5 @@
 
-/* v0.17.2: full-track separation, local master volume, timecode loop. */
-.stem-full-track{display:block;}
-.stem-full-track button{width:100%;min-height:46px;font-size:13px;}
-.stem-status.warning{color:#ffd0bf;}
+/* v0.17.4: local master volume and timecode loop (music separation removed). */
 .backing-master-volume{display:grid;gap:10px;padding:14px 15px;margin:12px 0;border:1px solid rgba(210,176,116,.35);border-radius:14px;background:rgba(18,32,46,.93);min-width:0;}
 .backing-master-volume label{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:850;color:#f1dab5;font-size:13px;}
 .backing-master-volume output{font-variant-numeric:tabular-nums;color:#e9bb73;}
@@ -13,7 +10,6 @@
 .youtube-loop-number em{font-size:9px;white-space:nowrap;}
 @media(max-width:390px){.youtube-loop-number input{font-size:16px;}.youtube-loop-number em{font-size:9px;}}
 
-.stem-full-track #stemCancel{margin-top:8px;background:#243241;color:#ead6b8;border-color:#586778;}
 
 
 /* v0.17.2 compact practice stage. Keep actual YouTube iframe >=200px in both axes. */
@@ -91,7 +87,7 @@
   #tabPractice .youtube-practice-rail>.youtube-speed-mini{padding:8px 9px;}
 }
 /* MY FILE: core transport, explicit click stop, volume and manual first-beat
-   alignment remain visible; advanced AI and trainers stay opt-in collapsibles. */
+   alignment remain visible; advanced trainers stay opt-in collapsibles. */
 #tabPractice #backingLocalPane .backing-primary-column,
 #tabPractice #backingLocalPane .backing-settings-column{gap:9px;}
 #tabPractice #backingLocalPane .backing-wave-wrap{height:74px;}
@@ -117,8 +113,6 @@
 #tabPractice #backingLocalPane .backing-control small{font-size:9px;}
 #tabPractice #backingLocalPane .backing-loop-panel{padding:10px;gap:8px;}
 #tabPractice #backingLocalPane .backing-loop-buttons button{min-height:33px;padding:7px 8px;}
-#tabPractice #backingLocalPane .stem-studio{margin:0;}
-#tabPractice #backingLocalPane .stem-studio>summary{padding:10px 12px;}
 @media(min-width:720px){
  #tabPractice #backingLocalPane:not(.hidden){display:grid!important;grid-template-columns:minmax(0,1.16fr) minmax(0,.84fr)!important;gap:12px!important;align-items:start;}
  #tabPractice #backingLocalPane .backing-settings-column .backing-control-grid{grid-template-columns:1fr;}
