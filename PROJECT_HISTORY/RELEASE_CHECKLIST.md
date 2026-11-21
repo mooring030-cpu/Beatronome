@@ -1,18 +1,15 @@
-# Beatronome v0.17.0 배포 전 점검표
+# v0.17.1 배포 전 체크리스트
 
 | 항목 | 상태 |
 |---|---|
-| JavaScript 문법 | 통과 |
-| 주요 기능 Node 테스트 | 17/17 통과 |
-| Chromium 가상 DOM 상호작용 | 18/18 통과 |
-| Chromium AudioContext 시뮬레이션 | 시작/변경/중지 통과 (음향 출력 청음 아님) |
-| 320/390/768/1366px 가로 스크롤 | 통과 |
-| HTML 중복 ID / CSS 파서 | 통과 |
-| 18개 Basic WAV 존재 | 통과 |
-| 버전/manifest/SW/PWA 정적 파일 | 통과 |
-| 소스 파일 지문 검증 | `python VERIFY_RELEASE.py` 통과 시 완료 |
-| iPhone/iPad 실기기 | **미실시** |
-| 실제 YouTube/MP3·MP4/Supabase | **미실시** |
-| GitHub Pages 배포 및 실제 오프라인 실행 | **미실시** |
+| Node 정적/회귀 및 모의 API 검사 | 통과 19건 |
+| Chromium DOM 기능 회귀 | 통과 18건 |
+| Chromium 2~6 stem WAV 가져오기/볼륨/MUTE/원본복귀/파일교체 | 통과 12건 |
+| 320/390/768/1366px 가로스크롤·필수 UI | 통과 |
+| JS 구문/HTML ID/CSS/PWA 파일/18개 WAV | 출고 시 VERIFY_RELEASE.py로 최종 검증 |
+| 외부 YouTube Premium 광고 없는 재생 | **미검증·앱에서 광고 제거 불가** |
+| 실제 136MB Demucs-6s ONNX 모델 추론 | **미검증(실험적)** |
+| Safari/iOS/PWA 배터리·메모리 안정성 | **미검증** |
+| GitHub Pages 배포 | 사용자 배포 필요 |
 
-**출고 구분:** 코드 통합·자동 QA 완료본 / 물리기기 안정성 인증 전. 배포 후 `HARDWARE_QA_CHECKLIST.md` 검증 필요.
+앱 전체 테스트 통과/실서비스 인증을 의미하지 않음.

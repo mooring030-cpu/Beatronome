@@ -978,7 +978,7 @@
     // thread to prepare future audio nodes; actual clicks remain Web Audio.
     if(!clockWorkletNode&&!clockWorkletLoading&&audioCtx.audioWorklet&&window.AudioWorkletNode){
       const workletContext=audioCtx;
-      clockWorkletLoading=workletContext.audioWorklet.addModule('./audio-clock-worklet.js?v=0.17.0')
+      clockWorkletLoading=workletContext.audioWorklet.addModule('./audio-clock-worklet.js?v=0.17.1')
         .then(()=>{
           if(audioCtx!==workletContext||clockWorkletNode)return;
           clockWorkletNode=new AudioWorkletNode(audioCtx,'beatronome-audio-clock');
@@ -992,7 +992,7 @@
         .finally(()=>{if(audioCtx===workletContext)clockWorkletLoading=null;});
     }
     if(!clockWorker&&typeof Worker!=='undefined'){
-      try{clockWorker=new Worker('./clock-worker.js?v=0.17.0');
+      try{clockWorker=new Worker('./clock-worker.js?v=0.17.1');
         clockWorker.onmessage=()=>{if(playing){if(clockDriver!=='audio-worklet')clockDriver='worker';scheduleTick();}};
         clockWorker.onerror=e=>{console.warn('Scheduler worker unavailable',e.message);clockWorker?.terminate();clockWorker=null;};
       }catch(e){console.warn('Scheduler worker unavailable',e);}
@@ -1321,7 +1321,7 @@
   function knowledgePractice(item){captureUndo('Knowledge 연습 시작');state.groove.genreEnabled=false;state.playbackMode='metro';state.bpm=item?.bpm||100;state.subdivision=item?.type==='scale'?2:1;state.practice.countInBars=1;persist();renderAll();switchTab('metronome');notify(`${item?.label||'이론'} · ${state.bpm} BPM 연습`);}
   window.BeatronomeBridge={recordKnowledge:knowledgeRecord,toggleKnowledgeFavorite:knowledgeToggleFavorite,startKnowledgePractice:knowledgePractice,isKnowledgeFavorite:id=>(state.library.knowledgeFavorites||[]).some(x=>x.id===id),refreshKnowledgeMemory:renderKnowledgeMemory};
 
-  const APP_VERSION='0.17.0';
+  const APP_VERSION='0.17.1';
   let swRegistration=null;
   let offlinePreparing=false;
   let updateWorker=null;

@@ -1,11 +1,8 @@
-# Beatronome 프로젝트 현재 상태
+# Beatronome 프로젝트 상태
 
-- 소스 버전: **v0.17.0** (2026-11-21)
-- 릴리스 성격: 데이터 결함 수정 + 사용자 선택형 실시간 오디오 스케줄 + 백업/복원 + 장기 개선 기능 통합
-- 실행 방식: GitHub Pages용 정적 웹앱/PWA. 프로젝트 기존 저장키 유지.
-- 주요 컴포넌트: 메트로놈, Groove/튜너, Meter Chain, 고급 훈련, 로컬 Backing, YouTube, Knowledge, 프리셋·Cloud Sync, 설정·QA.
-- 자동 테스트: Node 17, Chromium DOM 18, Chromium WebAudio 가상 실행 1시나리오, 리소스/문법/해시 검사.
-- 고객 환경: **실제 iPhone/iPad Safari PWA, YouTube 실영상, Supabase 실계정, GitHub Pages 배포 미확인.**
-- 알려진 시스템 제한: iOS에서 OS가 Web Audio/웹앱을 중단하는 경우 브라우저 코드만으로 백그라운드 무중단을 보장할 수 없음.
-
-`QA_V0170.md`, `HARDWARE_QA_CHECKLIST.md` 및 현행 `TODO.md`를 함께 관리합니다.
+- **현재 통합 코드:** v0.17.1 (2026-11-21). v0.17.0을 기반으로 YouTube Loop/Premium 대응 UX와 로컬 Stem Mixer를 추가.
+- **로컬 STEM MIXER:** 악기별 볼륨/MUTE/수동 분리된 파일 Import는 Chromium에서 테스트 통과. 6-part AI Demucs ONNX는 모델 다운로드와 외부 라이브러리 실행이 필요하므로 **실서비스 검증 미완료(실험적)**.
+- **YouTube:** IFrame API 공식 구현 유지. Premium 구독 판별/광고 차단/오디오 추출은 제공하지 않음. 링크+안내 및 A–B 초 단위 입력.
+- **데이터:** 기존 저장키 및 백업 유지. 로컬 음원과 AI 분리 결과는 JSON Cloud Sync나 백업에 포함하지 않음.
+- **QA:** Node 정적/회귀 19건, Chromium 통합 18건, 로컬 Stem 실기능 12건, 320·390·768·1366px 레이아웃. iPhone·iPad iOS WebAudio/PWA/30분 이상 장시간 재생 및 외부 모델 추론은 미검증.
+- **다음 확인:** GitHub Pages 배포 후 실제 136MB 모델 다운로드와 6-part 연산/소리 출력, 원본 교체 및 iOS 기기 메모리 한계, YouTube Premium 로그인의 브라우저 쿠키 유지 동작.

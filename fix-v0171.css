@@ -1,0 +1,69 @@
+/* Beatronome v0.17.1 — YouTube Premium sign-in help and above-the-fold A–B Loop */
+.youtube-account-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 12px;margin:-4px 0 0}
+.youtube-open-external{display:inline-flex;align-items:center;min-height:32px;padding:6px 9px;border:1px solid rgba(220,184,118,.42);border-radius:9px;background:rgba(199,160,94,.08);color:#e8c88a;text-decoration:none;font-size:11px;font-weight:800}
+.youtube-premium-help{min-width:0;max-width:100%;font-size:11px;color:#adb9bf}
+.youtube-premium-help summary{cursor:pointer;padding:6px 0;user-select:none}
+.youtube-premium-help p{margin:6px 0 0;max-width:620px;line-height:1.6;font-size:11px;color:#c4ced1}
+.youtube-loop-quick{display:grid;gap:11px;padding:14px;border-radius:16px;border:1px solid rgba(214,174,99,.43);background:linear-gradient(120deg,rgba(212,174,109,.11),rgba(5,12,18,.28));min-width:0}
+.youtube-loop-head{display:flex;align-items:center;justify-content:space-between;gap:9px;min-width:0}
+.youtube-loop-head>div{display:grid;gap:3px;min-width:0}
+.youtube-loop-head strong{font-size:13px;font-variant-numeric:tabular-nums;color:#f7e7c8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.youtube-loop-switch{min-width:104px;min-height:41px;padding:8px 10px;border-radius:11px;border:1px solid rgba(224,181,106,.5);background:#172938;color:#f2dfbf;font-weight:900;font-size:12px}
+.youtube-loop-switch.active{background:#d2ab67;color:#0c1824}
+.youtube-loop-time-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;align-items:end;gap:8px;min-width:0}
+.youtube-loop-time-grid label{display:grid;gap:6px;color:#c2b7a2;font-size:10px;font-weight:850;letter-spacing:.4px;min-width:0}
+.youtube-loop-number{display:flex;align-items:center;gap:4px;min-width:0;min-height:46px;padding:0 9px;border:1px solid #475058;border-radius:12px;background:#0c1a25}
+.youtube-loop-number:focus-within{border-color:#e2bc75;outline:1px solid #e2bc75}
+.youtube-loop-number input{border:0;outline:0;background:transparent;min-width:0;width:100%;padding:8px 0;font-size:18px;font-weight:800;color:#f5e6cb;font-variant-numeric:tabular-nums;cursor:text}
+.youtube-loop-number em{font-style:normal;color:#9cabb5;font-size:11px;flex:none}
+.youtube-loop-apply{min-width:60px;min-height:46px;padding:8px 12px;border:1px solid #d6ae74;border-radius:12px;background:#cfa76b;color:#142131;font-weight:900;font-size:12px}
+.youtube-loop-current-actions{display:grid;grid-template-columns:1fr 1fr auto;gap:7px}
+.youtube-loop-current-actions button{min-width:0;min-height:37px;border:1px solid rgba(234,215,180,.21);border-radius:10px;background:#152330;color:#ead8b9;padding:6px 9px;font-size:11px;font-weight:750}
+.youtube-loop-current-actions button:last-child{color:#c8adb0}
+.youtube-loop-note{font-size:10px;line-height:1.5;color:#94a4b0}
+.youtube-sync-details{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:rgba(6,13,21,.22)}
+.youtube-sync-details>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;min-height:42px;padding:9px 14px;font-size:11px;font-weight:800;color:#dec38d}
+.youtube-sync-details>summary::-webkit-details-marker{display:none}
+.youtube-sync-details>summary:after{content:'＋';font-size:17px}
+.youtube-sync-details[open]>summary:after{content:'−'}
+.youtube-sync-details .backing-sync-control{margin:0;border:0;border-top:1px solid rgba(220,184,118,.24);border-radius:0}
+@media(max-width:430px){.youtube-loop-quick{padding:11px;gap:9px}.youtube-loop-time-grid{gap:6px}.youtube-loop-number{padding:0 6px}.youtube-loop-number input{font-size:16px}.youtube-loop-apply{min-width:52px;padding:8px}.youtube-loop-current-actions{gap:5px}.youtube-loop-current-actions button{font-size:10px;padding:7px 4px}}
+@media(max-width:345px){.youtube-loop-head strong{font-size:12px}.youtube-loop-switch{min-width:87px;font-size:10px}.youtube-loop-number input{font-size:15px}}
+
+/* 0.17.1 AI Stem Mixer - local file paths only */
+.stem-studio{margin:12px 0;border:1px solid rgba(210,176,116,.38);border-radius:15px;background:#0d1a26;color:#f6f1e9;min-width:0}
+.stem-studio>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;padding:14px;font-weight:850;user-select:none}
+.stem-studio>summary small{display:block;font-size:11px;font-weight:500;color:#b1bdc8;margin-top:4px}
+.stem-badge{font-size:10px;letter-spacing:.08em;padding:6px 8px;border:1px solid rgba(210,176,116,.42);border-radius:9px;color:#dfc697}
+.stem-body{display:grid;gap:12px;padding:0 14px 14px;font-size:12px;line-height:1.6;min-width:0}
+.stem-body>p{margin:0;color:#c0cbd5}
+.stem-body .stem-help{font-size:11px;color:#bdaf99}
+.stem-process-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:end}
+.stem-process-grid label{display:grid;gap:5px;font-size:11px;color:#dfc697;min-width:0}
+.stem-process-grid input{width:100%;min-height:43px;padding:8px 10px;border:1px solid #485767;border-radius:10px;background:#0a1420;color:#fff;font:inherit;font-variant-numeric:tabular-nums}
+.stem-process-grid button{grid-column:1/-1;min-height:43px}
+.stem-import-tools{display:grid;gap:5px;border:1px dashed #465466;border-radius:12px;padding:12px}
+.stem-import-tools small{color:#aab7c5;font-size:10px;line-height:1.6}
+.stem-import-button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;text-align:center;cursor:pointer;background:#172634;border-radius:10px;color:#f3dfbc;font-weight:850}
+.stem-import-button input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.stem-progress{width:100%;height:10px;accent-color:#d4b078}
+.stem-status{font-size:11px;color:#d0d9df;min-height:20px;white-space:normal;overflow-wrap:anywhere}
+.stem-mixer{display:grid;gap:8px}
+.stem-lane{display:grid;grid-template-columns:68px minmax(0,1fr) 47px 40px;gap:8px;align-items:center;min-width:0;padding:8px 7px;border:1px solid #314252;border-radius:10px;background:#101e2b}
+.stem-lane label{font-weight:800;color:#f4e2bf;font-size:11px}
+.stem-lane input{width:100%;accent-color:#d4b078;min-width:0}
+.stem-lane output{text-align:right;font-variant-numeric:tabular-nums;color:#d7e1e8;font-size:11px}
+.stem-lane button{height:32px;border-radius:8px;border:1px solid #5c6c7a;background:#192d3a;color:#f2e3cd;font-size:10px;font-weight:800}
+.stem-lane button[aria-pressed="true"]{background:#d1a766;color:#102030}
+.stem-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:7px}
+.stem-actions button{min-height:40px}
+.youtube-stem-info{border:1px solid rgba(210,176,116,.25);border-radius:12px;padding:10px 12px;font-size:11px;color:#bcc8d5}
+.youtube-stem-info summary{cursor:pointer;color:#ead6b0;font-weight:750;user-select:none}
+.youtube-stem-info p{margin:7px 0;font-size:11px;line-height:1.6}
+.youtube-stem-info button{min-height:36px;padding:6px 12px;border-radius:8px;background:#1b2e3b;color:#f4dfb9;border:1px solid rgba(210,176,116,.4)}
+@media(max-width:360px){.stem-lane{grid-template-columns:58px minmax(0,1fr) 39px 34px;gap:4px}.stem-lane label{font-size:10px}.stem-lane button{font-size:9px}}
+
+.youtube-loop-drawer{border-radius:14px;background:rgba(11,21,31,.25)}
+.youtube-loop-drawer>summary{cursor:pointer;padding:8px 10px;color:#dabb7b;font-size:12px;letter-spacing:.04em;font-weight:900;display:flex;justify-content:space-between;align-items:center;gap:6px;user-select:none;min-height:38px}
+.youtube-loop-drawer>summary span{font-size:10px;font-weight:500;color:#a5b6c5;letter-spacing:0}
+.youtube-loop-drawer>.youtube-loop-quick{margin:3px 0 0}
