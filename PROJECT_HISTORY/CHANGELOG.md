@@ -1,3 +1,13 @@
+## 2026-11-21 / v0.17.2 — AI 오류 격리 및 플레이어 전면 UX 개선
+
+- 사용자 보고 오류 `AI 분리 실패: Aborted()` 대응: 전용 Worker, 명시적인 에러 분기, 취소/재시도, 원본 오디오 보호. **실제 모델 성공은 검증 전**.
+- STEM 전체 음원 6파트 분석(부분 선택/수동 분리 WAV 가져오기 제거), 44.1k 입력에 불필요한 OfflineAudioContext 회피, 원본/파트 볼륨 연결.
+- YouTube LOOP `mm:ss`/`hh:mm:ss`; Premium/광고 및 YouTube 음원 분리 안내 UI 제거.
+- YouTube 영상 우측(태블릿·PC)/바로 아래(모바일)에 동시재생·명시적 메트로놈 OFF·첫 박 수동 동기화·미니 SPEED 제공. MY FILE도 같은 원칙.
+- Meter Chain → QUICK SETUP 순서 변경. 오래된 CSS 중요도 규칙을 덮어 실제 표시 순서까지 조정.
+- Node Mock 9건·기존 회귀 19건·Chromium 5개 폭 사용자 조작 테스트 통과. 실제 iOS/YouTube/대용량 외부 AI 추론 미확인.
+
+
 ## v0.17.0 | 2026-11-21 | Audit-wide Stability, Audio, Data Backup, Meter Chain & Manual Sync
 
 - 기준: v0.16.9 소스 + 31항목 종합 점검(확인된 결함 B-01~07, 실기기 위험 R-01~10, 개선 제안 I-01~14).

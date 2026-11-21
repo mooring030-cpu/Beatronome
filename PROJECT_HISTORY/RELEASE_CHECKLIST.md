@@ -1,3 +1,15 @@
+## v0.17.2 릴리스 필수 항목
+
+- [x] 앱/Manifest/서비스워커 캐시 v0.17.2 일치
+- [x] JS 문법, HTML ID 중복 및 CSS 파싱/Basic WAV 18개 점검
+- [x] Node 9 + 19 회귀 검증 및 Chromium 5개 화면 폭 상호작용 검증
+- [x] YouTube/MY FILE STOP 버튼 메트로놈만 중단하는지 모의 테스트
+- [x] Meter Chain → QUICK SETUP 표시 order 컴퓨티드 스타일 확인
+- [x] CDN 모델 실패 시 원본 유지·Worker 종료·재시도 버튼 해제 모의 테스트
+- [ ] **실제 136MB AI 모델 다운로드/3분 음원 전체 추론 성공 검증**
+- [ ] **iPhone/iPad/실 YouTube/Supabase/장시간 실기기 테스트**
+- [ ] GitHub Pages 배포 후 PWA 새 버전 재실행 및 오프라인 기본 소리 확인
+
 # v0.17.1 배포 전 체크리스트
 
 | 항목 | 상태 |

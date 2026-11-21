@@ -1,0 +1,133 @@
+
+/* v0.17.2: full-track separation, local master volume, timecode loop. */
+.stem-full-track{display:block;}
+.stem-full-track button{width:100%;min-height:46px;font-size:13px;}
+.stem-status.warning{color:#ffd0bf;}
+.backing-master-volume{display:grid;gap:10px;padding:14px 15px;margin:12px 0;border:1px solid rgba(210,176,116,.35);border-radius:14px;background:rgba(18,32,46,.93);min-width:0;}
+.backing-master-volume label{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:850;color:#f1dab5;font-size:13px;}
+.backing-master-volume output{font-variant-numeric:tabular-nums;color:#e9bb73;}
+.backing-master-volume input{width:100%;accent-color:#d1a866;min-height:30px;}
+.backing-master-volume small{color:#abbcc9;font-size:10px;line-height:1.55;}
+.youtube-loop-number{min-height:46px;}
+.youtube-loop-number input{font-variant-numeric:tabular-nums;letter-spacing:.25px;font-size:18px;}
+.youtube-loop-number em{font-size:9px;white-space:nowrap;}
+@media(max-width:390px){.youtube-loop-number input{font-size:16px;}.youtube-loop-number em{font-size:9px;}}
+
+.stem-full-track #stemCancel{margin-top:8px;background:#243241;color:#ead6b8;border-color:#586778;}
+
+
+/* v0.17.2 compact practice stage. Keep actual YouTube iframe >=200px in both axes. */
+#tabPractice .backing-heading{margin-bottom:4px!important;}
+#tabPractice .backing-heading p{font-size:10px;}
+#tabPractice .backing-pane:not(.hidden){gap:8px!important;}
+#tabPractice .youtube-layout-compact{display:grid;grid-template-columns:minmax(0,1fr);gap:9px;min-width:0;width:100%;}
+#tabPractice .youtube-load-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px;align-items:stretch;}
+#tabPractice .youtube-load-row input{font-size:13px;padding:8px 10px;min-height:42px;}
+#tabPractice .youtube-load-row button{min-height:42px;white-space:nowrap;font-size:11px;padding:5px 9px;}
+#tabPractice .youtube-loop-drawer{min-width:0;}
+#tabPractice .youtube-loop-drawer>summary{display:flex;justify-content:flex-start;min-height:34px;padding:5px 9px;font-size:11px;gap:7px;}
+#tabPractice .youtube-loop-drawer>summary strong{font-weight:700;color:#edcf94;font-size:11px;flex:1;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;}
+#tabPractice .youtube-loop-drawer>summary span{font-size:10px;}
+#tabPractice .youtube-loop-quick{padding:9px 11px;gap:7px;}
+#tabPractice .youtube-loop-time-grid{gap:6px;}
+#tabPractice .youtube-loop-number,#tabPractice .youtube-loop-apply{min-height:39px;}
+#tabPractice .youtube-loop-number input{font-size:14px;}
+#tabPractice .youtube-loop-current-actions button{min-height:34px;}
+#tabPractice .youtube-loop-note{font-size:9px;}
+#tabPractice .youtube-stage-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:9px;align-items:start;min-width:0;}
+#tabPractice .youtube-video-column{display:grid;gap:7px;min-width:0;}
+#tabPractice .youtube-video-column .youtube-player-wrap{min-height:200px;border-radius:12px;aspect-ratio:16 / 9;}
+#tabPractice .youtube-video-column .backing-transport{gap:6px;}
+#tabPractice .youtube-video-column .backing-transport button{min-height:39px;border-radius:10px;font-size:12px;}
+#tabPractice .youtube-video-column .backing-time-row{margin-top:1px;}
+#tabPractice .youtube-practice-rail{display:grid;grid-template-columns:minmax(0,1fr);align-content:start;gap:7px;min-width:0;}
+#tabPractice .youtube-practice-rail>.youtube-metro-panel,
+#tabPractice .youtube-practice-rail>.youtube-sync-card,
+#tabPractice .youtube-practice-rail>.youtube-speed-mini{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;min-width:0;border:1px solid rgba(218,184,123,.29);padding:9px 10px;border-radius:12px;background:#142334;margin:0;}
+#tabPractice .youtube-practice-title{display:flex;align-items:center;justify-content:space-between;gap:5px;color:#d5ae6d;font-size:10px;font-weight:800;letter-spacing:.04em;}
+#tabPractice .youtube-practice-title span{font-size:9px;letter-spacing:0;color:#9db2c1;}
+#tabPractice .youtube-practice-title label{display:flex;align-items:center;gap:5px;color:#e6d8bb;letter-spacing:0;font-size:10px;font-weight:650;}
+#tabPractice .youtube-practice-title label input{width:18px;height:18px;accent-color:#d5ab65;}
+#tabPractice .youtube-metro-actions{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.8fr);gap:6px;}
+#tabPractice .youtube-metro-actions button{display:flex;justify-content:center;align-items:center;min-width:0;min-height:42px;font-size:11px;line-height:1.3;padding:7px 5px;border-radius:10px;font-weight:900;}
+#tabPractice .youtube-metro-actions #youtubePlayTogether{background:#d2ac6d;color:#12202e;border:1px solid #dbb87e;}
+#tabPractice .youtube-metro-actions #youtubeMetroStop{background:#202f3e;color:#f0d9c2;border:1px solid #627081;}
+#tabPractice .youtube-metro-actions #youtubeMetroStop.metro-running{background:#6a323d;color:#fff0e6;border-color:#ba7382;}
+#tabPractice #youtubeMetroStatus{font-size:10px;line-height:1.4;white-space:normal;color:#abbecb;min-height:14px;}
+#tabPractice .youtube-sync-card .youtube-resync-main{min-height:42px;width:100%;border-radius:10px;border:1px solid rgba(221,188,124,.5);background:#183048;color:#f0d9b1;font-weight:850;font-size:12px;}
+#tabPractice .youtube-sync-card .youtube-sync-offset{display:grid;gap:3px;min-width:0;}
+#tabPractice .youtube-sync-card .youtube-sync-offset label{display:flex;justify-content:space-between;color:#bdc9d2;font-size:10px;}
+#tabPractice .youtube-sync-card .youtube-sync-offset input{width:100%;min-height:20px;accent-color:#cda66a;}
+#tabPractice .youtube-sync-card .youtube-tap-sync{min-height:32px;border:1px solid #394d61;background:#152535;color:#e5cc9c;border-radius:8px;font-size:10px;font-weight:800;}
+#tabPractice .youtube-speed-mini{min-width:0;}
+#tabPractice .youtube-speed-mini .youtube-speed-stepper{display:grid;grid-template-columns:40px minmax(0,1fr) 40px;gap:6px;align-items:center;}
+#tabPractice .youtube-speed-mini .youtube-speed-stepper button{height:38px;min-width:0;font-size:19px;}
+#tabPractice .youtube-speed-mini .youtube-speed-number{display:flex;justify-content:center;min-width:0;}
+#tabPractice .youtube-speed-mini .youtube-speed-number input{max-width:64px;width:100%;font-size:17px;}
+#tabPractice .youtube-speed-mini .youtube-speed-options{min-width:0;}
+#tabPractice .youtube-speed-mini .youtube-speed-options>summary{padding:3px 1px;cursor:pointer;color:#e0bb7e;font-size:10px;}
+#tabPractice .youtube-speed-mini .youtube-speed-options input{width:100%;margin:5px 0;}
+#tabPractice .youtube-speed-mini .youtube-speed-options small{font-size:10px;}
+#tabPractice .youtube-speed-mini .youtube-rate-status{font-size:10px;margin:3px 0;}
+#tabPractice .youtube-more-tools>summary{min-height:37px;font-size:11px;padding:8px 11px;}
+/* Keep player and mixing controls in the same viewport when a landscape iPad/PC
+   has room; still respect the original mobile-first max content width. */
+@media(min-width:660px){
+  #tabPractice .youtube-stage-grid{grid-template-columns:minmax(0,1.28fr) minmax(240px,.95fr);gap:10px;}
+  #tabPractice .youtube-video-column .youtube-player-wrap{min-height:220px;}
+  #tabPractice .youtube-practice-rail{gap:7px;}
+  #tabPractice .youtube-metro-actions{grid-template-columns:1fr;}
+  #tabPractice .youtube-metro-actions button{min-height:36px;}
+}
+@media(max-width:405px){
+  #tabPractice .youtube-stage-grid{gap:7px;}
+  #tabPractice .youtube-practice-rail{gap:7px;}
+  #tabPractice .youtube-loop-drawer>summary span{font-size:9px;}
+  #tabPractice .youtube-loop-time-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;}
+  #tabPractice .youtube-loop-number em{font-size:8px;}
+  #tabPractice .youtube-metro-actions button{min-height:40px;font-size:10px;}
+  #tabPractice .youtube-practice-rail>.youtube-metro-panel,
+  #tabPractice .youtube-practice-rail>.youtube-sync-card,
+  #tabPractice .youtube-practice-rail>.youtube-speed-mini{padding:8px 9px;}
+}
+/* MY FILE: core transport, explicit click stop, volume and manual first-beat
+   alignment remain visible; advanced AI and trainers stay opt-in collapsibles. */
+#tabPractice #backingLocalPane .backing-primary-column,
+#tabPractice #backingLocalPane .backing-settings-column{gap:9px;}
+#tabPractice #backingLocalPane .backing-wave-wrap{height:74px;}
+#tabPractice #backingLocalPane .backing-wave-wrap canvas{height:72px;}
+#tabPractice #backingLocalPane .backing-loop-tip{font-size:9px;margin:0;}
+#tabPractice .local-combined-toolbar{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,.75fr);gap:6px;}
+#tabPractice .local-combined-toolbar button{min-height:41px;font-size:11px;font-weight:800;padding:6px;}
+#tabPractice .local-combined-toolbar .backing-metro-stop{background:#273746;border:1px solid #60717d;color:#f2d1c1;}
+#tabPractice .local-combined-status{color:#a7b9c5;font-size:10px;line-height:1.4;margin-top:-5px;}
+#tabPractice #backingLocalPane .backing-sync-control{padding:9px 10px;margin:0;gap:5px;}
+#tabPractice #backingLocalPane .backing-sync-control strong{font-size:11px;}
+#tabPractice #backingLocalPane .backing-sync-control label{font-size:10px;}
+#tabPractice #backingLocalPane .backing-sync-control button{min-height:35px;font-size:10px;}
+#tabPractice #backingLocalPane .backing-sync-control small{font-size:10px;line-height:1.3;}
+#tabPractice .backing-master-volume{padding:9px 10px;margin:0;gap:4px;}
+#tabPractice .backing-master-volume label{font-size:11px;}
+#tabPractice .backing-master-volume small{font-size:9px;}
+#tabPractice #backingLocalPane .backing-control-grid{gap:7px;grid-template-columns:repeat(2,minmax(0,1fr));}
+#tabPractice #backingLocalPane .backing-control{padding:9px;gap:6px;}
+#tabPractice #backingLocalPane .backing-stepper{grid-template-columns:27px minmax(0,1fr) 27px;gap:3px;}
+#tabPractice #backingLocalPane .backing-stepper strong{font-size:16px;}
+#tabPractice #backingLocalPane .backing-stepper button{height:32px;font-size:16px;}
+#tabPractice #backingLocalPane .backing-control small{font-size:9px;}
+#tabPractice #backingLocalPane .backing-loop-panel{padding:10px;gap:8px;}
+#tabPractice #backingLocalPane .backing-loop-buttons button{min-height:33px;padding:7px 8px;}
+#tabPractice #backingLocalPane .stem-studio{margin:0;}
+#tabPractice #backingLocalPane .stem-studio>summary{padding:10px 12px;}
+@media(min-width:720px){
+ #tabPractice #backingLocalPane:not(.hidden){display:grid!important;grid-template-columns:minmax(0,1.16fr) minmax(0,.84fr)!important;gap:12px!important;align-items:start;}
+ #tabPractice #backingLocalPane .backing-settings-column .backing-control-grid{grid-template-columns:1fr;}
+}
+@media(max-width:355px){#tabPractice .local-combined-toolbar{grid-template-columns:1fr 105px;}}
+
+/* Explicit visual order overrides inherited important flex/grid order rules. */
+#tabMetronome.active>.instrument-console{order:0!important;}
+#tabMetronome.active>.meter-chain-panel{order:1!important;}
+#tabMetronome.active>.core-setting-strip{order:2!important;}
+#tabMetronome.active>.quick-preset-strip{order:3!important;}
+#tabMetronome.active>.training-panel{order:4!important;}

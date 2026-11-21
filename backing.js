@@ -40,6 +40,7 @@
 
   function applyLocalSettings(){
     const media=$('backingMedia'); media.playbackRate=s.speed/100; try{media.preservesPitch=true;media.webkitPreservesPitch=true;}catch{}
+    if($('backingVolumeValue'))$('backingVolumeValue').textContent=`${s.volume}%`;
     $('backingSpeed').value=s.speed;$('backingSpeedValue').textContent=`${s.speed}%`;$('backingKey').value=s.key;$('backingKeyValue').textContent=`${s.key>0?'+':''}${s.key} st`;$('backingVolume').value=s.volume;$('backingTrackBpm').value=s.trackBpm;$('backingMetroTogether').checked=!!s.metroTogether;
     if(pitch)pitch.setSemitones(s.key);if(gain&&ctx)gain.gain.setTargetAtTime(s.volume/100,ctx.currentTime,.01);syncStemSettings();renderLocalLoop();renderMarkers('local');renderTrainer();
   }
@@ -116,7 +117,23 @@
     });
   }
   $('backingPlay').onclick=()=>{const m=$('backingMedia');if(!m.src){notify('파일을 먼저 선택하세요.');return;}if(m.paused)startLocalMedia(s.metroTogether);else m.pause();};
-  $('backingPlayTogether').onclick=()=>{s.metroTogether=true;save();applyLocalSettings();startLocalMedia(true);};
+  $('backingPlayTogether').onclick=()=>{
+    s.metroTogether=true;save();applyLocalSettings();
+    $('backingMetroStatus').textContent='음원 + 메트로놈 시작 중…';
+    startLocalMedia(true).then(ok=>{
+      $('backingMetroStatus').textContent=ok&&window.BeatronomeAPI?.isPlaying?.()
+        ?'음원 + 메트로놈 재생 중 · 클릭만 끄려면 “■ 클릭 끄기”'
+        :'동시 재생 상태를 확인하세요. 메트로놈 소리가 안 나면 소리 복구를 사용하세요.';
+    });
+  };
+  $('backingMetroStop').onclick=()=>{
+    s.metroTogether=false;save();applyLocalSettings();
+    // This is a direct user request to STOP the metronome. Keep the backing
+    // track playing and stop the click even if it was started independently.
+    try{window.BeatronomeAPI?.stop?.();}catch(e){console.warn('Local metronome stop',e);}
+    metroStartedByBacking=false;
+    $('backingMetroStatus').textContent='메트로놈 OFF · 음원 재생은 유지됩니다.';
+  };
   $('backingBack5').onclick=()=>{$('backingMedia').currentTime=Math.max(0,$('backingMedia').currentTime-5)};$('backingForward5').onclick=()=>{$('backingMedia').currentTime=Math.min($('backingMedia').duration||1e9,$('backingMedia').currentTime+5)};
   $('backingSeek').oninput=e=>{const m=$('backingMedia');if(m.duration)m.currentTime=Number(e.target.value)/1000*m.duration;};
   // Tap waveform to seek. Horizontal drag (>12px) selects the A–B range.
@@ -175,6 +192,9 @@
   function youtubeMetroStatus(message,warning=false){
     const el=$('youtubeMetroStatus');if(!el)return;
     el.textContent=message;el.classList.toggle('warning',warning);
+    const running=!!window.BeatronomeAPI?.isPlaying?.();
+    $('youtubeMetroStop')?.classList.toggle('metro-running',running);
+    $('youtubePlayTogether')?.classList.toggle('metro-running',running && !!s.youtube.metroTogether);
   }
   function stopYoutubeMetro(){
     // Invalidate a pending asynchronous start so clearing/pausing a video cannot
@@ -238,22 +258,8 @@
     const target=document.createElement('div');target.id='youtubePlayer';
     wrap.prepend(target);
   }
-  function updateYoutubeExternalLink(){
-    // External links are always generated from a validated 11-character ID;
-    // the embedded player cannot inspect or force YouTube Premium login.
-    const id=extractYouTubeId($('youtubeUrl').value)||s.youtube.videoId;
-    const link=$('youtubeOpenOnYoutube');
-    if(id&&/^[A-Za-z0-9_-]{11}$/.test(id)){
-      link.href=`https://www.youtube.com/watch?v=${encodeURIComponent(id)}`;
-      link.classList.remove('hidden');
-    }else{
-      link.href='https://www.youtube.com/';
-      link.classList.add('hidden');
-    }
-  }
   function syncYouTubeClearButton(){
     $('youtubeClear').disabled=!ytPlayer&&!s.youtube.videoId&&!$('youtubeUrl').value.trim();
-    updateYoutubeExternalLink();
   }
   function clearYouTube(){
     // Prevent late API/iframe events from reviving a cleared video.
@@ -401,33 +407,46 @@
   $('youtubeSpeedNumber').addEventListener('change',e=>applyYoutubeRate(e.target.value));
   $('youtubeSpeedNumber').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.currentTarget.blur();}});
   renderYoutubeRate();
+  // User-facing loop timing is mm:ss or hh:mm:ss, not fractional seconds.
+  const formatLoopTime=value=>{
+    const n=Math.max(0,Math.floor(Number(value)||0)),h=Math.floor(n/3600),m=Math.floor(n%3600/60),sec=n%60;
+    return h?`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`:`${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+  };
+  function parseLoopTime(value){
+    const raw=String(value||'').trim();
+    if(!/^\d{1,3}:\d{1,2}(?::\d{1,2})?$/.test(raw))return NaN;
+    const items=raw.split(':').map(Number);
+    if(items.slice(1).some(v=>v>=60))return NaN;
+    return items.reduce((a,v)=>a*60+v,0);
+  };
   function renderYoutubeLoop(){
     const y=s.youtube,ok=Number.isFinite(y.loopA)&&Number.isFinite(y.loopB)&&y.loopB>y.loopA+.05;
     $('youtubeLoopToggle').disabled=!ok;
     $('youtubeLoopToggle').textContent=y.loopOn&&ok?'LOOP ON':'LOOP OFF';
     $('youtubeLoopToggle').classList.toggle('active',y.loopOn&&ok);
     $('youtubeLoopToggle').setAttribute('aria-pressed',String(!!(y.loopOn&&ok)));
-    $('youtubeLoopText').textContent=ok?`${fmt(y.loopA)} → ${fmt(y.loopB)}`:'구간 미설정';
-    $('youtubeLoopStartSeconds').value=Number.isFinite(y.loopA)?String(Math.round(y.loopA*10)/10):'';
-    $('youtubeLoopEndSeconds').value=Number.isFinite(y.loopB)?String(Math.round(y.loopB*10)/10):'';
+    $('youtubeLoopText').textContent=ok?`${formatLoopTime(y.loopA)} → ${formatLoopTime(y.loopB)}`:'구간 미설정';
+    if(document.activeElement!==$('youtubeLoopStartSeconds'))$('youtubeLoopStartSeconds').value=Number.isFinite(y.loopA)?formatLoopTime(y.loopA):'';
+    if(document.activeElement!==$('youtubeLoopEndSeconds'))$('youtubeLoopEndSeconds').value=Number.isFinite(y.loopB)?formatLoopTime(y.loopB):'';
     $('youtubeMetroTogether').checked=!!y.metroTogether;
+    $('youtubeLoopFoldLabel').textContent=ok?`${formatLoopTime(y.loopA)}–${formatLoopTime(y.loopB)}`:'구간 반복 설정';
   }
   function applyYoutubeLoopSeconds(){
     if(!ytPlayer){notify('영상을 먼저 불러온 후 구간을 설정하세요.');return false;}
     const rawA=$('youtubeLoopStartSeconds').value.trim(),rawB=$('youtubeLoopEndSeconds').value.trim();
-    if(!rawA||!rawB){notify('START와 END 시간을 모두 초 단위로 입력하세요.');return false;}
-    const a=Number(rawA),b=Number(rawB),duration=Number(ytPlayer.getDuration?.())||0;
+    if(!rawA||!rawB){notify('START와 END를 00:00 형식으로 입력하세요.');return false;}
+    const a=parseLoopTime(rawA),b=parseLoopTime(rawB),duration=Number(ytPlayer.getDuration?.())||0;
     if(!Number.isFinite(a)||!Number.isFinite(b)||a<0||b<=a+0.05){
-      notify('시작은 0초 이상, 종료는 시작보다 최소 0.1초 뒤여야 합니다.');return false;
+      notify('00:00 형식으로 입력하고 END를 START보다 뒤로 설정하세요.');return false;
     }
     if(duration>0&&b>duration+0.05){
       notify(`종료 시간은 영상 길이 ${fmt(duration)}를 넘을 수 없습니다.`);return false;
     }
-    s.youtube.loopA=Math.round(a*10)/10;
-    s.youtube.loopB=Math.round(b*10)/10;
+    s.youtube.loopA=a;
+    s.youtube.loopB=b;
     // Applying the segment is a deliberate action: enable looping immediately.
     s.youtube.loopOn=true;save();renderYoutubeLoop();
-    notify(`Loop 설정: ${fmt(s.youtube.loopA)} → ${fmt(s.youtube.loopB)}`);
+    notify(`Loop 설정: ${formatLoopTime(s.youtube.loopA)} → ${formatLoopTime(s.youtube.loopB)}`);
     return true;
   }
   $('youtubeLoopApply').onclick=applyYoutubeLoopSeconds;
@@ -455,8 +474,17 @@
     if(!ytPlayer){notify('YouTube 영상을 먼저 불러오세요.');return;}
     s.youtube.metroTogether=true;
     save();renderYoutubeLoop();
-    startYoutubeMetro(); // guaranteed user-gesture path for Web Audio unlock
+    startYoutubeMetro(); // must begin synchronously within the tap gesture
     ytPlayer.playVideo();
+  };
+  $('youtubeMetroStop').onclick=()=>{
+    // Explicitly switch off clicking without pausing/restarting the video.
+    s.youtube.metroTogether=false;save();
+    stopYoutubeMetro();
+    try{if(window.BeatronomeAPI?.isPlaying?.())window.BeatronomeAPI.stop();}
+    catch(e){console.warn('YouTube metronome stop',e);}
+    renderYoutubeLoop();
+    youtubeMetroStatus('메트로놈 OFF · 영상은 계속 재생됩니다.');
   };
   $('youtubeBack5').onclick=()=>ytPlayer?.seekTo?.(Math.max(0,(ytPlayer.getCurrentTime?.()||0)-5),true);$('youtubeForward5').onclick=()=>ytPlayer?.seekTo?.((ytPlayer.getCurrentTime?.()||0)+5,true);$('youtubeSeek').oninput=e=>{const d=ytPlayer?.getDuration?.()||0;if(d)ytPlayer.seekTo(Number(e.target.value)/1000*d,true);};$('youtubeSetA').onclick=()=>{if(!ytPlayer)return;s.youtube.loopA=ytPlayer.getCurrentTime();if(Number.isFinite(s.youtube.loopB)&&s.youtube.loopB<=s.youtube.loopA)s.youtube.loopB=null;save();renderYoutubeLoop();};$('youtubeSetB').onclick=()=>{if(!ytPlayer)return;s.youtube.loopB=ytPlayer.getCurrentTime();if(!Number.isFinite(s.youtube.loopA))s.youtube.loopA=0;if(s.youtube.loopB<=s.youtube.loopA+.05){notify('END는 START보다 뒤여야 합니다.');s.youtube.loopB=null;}save();renderYoutubeLoop();};$('youtubeLoopToggle').onclick=()=>{s.youtube.loopOn=!s.youtube.loopOn;save();renderYoutubeLoop();};$('youtubeLoopClear').onclick=()=>{s.youtube.loopA=s.youtube.loopB=null;s.youtube.loopOn=false;save();renderYoutubeLoop();};$('youtubeMetroTogether').onchange=e=>{
     s.youtube.metroTogether=e.target.checked;save();
@@ -546,11 +574,13 @@
     }
     stemTracks=[];stemMixActive=false;stemClipStart=0;stemClipEnd=0;
   }
-  async function installStemTracks({tracks,start=0,end}){
+  async function installStemTracks({tracks,start=0,end,file=null}){
+    if(file&&activeLocalFile!==file)throw new Error('다른 원본 파일을 선택했습니다.');
     const m=$('backingMedia');if(!activeLocalFile||!m.src)throw new Error('원본 파일을 먼저 선택해 주세요.');
     if(!Array.isArray(tracks)||tracks.length<2||tracks.length>6)throw new Error('악기 파일을 2~6개 선택하세요.');
     if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)throw new Error('잘못된 분리 구간');
     await ensureAudioGraph();
+    if(file&&activeLocalFile!==file)throw new Error('다른 원본 파일을 선택했습니다.');
     clearStemTracks();
     // Video source must not leak into the mixer; only blob URLs from user files.
     try{
@@ -577,10 +607,6 @@
     install:installStemTracks,clear:clearStemTracks,
     setLevel:setStemLevel,getTracks:()=>stemTracks.map(t=>({name:t.name,volume:t.volume})),
     isActive:()=>stemMixActive
-  };
-  $('youtubeToMyFile').onclick=()=>{
-    document.querySelector('#backingSourceTabs [data-source="local"]')?.click();
-    $('stemStudio').open=true; $('stemStudio').scrollIntoView({block:'center',behavior:'smooth'});
   };
   // initialize
   setSource(s.source||'local');applyLocalSettings();renderRecentFiles();renderMarkers('local');renderYoutubeLoop();renderMarkers('youtube');syncYouTubeClearButton();

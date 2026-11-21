@@ -1,3 +1,15 @@
+## v0.17.2 오류 및 제약 추적
+
+| 이슈 | 원인/분석 | 조치 | 판정 |
+|---|---|---|---|
+| BUG-172-01: AI `Aborted()` | 고용량 ONNX WebAssembly 런타임/메모리 제한 가능성. 실제 예외 로그만으로 특정 내부 위치 확정 불가 | ONNX를 Dedicated Worker로 분리, 44.1k 입력 중복 버퍼 줄임, 에러 안내/재시도/원본 유지 | **위험 완화**, 실제 모델 미검증 |
+| BUG-172-02: 분리 구간이 노래 일부만 적용됨 | 기존 v0.17.1 부분 범위 UI | 전체 음원 처리로 변경, 부분 파일 선택 제거 | Mock/길이 검증 통과 |
+| BUG-172-03: YouTube 클릭 OFF가 불명확 | 동시재생 버튼만 존재 | 영상/음원 유지 + 클릭만 끄는 독립 버튼 | Chromium Mock 통과 |
+| BUG-172-04: Meter Chain 표시 순서 | 과거 CSS `order:3!important`가 HTML 순서를 이김 | CSS `order` 우선순위 정리 | Computed Style 5폭 통과 |
+| BUG-172-05: 720px 이상 소스 전환 시 로컬 패널이 남음 | 새 그리드 display!important가 .hidden 무시 | :not(.hidden) 한정, 소스 상호배타적 표시 | Chromium 5폭 통과 |
+| BUG-172-06: LOOP 소수 초 혼동 | 내부 초 단위 표시 | `mm:ss`/`hh:mm:ss` 표기/입력, 범위 검사 | Node/브라우저 통과 |
+
+
 # Beatronome 버그 관리 — v0.17.0 (2026-11-21)
 
 ## v0.16.9 대비 코드 개선 완료

@@ -1,10 +1,10 @@
-"""Beatronome v0.17.1 release verification. Run from any working directory."""
+"""Beatronome v0.17.2 release verification. Run from any working directory."""
 from pathlib import Path
 import re,json,hashlib,subprocess,sys
 from bs4 import BeautifulSoup
 import tinycss2
 ROOT=Path(__file__).resolve().parent
-VERSION='0.17.1'
+VERSION='0.17.2'
 FAIL=[];PASS=[]
 def ok(condition,name):
  (PASS if condition else FAIL).append(name)
@@ -29,7 +29,7 @@ ok(styles==[f'./beatronome.bundle.css?v={VERSION}'],'One runtime stylesheet bund
 css=read('beatronome.bundle.css')
 parse_errors=[x for x in tinycss2.parse_stylesheet(css,skip_whitespace=True,skip_comments=True) if x.type=='error']
 ok(not parse_errors,f'CSS parser errors: {len(parse_errors)}')
-for f in ['app.js','backing.js','stem-separation.js','knowledge.js','quality.js','ux-v016.js','pitch-shifter.js','clock-worker.js','audio-clock-worklet.js','sw.js','QA_V0171_TESTS.js']:
+for f in ['app.js','backing.js','stem-separation.js','stem-worker.js','knowledge.js','quality.js','ux-v016.js','pitch-shifter.js','clock-worker.js','audio-clock-worklet.js','sw.js','QA_V0171_TESTS.js']:
  p=subprocess.run(['node','--check',str(ROOT/f)],capture_output=True,text=True)
  ok(p.returncode==0,f'Node syntax {f}')
 for bank in range(1,7):

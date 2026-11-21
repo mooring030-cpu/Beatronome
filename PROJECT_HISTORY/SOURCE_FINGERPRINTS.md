@@ -1,51 +1,16 @@
-# Beatronome v0.17.1 SHA-256
+# Beatronome v0.17.2 - 배포 소스 SHA-256
 
-- `PROJECT_HISTORY/CHANGELOG.md`: `4755d2b14ad8310d999c0aa43bb47bbec65f6d6e47407ab1d6971d2be0606142`
-- `QA_V0170_TESTS.js`: `ca7011e186b5cd2b2b679d83d3a39e40b045c9cb6fc426085fcef653c78d5eb8`
-- `QA_V0171.md`: `440ebde32333eea44278d9e4c8a0b045caa68a35d6475f67e9a87f727381afe0`
-- `README.md`: `db5a72643b9b6d78b24e842669db98834804c77d29531da0ee7468b700867ef8`
-- `THIRD_PARTY_NOTICES.txt`: `31ed010a561a23e13f65a903f510955ce8b66e1f9acfce464bf7ccb67e741e14`
-- `app.js`: `30d71572c5e4f1682c31e23cc00308efa6023045a2277edf9f9ade524d5d5028`
-- `audio-clock-worklet.js`: `d95504d1ead529444bb909e8beb698512583960027e864ae0f29624385cff1fe`
-- `audio/basic/bank1_normal.wav`: `fdfc4e9055c8796c412dae455e0d34d56d8d5f753ac9478cfbf334d3c5fd474f`
-- `audio/basic/bank1_strong.wav`: `4a76564b199bc35f7dda25ed0ed07948668606e004217ffe38b0ac80e848ddc6`
-- `audio/basic/bank1_weak.wav`: `17088c315267aebbfc85718192c86f5baf8589bf814ca0e13ad592a490ffa9c3`
-- `audio/basic/bank2_normal.wav`: `3a2500a71a541777e2e35d18990537d33d0e6c0314c9253d323891c44003626b`
-- `audio/basic/bank2_strong.wav`: `96815441fde8f0dc7d8cdf7d49c4557ef7c367f0b8c42097da4ec6d69a6595d0`
-- `audio/basic/bank2_weak.wav`: `db3c1dde74259c75b5267ec3205cbed0af45f30dd00723610d50c907c2c31f2e`
-- `audio/basic/bank3_normal.wav`: `e8db3228cb50617248d7e90202a5be8521fd64ed42fe900f4730a1fc597e9cb0`
-- `audio/basic/bank3_strong.wav`: `e9e2c1c2fdd665ba38e645ba3ed31e0df1fa676ad92740595e3f417fcb674afc`
-- `audio/basic/bank3_weak.wav`: `b3efadb25666bac56f817e991e02d7befd0c02ea82da40d73a04a02afc7930de`
-- `audio/basic/bank4_normal.wav`: `2260f68f857ffe07de2faa8e853773a0e171d2c94b7b359b591db703f50d651b`
-- `audio/basic/bank4_strong.wav`: `aea7ad5870963883a9e77b0fb01b4f6f29fc54f801fa018185e6f078c046bb97`
-- `audio/basic/bank4_weak.wav`: `87923ceb4fffa08e318d5192d51b94f6f76f80c7ce660a0a7591c75c1dd50df2`
-- `audio/basic/bank5_normal.wav`: `efcad06ec0bf1f43ec149d115158414a07e125539a4207f9171174fd164bb1c8`
-- `audio/basic/bank5_strong.wav`: `6f62e9ac869cfe77640678223635dccc94d737bfe9ae88cdedbd55c1bea54cdf`
-- `audio/basic/bank5_weak.wav`: `47fbdc4e2807396c360604f14d97f67d91c231134ff7e24b9fa564b715edbaf0`
-- `audio/basic/bank6_normal.wav`: `90d63c5903f17fa114cf3466b059b103e4d92cea7d1a1f93fb23cb3143df96b0`
-- `audio/basic/bank6_strong.wav`: `83e2af83fe6fa70a365a66e1118b3e181a39c9044cb68e0a921b64282b06e6ce`
-- `audio/basic/bank6_weak.wav`: `7569cc2cb5b4ac98f0f2d4b1fa8a5beb34172a7ddfdfa6fa0b446cb113c27cd8`
-- `backing.js`: `b934bea63dec1b5bd41a9db588b7bfea9493161b03680e461d3835cf878b9c31`
-- `beatronome.bundle.css`: `d7b587c5d44275b473eb92f850890197971b0b461efcf1761190220d3b146728`
-- `clock-worker.js`: `ed7c7c87bba515fc1a497839a788bc8ea982429e29315bebdd622669e6ceb206`
-- `cloud-config.js`: `5c8ed4d1da677049c64762d951720c6e32660158319d91a550aa91d5a887361a`
-- `design-v016.css`: `bd82a74b27b762413118457ea9bd1208d4c681e1490e90b6080b9c1796ed61ed`
-- `fix-v0165.css`: `8c5d81c3453f5aa49e0e2d425551a7d805b5c0854b0918f41f42307e60cdcd11`
-- `fix-v0166.css`: `b5e85fdf90d7ce164ae4ae1d9ed07b4d03435385ab3535c090b49b602d261ebc`
-- `fix-v0167.css`: `9fd1ea744a805b314298b9b0fda141fd6d1458be8248dd8933d244088c1b0def`
-- `fix-v0168.css`: `bed0b5f6cd3f0e66e1ad74d2452fd026a641f3d55201f76008eb5e96d9baca98`
-- `fix-v0169.css`: `cc9a95ea2e5ab924740c9d9f8c28937089f91c08e27e45ba00c33fee1748c49a`
-- `fix-v0170.css`: `67549a92e5d30e0f33e0b9628b7ce872fe958f716a563484d2845d6335f78564`
-- `fix-v0171.css`: `34223958dff6bc79bfb31c1aec90b8de941bd6edf3991c15b3ccc3df78d96a40`
-- `index.html`: `498e40d554ed67873f817f19139ec92449ccd207a608b30a37f16762b89ede26`
-- `knowledge.js`: `95fc570694138cec9b1c82e490c58e2e2447a571a8db0b383a3b4eaf579615a1`
-- `manifest.webmanifest`: `39eda7622798c21f4c571dec04692619e87369342a9edbedf0ef0093a40c250a`
-- `pitch-shifter.js`: `2ef2be3ab91726b3af525cd504dd5ba9e3dd81c9fcfb616527c1285367b736b2`
-- `polish.css`: `333856005c73e7620a5532d8eee91ffbe2a78e307e0936a2a1cd524af2454dea`
-- `quality.js`: `f43f29b1e49cf7a2b9769bed19b1b4483d2e8368e352b0fd3a0ec5b556547700`
-- `responsive-v0163.css`: `041a839b2cb9b55c61d12626d1ec3dfab0f61d5e67ed5846a7a37da37ed540a2`
-- `stem-separation.js`: `d3422c86655ab7433c187a3beaff44c74950055df0212a6dffb5d5797d61d1ca`
-- `styles.css`: `def4fa0f6091ea14dbf612282db53ab634dc0c0c9a3a6d0540caf722422f7255`
-- `supabase_setup.sql`: `7f0444ea58a89859be1dc11b4dc320a2b8b7f81ea4dd7cf0cb062dc106d99ffe`
-- `sw.js`: `5f5a0871e070921d57b10b5cf71ba9e8ea7adaf62799e3a3f0b9612abc321967`
-- `ux-v016.js`: `3c2601de5a55dc79288751ff987c27f39386f6328d478a3ebe8eecfebe33c404`
+아래 값은 실제 릴리스 후보 파일을 기준으로 기록합니다. `BUILD_FINGERPRINTS.json` 및 `VERIFY_RELEASE.py`에서도 동일성을 검사합니다.
+
+- `index.html`: `c64e6c0e7c799bede1036ff896d625c0b35683517b2715f57eff4c3f5076f60c`
+- `app.js`: `2865dda1859c150d2134d9e84c4ea68a5087a18037a5c6266c3921ad38cb95b6`
+- `backing.js`: `5bca05c9fc49e4619d806615909b078fd57726c2185152c5aad5f3001653cd08`
+- `stem-separation.js`: `b21facd4f29b84f4433490945b60eef29d9babe76ee7681ef9da90b078c2d0a5`
+- `stem-worker.js`: `7e4bd86ea1221d57611ada23770e657b168d772e57bae986694ceee6a8a25f46`
+- `beatronome.bundle.css`: `7b70ac2cbc887ca3701d50df670c16351cf745f201e9092cc04d13013a22b23c`
+- `fix-v0172.css`: `b1211b7f9e6875033226657879248dd095c1be54163a7e056afad429129c8627`
+- `sw.js`: `d6b3a61fe12c58238f055e41193c52b2e99ad12d5666fa2af14b0c198b06f659`
+- `README.md`: `35bb343d01c6f57cce0d099a1bb0c74c262c78a659858211d2150e2ca51ab27b`
+- `QA_V0172.md`: `efb1eb057b675e7aee13c2dd283acaa50f8e776258fe7c3a2ddaad58bea58373`
+- `VERIFY_RELEASE.py`: `0bd6a75642e1b248710fe6f37d88e7e3ac83b006b818fd49af27e26487f0a1e0`
+- `PROJECT_HISTORY/CHANGELOG.md`: `a1d510100c363e2a9de89f76550d1935b11c93a82c4b0dc22dd53024c39343ad`
