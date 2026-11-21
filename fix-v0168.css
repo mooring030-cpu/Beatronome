@@ -1,0 +1,18 @@
+/* Beatronome v0.16.8: iOS audio rescue & YouTube clear. */
+.youtube-load-row{grid-template-columns:minmax(0,1fr) auto auto;align-items:stretch}
+.youtube-load-row .youtube-clear-button{
+  min-width:62px;padding:10px 12px;border:1px solid rgba(232,200,148,.26);
+  border-radius:12px;background:#172435;color:#f1dfc1;
+  font-size:12px;font-weight:800;cursor:pointer;
+}
+.youtube-load-row .youtube-clear-button:disabled{opacity:.42;cursor:default}
+.youtube-load-row .youtube-clear-button:not(:disabled):active{transform:translateY(1px)}
+.audio-recovery-row{display:flex;align-items:center;justify-content:center;gap:10px;
+  flex-wrap:wrap;padding:6px 10px;margin:0 auto 4px;color:#c9c0b4;font-size:11px}
+.audio-recovery-row.hidden{display:none!important}
+.audio-recovery-row button{border:1px solid rgba(224,188,123,.36);
+  border-radius:999px;background:#19293a;color:#f5e6ca;padding:7px 12px;
+  font-weight:800;font-size:11px;cursor:pointer}
+@media(max-width:390px){.youtube-load-row{gap:6px}
+  .youtube-load-row .primary-small,.youtube-load-row .youtube-clear-button{padding:9px 9px;min-width:0}
+}

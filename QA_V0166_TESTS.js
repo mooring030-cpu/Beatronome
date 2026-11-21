@@ -6,6 +6,7 @@ const src=fs.readFileSync(__dirname+'/app.js','utf8');
 const html=fs.readFileSync(__dirname+'/index.html','utf8');
 const css=fs.readFileSync(__dirname+'/fix-v0166.css','utf8');
 const sw=fs.readFileSync(__dirname+'/sw.js','utf8');
+const currentVersion=src.match(/const APP_VERSION='([0-9.]+)'/)[1];
 function between(start,end){const a=src.indexOf(start);const b=src.indexOf(end,a+start.length);assert(a!==-1&&b!==-1,`${start} / ${end} source missing`);return src.slice(a,b);}
 const mocks={
  clamp:(v,min,max)=>Math.max(min,Math.min(max,v)),uid:()=>String(Math.random()),
@@ -78,13 +79,13 @@ check('future preset import hidden clock does not reactivate',()=>{
 check('knowledge chip explicit dark surface is last CSS layer',()=>{
  assert.match(css,/\.knowledge-memory-strip \.knowledge-chip-row button\s*\{/);
  assert.match(css,/background:#1a2837!important/);
- assert.match(html,/fix-v0166\.css\?v=0\.16\.6/);
+ assert.ok(html.includes(`fix-v0166.css?v=${currentVersion}`));
 });
 check('version and worker pre-cache consistent',()=>{
- assert.match(src,/const APP_VERSION='0\.16\.6'/);
- assert.match(sw,/const VERSION = '0\.16\.6'/);
+ assert.ok(src.includes(`const APP_VERSION='${currentVersion}'`));
+ assert.ok(sw.includes(`const VERSION = '${currentVersion}'`));
  assert.match(sw,/fix-v0166\.css/);
- assert.match(html,/v0\.16\.6/);
+ assert.ok(html.includes(`v${currentVersion}`));
 });
 console.log('PASS',cases.length,'tests:\n- '+cases.join('\n- '));
 // Verify live audio scheduling reads training state, not a stale snapshot.
@@ -99,7 +100,7 @@ function rememberMetroSources(){}function setBpm(){}
 `;
 const schedMocks={clamp:(n,a,b)=>Math.max(a,Math.min(b,n)),SUBDIVISIONS:{1:{count:1,mask:[true],bank:1}}};
 vm.createContext(schedMocks);
-vm.runInContext(schedulingStub+between('  function scheduleStep(time){','  async function start(){'),schedMocks);
+vm.runInContext(schedulingStub+between('  function scheduleStep(time){','  function ensureClockDrivers(){'),schedMocks);
 const schedule=(expr)=>vm.runInContext(expr,schedMocks);
 check('live Internal Clock ON/OFF changes upcoming click scheduling without stop',()=>{
  schedule(`let state={bpm:120,subdivision:1,sound:'classic',volume:.8,playbackMode:'metro',meterChainEnabled:false,training:{internalEnabled:true,soundBars:1,muteBars:1,randomMuteEnabled:false,gradualEnabled:false,autoTempoEnabled:false}}`);

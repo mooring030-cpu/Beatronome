@@ -1,0 +1,58 @@
+/* Beatronome v0.16.7 — unified mobile-first layout for phones, tablets and PCs. */
+#app{width:100%!important;max-width:760px!important;margin-inline:auto!important;min-width:0!important;
+  padding-bottom:calc(96px + env(safe-area-inset-bottom))!important}
+main{padding:16px clamp(10px,2vw,22px) calc(20px + env(safe-area-inset-bottom))!important;max-width:100%!important}
+#tabMetronome.active,#tabGroove.active,#tabTuner.active{
+  display:flex!important;flex-direction:column!important;gap:12px!important;
+  grid-template-areas:none!important;grid-template-columns:none!important;align-items:stretch!important
+}
+#tabMetronome.active > *,#tabGroove.active > *,#tabTuner.active > *{min-width:0!important;width:100%!important;max-width:100%!important;order:initial!important}
+#tabMetronome>.instrument-console{display:block!important;margin:0!important}
+#tabMetronome>.core-setting-strip,#tabMetronome>.quick-preset-strip,
+#tabMetronome>.meter-chain-panel,#tabMetronome>.training-panel{grid-area:auto!important;grid-column:auto!important;grid-row:auto!important}
+#tabMetronome>.meter-chain-panel{order:3!important}
+#tabMetronome>.training-panel{order:4!important}
+#tabPractice .backing-pane:not(.hidden){display:flex!important;flex-direction:column!important;gap:12px!important}
+#tabPractice .backing-pane:not(.hidden)>*{width:100%!important;min-width:0!important;max-width:100%!important;grid-column:auto!important}
+.more-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.manual-list,.preset-list,.musician-grid{grid-template-columns:minmax(0,1fr)!important}
+.bottom-nav{position:fixed!important;top:auto!important;bottom:0!important;left:50%!important;
+ transform:translateX(-50%)!important;width:min(760px,100%)!important;max-width:100%!important;
+ grid-template-columns:repeat(5,minmax(0,1fr))!important;padding:8px 10px calc(8px + env(safe-area-inset-bottom))!important;
+ border-radius:16px 16px 0 0!important;z-index:25!important}
+.bottom-nav button{min-width:0!important;min-height:52px!important;flex-direction:column!important}
+.knowledge-nav{top:0!important}
+/* Meter Chain is directly below presets and directly above advanced training, not a modal. */
+.meter-chain-panel{padding:0!important;overflow:hidden!important;min-width:0!important;
+ border-color:rgba(216,182,107,.25)!important}
+.meter-chain-panel>.meter-chain-block{margin:0!important;border:0!important;border-radius:0!important;background:transparent!important}
+.meter-chain-panel .meter-chain-head{min-height:66px;padding:14px 16px!important;align-items:center}
+.meter-chain-panel .meter-chain-head strong{font-size:16px!important;color:#f0d8a2!important}
+.meter-chain-panel .meter-chain-head span{font-size:12px!important;line-height:1.5!important}
+.meter-chain-panel .meter-chain-body{padding:12px 14px 16px!important;min-width:0!important}
+.meter-chain-panel .meter-chain-list{max-width:100%;overflow-x:auto}
+.meter-chain-panel .meter-chain-chip{min-width:0}
+.meter-chain-panel .meter-chain-toolbar{gap:8px}
+.meter-chain-panel button:focus-visible{outline:2px solid #d8b66b;outline-offset:2px}
+.youtube-metro-panel{display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center;
+ padding:12px 14px;border:1px solid rgba(216,182,107,.30);border-radius:16px;background:#172536;min-width:0}
+.youtube-metro-panel label{display:flex;align-items:center;gap:8px;min-width:0;font-size:13px;font-weight:650;color:#f1e4c9}
+.youtube-metro-panel label input{width:19px;height:19px;accent-color:#d8b66b;flex:0 0 auto}
+.youtube-play-together{background:#d8b66b!important;color:#101b29!important;border:1px solid #e7cb8e!important;
+ border-radius:12px;padding:11px 13px;font-size:12px;font-weight:800;min-height:44px}
+#youtubeMetroStatus{grid-column:1/-1;font-size:12px;line-height:1.55;color:#afbdca}
+#youtubeMetroStatus.warning{color:#f0c184}
+@media(max-width:430px){
+ .youtube-metro-panel{grid-template-columns:1fr;gap:9px}
+ .youtube-play-together{width:100%}
+ .meter-chain-panel .meter-chain-toolbar{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ .meter-chain-panel .meter-chain-toolbar button{min-width:0;padding:8px 2px}
+}
+/* Match the reference mobile rhythm on desktop/tablet instead of switching to landscape grids. */
+@media(min-width:701px){
+  html{overflow-y:auto!important;scrollbar-gutter:stable}
+  body{overflow-y:visible!important}
+  #tabMetronome.active{gap:12px!important}
+  .bpm-drag strong{font-size:clamp(76px,15vw,114px)!important}
+  .top-beat-grid .beat-dot{max-height:none!important}
+}

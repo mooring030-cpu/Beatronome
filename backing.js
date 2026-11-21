@@ -5,7 +5,7 @@
   const STORE_KEY='beatronome-backing-v1'; // Keep the existing storage key to preserve prior settings.
   const defaults={recentFiles:[],fileProfiles:{},source:'local',speed:100,key:0,volume:90,loopA:null,loopB:null,loopOn:false,trackBpm:120,metroTogether:false,markers:{},youtube:{url:'',videoId:'',rate:1,loopA:null,loopB:null,loopOn:false,metroTogether:false},trainer:{speedOn:false,speedStart:70,speedEnd:100,speedStep:5,speedLoops:2,keyOn:false,keyStart:0,keyStep:1,keyLoops:2}};
   const load=()=>{try{return {...defaults,...JSON.parse(localStorage.getItem(STORE_KEY)||'{}'),youtube:{...defaults.youtube,...(JSON.parse(localStorage.getItem(STORE_KEY)||'{}').youtube||{})},trainer:{...defaults.trainer,...(JSON.parse(localStorage.getItem(STORE_KEY)||'{}').trainer||{})}}}catch{return structuredClone(defaults)}};
-  let s=load(), localTrackKey='', ytTrackKey=s.youtube?.videoId?`yt:${s.youtube.videoId}`:'', objectUrl='', mediaSource=null, ctx=null, pitch=null, gain=null, decodedBuffer=null, ytPlayer=null, ytTimer=null, localLoopCount=0, keyLoopCount=0, keyTrainerIndex=0, metroStartedByBacking=false, ytMetroStarted=false;
+  let s=load(), localTrackKey='', ytTrackKey=s.youtube?.videoId?`yt:${s.youtube.videoId}`:'', objectUrl='', mediaSource=null, ctx=null, pitch=null, gain=null, decodedBuffer=null, ytPlayer=null, ytTimer=null, localLoopCount=0, keyLoopCount=0, keyTrainerIndex=0, metroStartedByBacking=false, ytMetroStarted=false, ytMetroStarting=null, ytLoadGeneration=0, ytMetroToken=0;
   function save(){
     if(localTrackKey){
       s.fileProfiles=s.fileProfiles||{};
@@ -118,7 +118,147 @@
   let ytApiPromise=null;
   function loadYouTubeApi(){if(window.YT?.Player)return Promise.resolve();if(ytApiPromise)return ytApiPromise;ytApiPromise=new Promise((resolve,reject)=>{const old=window.onYouTubeIframeAPIReady;window.onYouTubeIframeAPIReady=()=>{try{old?.();}catch{}resolve();};const sc=document.createElement('script');sc.src='https://www.youtube.com/iframe_api';sc.onerror=reject;document.head.appendChild(sc);setTimeout(()=>window.YT?.Player&&resolve(),2500);});return ytApiPromise;}
   function extractYouTubeId(url){try{const u=new URL(url.trim());if(u.hostname.includes('youtu.be'))return u.pathname.split('/').filter(Boolean)[0]||'';if(u.hostname.includes('youtube.com')){if(u.pathname.startsWith('/shorts/')||u.pathname.startsWith('/embed/'))return u.pathname.split('/')[2]||'';return u.searchParams.get('v')||'';}}catch{}return /^[\w-]{11}$/.test(url.trim())?url.trim():'';}
-  async function loadYouTube(){if(!navigator.onLine){notify('YouTube는 인터넷 연결이 필요합니다.');return;}const id=extractYouTubeId($('youtubeUrl').value);if(!id){notify('올바른 YouTube 링크를 입력하세요.');return;}s.youtube.url=$('youtubeUrl').value.trim();s.youtube.videoId=id;ytTrackKey=`yt:${id}`;save();await loadYouTubeApi();if(ytPlayer?.destroy)ytPlayer.destroy();$('youtubePlaceholder').classList.add('hidden');ytPlayer=new YT.Player('youtubePlayer',{videoId:id,width:'100%',height:'100%',playerVars:{playsinline:1,rel:0},events:{onReady:()=>{renderYoutubeLoop();renderMarkers('youtube');requestYoutubePlaybackRate();renderYoutubeRate();startYtTimer();},onPlaybackRateChange:()=>renderYoutubeRate(),onStateChange:e=>{if(e.data===YT.PlayerState.PLAYING){$('youtubePlay').textContent='Ⅱ PAUSE';if(s.youtube.metroTogether&&!window.BeatronomeAPI?.isPlaying?.()){window.BeatronomeAPI?.start?.();ytMetroStarted=true;}}else if(e.data===YT.PlayerState.PAUSED||e.data===YT.PlayerState.ENDED){$('youtubePlay').textContent='▶ PLAY';if(ytMetroStarted&&window.BeatronomeAPI?.isPlaying?.()){window.BeatronomeAPI.stop();ytMetroStarted=false;}}}}});}
+  function youtubeMetroStatus(message,warning=false){
+    const el=$('youtubeMetroStatus');if(!el)return;
+    el.textContent=message;el.classList.toggle('warning',warning);
+  }
+  function stopYoutubeMetro(){
+    // Invalidate a pending asynchronous start so clearing/pausing a video cannot
+    // turn its metronome back on after it has already been removed.
+    ytMetroToken++;
+    // Never stop a metronome the user had started independently.
+    if(ytMetroStarted&&window.BeatronomeAPI?.isPlaying?.())window.BeatronomeAPI.stop();
+    ytMetroStarted=false;
+    ytMetroStarting=null;
+    youtubeMetroStatus(s.youtube.metroTogether?'영상 + 메트로놈: 일시 정지':'메트로놈 함께 재생 OFF');
+  }
+  function startYoutubeMetro(){
+    if(!s.youtube.metroTogether)return Promise.resolve(false);
+    const metro=window.BeatronomeAPI;
+    if(!metro?.start){youtubeMetroStatus('메트로놈 연결을 확인할 수 없습니다.',true);return Promise.resolve(false);}
+    if(metro.isPlaying()){
+      // It was already running before this video. We must not own/stop it.
+      // YouTube can steal audio focus on some browsers; resume while this
+      // combined button still has a user-activation token.
+      const wasSuspended=metro.getDebugSnapshot?.().audioState==='suspended';
+      if(wasSuspended){
+        return Promise.resolve(metro.resumeAudio?.()).then(ok=>{
+          youtubeMetroStatus(ok?'메트로놈 오디오 복구됨 · 영상과 박자를 확인하세요.':'오디오 포커스가 제한됩니다. 영상 + 메트로놈을 다시 눌러주세요.',!ok);
+          return !!ok;
+        }).catch(()=>{youtubeMetroStatus('오디오 포커스 복구가 차단되었습니다.',true);return false;});
+      }
+      youtubeMetroStatus('메트로놈 재생 중 · 영상의 첫 박과 수동으로 맞춰주세요.');
+      return Promise.resolve(true);
+    }
+    if(ytMetroStarting)return ytMetroStarting;
+    youtubeMetroStatus('메트로놈 오디오 시작 중…');
+    // Call .start() synchronously inside this user gesture. Delaying it until
+    // the asynchronous YouTube iframe PLAYING event prevents WebAudio from
+    // being unlocked on iOS/Safari and other autoplay-restricted browsers.
+    const token=++ytMetroToken;
+    const promise=metro.start();
+    const tracked=Promise.resolve(promise).then(()=>{
+      if(token!==ytMetroToken||!s.youtube.metroTogether||!ytPlayer){
+        // This request started with an unloaded/old video and was cancelled.
+        if(metro.isPlaying()&&!ytMetroStarted)metro.stop();
+        return false;
+      }
+      ytMetroStarted=metro.isPlaying();
+      if(ytMetroStarted)youtubeMetroStatus('영상 + 메트로놈 동시 재생 중 · 자동 박자 정렬은 지원되지 않습니다.');
+      else youtubeMetroStatus('오디오 시작이 차단되었습니다. “영상 + 메트로놈”을 다시 누르세요.',true);
+      return ytMetroStarted;
+    }).catch(err=>{
+      console.warn('YouTube metronome start was blocked',err);
+      ytMetroStarted=false;
+      youtubeMetroStatus('브라우저가 소리를 차단했습니다. “영상 + 메트로놈”을 다시 누르세요.',true);
+      return false;
+    }).finally(()=>{if(ytMetroStarting===tracked)ytMetroStarting=null;});
+    ytMetroStarting=tracked;
+    return tracked;
+  }
+  // YT.Player replaces #youtubePlayer with an iframe. Re-create the target
+  // before each load so "clear -> load" works even after destroy().
+  function createYouTubeTarget(){
+    const wrap=$('youtubePlayerWrap');
+    wrap.querySelector('#youtubePlayer')?.remove();
+    const target=document.createElement('div');target.id='youtubePlayer';
+    wrap.prepend(target);
+  }
+  function syncYouTubeClearButton(){
+    $('youtubeClear').disabled=!ytPlayer&&!s.youtube.videoId&&!$('youtubeUrl').value.trim();
+  }
+  function clearYouTube(){
+    // Prevent late API/iframe events from reviving a cleared video.
+    ++ytLoadGeneration;
+    stopYoutubeMetro();
+    clearInterval(ytTimer);ytTimer=null;
+    clearTimeout(youtubeRateTimer);clearTimeout(youtubeRateStatusTimer);
+    try{ytPlayer?.stopVideo?.();}catch{}
+    try{ytPlayer?.destroy?.();}catch{}
+    ytPlayer=null;
+    createYouTubeTarget();
+    s.youtube.url='';s.youtube.videoId='';
+    s.youtube.loopA=null;s.youtube.loopB=null;s.youtube.loopOn=false;
+    ytTrackKey='';
+    $('youtubeUrl').value='';
+    $('youtubePlaceholder').classList.remove('hidden');
+    $('youtubeCurrentTime').textContent='00:00';
+    $('youtubeDuration').textContent='00:00';
+    $('youtubeSeek').value='0';
+    $('youtubePlay').textContent='▶ PLAY';
+    renderYoutubeLoop();renderMarkers('youtube');renderYoutubeRate();
+    youtubeMetroStatus('영상 초기화 완료 · 다른 링크를 입력해 주세요.');
+    save();syncYouTubeClearButton();
+  }
+  async function loadYouTube(){
+    if(!navigator.onLine){notify('YouTube는 인터넷 연결이 필요합니다.');return;}
+    const id=extractYouTubeId($('youtubeUrl').value);
+    if(!id){notify('올바른 YouTube 링크를 입력하세요.');return;}
+    const generation=++ytLoadGeneration;
+    s.youtube.url=$('youtubeUrl').value.trim();s.youtube.videoId=id;
+    ytTrackKey=`yt:${id}`;save();syncYouTubeClearButton();
+    try{
+      await loadYouTubeApi();
+      if(generation!==ytLoadGeneration)return; // cleared during pending API load
+      stopYoutubeMetro();
+      try{ytPlayer?.destroy?.();}catch{}
+      ytPlayer=null;
+      clearInterval(ytTimer);ytTimer=null;
+      createYouTubeTarget();
+      $('youtubePlaceholder').classList.add('hidden');
+      ytPlayer=new YT.Player('youtubePlayer',{
+        videoId:id,width:'100%',height:'100%',
+        playerVars:{playsinline:1,rel:0,enablejsapi:1,origin:window.location.origin},
+        events:{
+          onReady:()=>{
+            if(generation!==ytLoadGeneration)return;
+            renderYoutubeLoop();renderMarkers('youtube');requestYoutubePlaybackRate();
+            renderYoutubeRate();startYtTimer();
+            youtubeMetroStatus('영상 준비됨 · 함께 재생 버튼을 누르면 두 소리를 시작합니다.');
+          },
+          onPlaybackRateChange:()=>{if(generation===ytLoadGeneration)renderYoutubeRate();},
+          onError:e=>{if(generation===ytLoadGeneration)youtubeMetroStatus(`YouTube 영상 오류 (${e.data}). 영상 재생 가능 여부를 확인하세요.`,true);},
+          onStateChange:e=>{
+            if(generation!==ytLoadGeneration)return;
+            if(e.data===YT.PlayerState.PLAYING){
+              $('youtubePlay').textContent='Ⅱ PAUSE';
+              // Embedded iframe click is outside our user activation. Best
+              // effort only; the combined button is the reliable path.
+              if(s.youtube.metroTogether&&!window.BeatronomeAPI?.isPlaying?.())startYoutubeMetro();
+              else if(s.youtube.metroTogether&&window.BeatronomeAPI?.isPlaying?.())youtubeMetroStatus('영상 + 메트로놈 재생 중 · 첫 박 자동 정렬은 지원되지 않습니다.');
+            }else if(e.data===YT.PlayerState.PAUSED||e.data===YT.PlayerState.ENDED){
+              $('youtubePlay').textContent='▶ PLAY';
+              stopYoutubeMetro();
+            }
+          }
+        }
+      });
+    }catch(err){
+      if(generation!==ytLoadGeneration)return;
+      console.warn('YouTube embed failed',err);
+      youtubeMetroStatus('YouTube 플레이어를 불러오지 못했습니다. 네트워크나 영상 제한을 확인하세요.',true);
+    }
+  }
   function startYtTimer(){clearInterval(ytTimer);ytTimer=setInterval(()=>{if(!ytPlayer?.getCurrentTime)return;const cur=ytPlayer.getCurrentTime()||0,dur=ytPlayer.getDuration()||0;$('youtubeCurrentTime').textContent=fmt(cur);$('youtubeDuration').textContent=fmt(dur);$('youtubeSeek').value=dur?Math.round(cur/dur*1000):0;if(s.youtube.loopOn&&Number.isFinite(s.youtube.loopA)&&Number.isFinite(s.youtube.loopB)&&cur>=s.youtube.loopB-.08)ytPlayer.seekTo(s.youtube.loopA,true);},120);}
   // YouTube IFrame API only promises video-specific available playback rates.
   // The 5% input is a *request*, not a guarantee that the iframe can play it.
@@ -174,9 +314,35 @@
   $('youtubeSpeedNumber').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.currentTarget.blur();}});
   renderYoutubeRate();
   function renderYoutubeLoop(){const y=s.youtube,ok=Number.isFinite(y.loopA)&&Number.isFinite(y.loopB)&&y.loopB>y.loopA+.05;$('youtubeLoopToggle').disabled=!ok;$('youtubeLoopToggle').textContent=y.loopOn&&ok?'LOOP ON':'LOOP OFF';$('youtubeLoopToggle').classList.toggle('active',y.loopOn&&ok);$('youtubeLoopText').textContent=ok?`${fmt(y.loopA)} → ${fmt(y.loopB)}`:'구간 미설정';$('youtubeMetroTogether').checked=!!y.metroTogether;}
-  $('youtubeLoad').onclick=loadYouTube;$('youtubeUrl').value=s.youtube.url||'';$('youtubePlay').onclick=()=>{if(!ytPlayer){notify('YouTube 영상을 먼저 불러오세요.');return;}const st=ytPlayer.getPlayerState();if(st===YT.PlayerState.PLAYING)ytPlayer.pauseVideo();else ytPlayer.playVideo();};$('youtubeBack5').onclick=()=>ytPlayer?.seekTo?.(Math.max(0,(ytPlayer.getCurrentTime?.()||0)-5),true);$('youtubeForward5').onclick=()=>ytPlayer?.seekTo?.((ytPlayer.getCurrentTime?.()||0)+5,true);$('youtubeSeek').oninput=e=>{const d=ytPlayer?.getDuration?.()||0;if(d)ytPlayer.seekTo(Number(e.target.value)/1000*d,true);};$('youtubeSetA').onclick=()=>{if(!ytPlayer)return;s.youtube.loopA=ytPlayer.getCurrentTime();if(Number.isFinite(s.youtube.loopB)&&s.youtube.loopB<=s.youtube.loopA)s.youtube.loopB=null;save();renderYoutubeLoop();};$('youtubeSetB').onclick=()=>{if(!ytPlayer)return;s.youtube.loopB=ytPlayer.getCurrentTime();if(!Number.isFinite(s.youtube.loopA))s.youtube.loopA=0;if(s.youtube.loopB<=s.youtube.loopA+.05){notify('END는 START보다 뒤여야 합니다.');s.youtube.loopB=null;}save();renderYoutubeLoop();};$('youtubeLoopToggle').onclick=()=>{s.youtube.loopOn=!s.youtube.loopOn;save();renderYoutubeLoop();};$('youtubeLoopClear').onclick=()=>{s.youtube.loopA=s.youtube.loopB=null;s.youtube.loopOn=false;save();renderYoutubeLoop();};$('youtubeMetroTogether').onchange=e=>{s.youtube.metroTogether=e.target.checked;save();};$('youtubeAddMarker').onclick=()=>addMarker('youtube');
+  $('youtubeLoad').onclick=loadYouTube;
+  $('youtubeClear').onclick=clearYouTube;
+  $('youtubeUrl').value=s.youtube.url||'';
+  $('youtubeUrl').addEventListener('input',syncYouTubeClearButton);
+  syncYouTubeClearButton();
+  $('youtubePlay').onclick=()=>{
+    if(!ytPlayer){notify('YouTube 영상을 먼저 불러오세요.');return;}
+    const isPlaying=ytPlayer.getPlayerState()===YT.PlayerState.PLAYING;
+    if(isPlaying){ytPlayer.pauseVideo();stopYoutubeMetro();}
+    else{
+      if(s.youtube.metroTogether)startYoutubeMetro(); // must precede cross-origin playVideo()
+      ytPlayer.playVideo();
+    }
+  };
+  $('youtubePlayTogether').onclick=()=>{
+    if(!ytPlayer){notify('YouTube 영상을 먼저 불러오세요.');return;}
+    s.youtube.metroTogether=true;
+    save();renderYoutubeLoop();
+    startYoutubeMetro(); // guaranteed user-gesture path for Web Audio unlock
+    ytPlayer.playVideo();
+  };
+  $('youtubeBack5').onclick=()=>ytPlayer?.seekTo?.(Math.max(0,(ytPlayer.getCurrentTime?.()||0)-5),true);$('youtubeForward5').onclick=()=>ytPlayer?.seekTo?.((ytPlayer.getCurrentTime?.()||0)+5,true);$('youtubeSeek').oninput=e=>{const d=ytPlayer?.getDuration?.()||0;if(d)ytPlayer.seekTo(Number(e.target.value)/1000*d,true);};$('youtubeSetA').onclick=()=>{if(!ytPlayer)return;s.youtube.loopA=ytPlayer.getCurrentTime();if(Number.isFinite(s.youtube.loopB)&&s.youtube.loopB<=s.youtube.loopA)s.youtube.loopB=null;save();renderYoutubeLoop();};$('youtubeSetB').onclick=()=>{if(!ytPlayer)return;s.youtube.loopB=ytPlayer.getCurrentTime();if(!Number.isFinite(s.youtube.loopA))s.youtube.loopA=0;if(s.youtube.loopB<=s.youtube.loopA+.05){notify('END는 START보다 뒤여야 합니다.');s.youtube.loopB=null;}save();renderYoutubeLoop();};$('youtubeLoopToggle').onclick=()=>{s.youtube.loopOn=!s.youtube.loopOn;save();renderYoutubeLoop();};$('youtubeLoopClear').onclick=()=>{s.youtube.loopA=s.youtube.loopB=null;s.youtube.loopOn=false;save();renderYoutubeLoop();};$('youtubeMetroTogether').onchange=e=>{
+    s.youtube.metroTogether=e.target.checked;save();
+    if(!s.youtube.metroTogether)stopYoutubeMetro();
+    else if(ytPlayer?.getPlayerState?.()===YT.PlayerState.PLAYING)startYoutubeMetro();
+    else youtubeMetroStatus('ON · “영상 + 메트로놈”을 누르면 두 소리를 시작합니다.');
+  };$('youtubeAddMarker').onclick=()=>addMarker('youtube');
 
   // initialize
-  setSource(s.source||'local');applyLocalSettings();renderRecentFiles();renderMarkers('local');renderYoutubeLoop();renderMarkers('youtube');
-  window.addEventListener('beforeunload',()=>{clearInterval(ytTimer);clearTimeout(youtubeRateTimer);clearTimeout(youtubeRateStatusTimer);if(objectUrl)URL.revokeObjectURL(objectUrl);try{ctx?.close();}catch{}});
+  setSource(s.source||'local');applyLocalSettings();renderRecentFiles();renderMarkers('local');renderYoutubeLoop();renderMarkers('youtube');syncYouTubeClearButton();
+  window.addEventListener('beforeunload',()=>{stopYoutubeMetro();clearInterval(ytTimer);clearTimeout(youtubeRateTimer);clearTimeout(youtubeRateStatusTimer);if(objectUrl)URL.revokeObjectURL(objectUrl);try{ctx?.close();}catch{}});
 })();

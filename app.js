@@ -214,8 +214,13 @@
   let playing=false,currentBeat=-1,currentDrumStep=-1,elapsed=0,trainingExpanded=state.practice.trainingExpanded,selectedChainIndex=0;
   let playbackChainIndex=0,playbackChainBarCount=0,visualChainIndex=-1,visualChainBarCount=0;
   let audioCtx=null,master=null,limiter=null,noiseCache=null,scheduler=null,nextNoteTime=0,stepIndex=0,barIndex=0,startTime=0,sessionBaseBpm=state.bpm,tempoDir=1;
-  let scheduledMetroSources=[];
-  // v0.16.6 timing telemetry: reports Web Audio scheduling intervals only.
+  let scheduledMetroSources=[],scheduledDrumSources=[];
+  // v0.16.7: audio-thread heartbeat + worker fallback + adaptive future buffering.
+  let clockWorker=null,clockWorkletNode=null,clockWorkletLoading=null,clockWorkletGain=null;
+  let startPending=null,scheduleBusy=false,clockDriver='timeout';
+  let startAttemptId=0,audioRecoveryCount=0,audioRecoveryNeeded=false;
+  const isIOSDevice=()=>/iPad|iPhone|iPod/.test(navigator.userAgent||'') || (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  // v0.16.7 timing telemetry: reports Web Audio scheduling intervals only.
   // This cannot measure physical speaker/Bluetooth latency.
   let clockLast=null,clockChecks=0,clockErrorSum=0,clockErrorMax=0,clockRecoveries=0;
   function trackScheduledClock(time,interval){
@@ -225,7 +230,7 @@
     }
     clockLast={time,interval};
   }
-  function getTimingStats(){return {samples:clockChecks,meanIntervalErrorMs:clockChecks?Math.round(clockErrorSum/clockChecks*1000*100)/100:0,maxIntervalErrorMs:Math.round(clockErrorMax*1000*100)/100,recoveries:clockRecoveries,scope:'Web Audio scheduler; not hardware output latency'};}
+  function getTimingStats(){return {samples:clockChecks,meanIntervalErrorMs:clockChecks?Math.round(clockErrorSum/clockChecks*1000*100)/100:0,maxIntervalErrorMs:Math.round(clockErrorMax*1000*100)/100,recoveries:clockRecoveries,driver:clockDriver,hidden:document.hidden,scope:'Web Audio scheduled timestamps; hardware and OS background playback are not guaranteed'};}
 
   let wakeLock=null,visualQueue=[],drumVisualQueue=[],rafId=null,tapTimes=[],toastTimer=null,drag=null,dialDragging=false,repeatDelay=null,repeatTimer=null,bpmPersistTimer=null;
   let selectedGenre=state.groove.genre||'Rock';
@@ -640,31 +645,108 @@
     try{
       const session=navigator.audioSession;
       if(!session)return;
+      // Avoid toggling ambient/playback while starting. On iOS this can
+      // interrupt a just-unlocked AudioContext. Explicit recovery can cycle.
       if(forceCycle&&mode==='playback'){
         try{session.type='ambient';}catch{}
         setTimeout(()=>{try{session.type='playback';}catch{}},0);
-      }else session.type=mode;
+      }else if(session.type!==mode)session.type=mode;
     }catch{}
   }
-  function applyOutputBoost(){if(master&&audioCtx)master.gain.setTargetAtTime(miniMuted?0:state.outputBoost,audioCtx.currentTime,.012);}
+  function showAudioRecovery(message){
+    audioRecoveryNeeded=true;
+    const row=$('audioRecoveryRow');if(row)row.classList.remove('hidden');
+    if(message)notify(message);
+  }
+  function updateAudioRecoveryUi(){
+    const row=$('audioRecoveryRow');if(row)row.classList.toggle('hidden',!isIOSDevice()&&!audioRecoveryNeeded);
+  }
+  function applyOutputBoost(){if(master&&audioCtx&&audioCtx.state!=='closed')master.gain.setTargetAtTime(miniMuted?0:state.outputBoost,audioCtx.currentTime,.012);}
+  function releaseAudioContext(){
+    const old=audioCtx;
+    try{clockWorkletNode?.port.postMessage({type:'stop'});clockWorkletNode?.disconnect();}catch{}
+    try{clockWorkletGain?.disconnect();}catch{}
+    clockWorkletNode=null;clockWorkletGain=null;clockWorkletLoading=null;
+    audioCtx=null;master=null;limiter=null;noiseCache=null;basicLoading=null;
+    // No await: next AudioContext must be created inside the user's tap.
+    if(old&&old.state!=='closed')Promise.resolve(old.close()).catch(e=>console.warn('Previous audio context close',e));
+  }
+  function createAudioContext(){
+    const Ctx=window.AudioContext||window.webkitAudioContext;
+    if(!Ctx)throw new Error('Web Audio unavailable');
+    const context=new Ctx({latencyHint:'interactive'});
+    audioCtx=context;
+    master=context.createGain();master.gain.value=miniMuted?0:state.outputBoost;
+    limiter=context.createDynamicsCompressor();
+    limiter.threshold.value=-1;limiter.knee.value=3;limiter.ratio.value=8;limiter.attack.value=.001;limiter.release.value=.08;
+    master.connect(limiter).connect(context.destination);
+    // AudioContext.state can transition to "interrupted" in iOS Safari.
+    // Recover scheduling only after the audio rendering thread is running.
+    context.addEventListener?.('statechange',()=>{
+      if(context!==audioCtx||!playing)return;
+      if(context.state==='running'){
+        audioRecoveryNeeded=false;updateAudioRecoveryUi();scheduleTick();
+      }else if(document.visibilityState==='visible'){
+        showAudioRecovery('오디오 출력이 중단되었습니다. 소리 복구를 눌러주세요.');
+      }
+    });
+    // A very short, near-silent source started in the user gesture primes
+    // WebKit's audio output. This is not an OS background-play workaround.
+    try{
+      const src=context.createOscillator(),gain=context.createGain();
+      gain.gain.value=.000001;src.connect(gain).connect(context.destination);
+      src.start();src.stop(context.currentTime+.02);
+    }catch(e){console.warn('Audio unlock primer',e);}
+    return context;
+  }
+  async function resumeAudioContext(context){
+    if(context.state==='running')return true;
+    if(context.state==='closed')throw new Error('AudioContext is closed');
+    // Promise may remain pending on iOS while a call, another app or browser
+    // audio-focus restriction holds the session. Don't leave START stuck.
+    let resumeResult;
+    try{resumeResult=context.resume();}catch(e){throw e;}
+    const settled=await Promise.race([
+      Promise.resolve(resumeResult).then(()=>true).catch(()=>false),
+      new Promise(resolve=>setTimeout(()=>resolve(false),1200))
+    ]);
+    return settled&&context===audioCtx&&context.state==='running';
+  }
   async function ensureAudio(){
     configureIOSAudioSession('playback');
-    if(!audioCtx){
-      const Ctx=window.AudioContext||window.webkitAudioContext;audioCtx=new Ctx({latencyHint:'interactive'});
-      master=audioCtx.createGain();master.gain.value=miniMuted?0:state.outputBoost;
-      limiter=audioCtx.createDynamicsCompressor();
-      limiter.threshold.value=-1;limiter.knee.value=3;limiter.ratio.value=8;limiter.attack.value=.001;limiter.release.value=.08;
-      master.connect(limiter).connect(audioCtx.destination);
-    }
-    if(audioCtx.state==='suspended')await audioCtx.resume();
+    // A newly tapped PLAY is allowed to replace an iOS context that never
+    // recovered from an external interruption (rather than only testing
+    // for "suspended" as in v0.16.7).
+    if(audioCtx?.state==='closed'||(!playing&&isIOSDevice()&&audioCtx?.state==='interrupted'))releaseAudioContext();
+    if(!audioCtx)createAudioContext();
+    const context=audioCtx;
+    if(!await resumeAudioContext(context))throw new Error(`AudioContext not running (${context.state})`);
     applyOutputBoost();
     configureIOSAudioSession('playback');
-    if(state.sound==='basic')await loadBasicSamples();
+    // Don't block first playback on 18 sequential WAV fetches, which can
+    // outlast a Safari user-activation window. synthClick has a fallback.
+    if(state.sound==='basic')void loadBasicSamples();
+    audioRecoveryNeeded=false;updateAudioRecoveryUi();
   }
   async function loadBasicSamples(){
-    if(Object.keys(basicBuffers).length>=18)return basicBuffers;if(basicLoading)return basicLoading;
-    basicLoading=(async()=>{const roles=['strong','weak','normal'];for(let bank=1;bank<=6;bank++){for(const role of roles){const key=`${bank}:${role}`;if(basicBuffers[key])continue;const res=await fetch(`./audio/basic/bank${bank}_${role}.wav`,{cache:'force-cache'});if(!res.ok)throw new Error(`Basic sample ${key} load failed`);basicBuffers[key]=await audioCtx.decodeAudioData(await res.arrayBuffer());}}return basicBuffers;})().catch(err=>{console.warn(err);notify('Basic 샘플을 불러오지 못했습니다.');return basicBuffers;}).finally(()=>{basicLoading=null;});
-    return basicLoading;
+    if(Object.keys(basicBuffers).length>=18)return basicBuffers;
+    if(basicLoading)return basicLoading;
+    const context=audioCtx;
+    if(!context||context.state==='closed')return basicBuffers;
+    const roles=['strong','weak','normal'];
+    const keys=[];for(let bank=1;bank<=6;bank++)for(const role of roles)keys.push([bank,role]);
+    const loading=Promise.all(keys.map(async([bank,role])=>{
+      const key=`${bank}:${role}`;
+      if(basicBuffers[key])return;
+      try{
+        const res=await fetch(`./audio/basic/bank${bank}_${role}.wav`,{cache:'force-cache'});
+        if(!res.ok)throw new Error(`Basic sample ${key} failed: ${res.status}`);
+        const buffer=await context.decodeAudioData(await res.arrayBuffer());
+        if(audioCtx===context)basicBuffers[key]=buffer;
+      }catch(err){console.warn('Basic sample load',key,err);}
+    })).then(()=>basicBuffers).finally(()=>{if(basicLoading===loading)basicLoading=null;});
+    basicLoading=loading;
+    return loading;
   }
   function noiseBuffer(){if(noiseCache)return noiseCache;const len=Math.max(1,Math.floor(audioCtx.sampleRate*.5)),buf=audioCtx.createBuffer(1,len,audioCtx.sampleRate),data=buf.getChannelData(0);for(let i=0;i<len;i++)data[i]=Math.random()*2-1;noiseCache=buf;return noiseCache;}
   function synthClick(when,sound,accent=false,volume=.8,role=null,bank=1){
@@ -717,10 +799,11 @@
   }
 
   function synthDrum(type,when,velocity=1){
-    if(!audioCtx||!master)return;const kit=state.groove.kit,h=state.groove.humanize/100;velocity=clamp(velocity*(1+(Math.random()-.5)*.28*h),.15,1.2);const kg=kit==='lofi'?.76:kit==='electronic'?1.02:kit==='brush'?.62:1;
+    if(!audioCtx||!master)return [];
+    const sources=[];const kit=state.groove.kit,h=state.groove.humanize/100;velocity=clamp(velocity*(1+(Math.random()-.5)*.28*h),.15,1.2);const kg=kit==='lofi'?.76:kit==='electronic'?1.02:kit==='brush'?.62:1;
     const out=audioCtx.createGain();out.gain.setValueAtTime(Math.max(.0001,state.groove.volume*velocity*kg),when);out.connect(master);
-    const osc=(wave,f0,f1,dur,gain=1)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=wave;o.frequency.setValueAtTime(f0,when);if(f1)o.frequency.exponentialRampToValueAtTime(Math.max(1,f1),when+dur);g.gain.setValueAtTime(gain,when);g.gain.exponentialRampToValueAtTime(.0001,when+dur);o.connect(g).connect(out);o.start(when);o.stop(when+dur+.03);};
-    const noise=(dur,gain=.5,hp=1000,lp=18000)=>{const src=audioCtx.createBufferSource(),hpF=audioCtx.createBiquadFilter(),lpF=audioCtx.createBiquadFilter(),g=audioCtx.createGain();src.buffer=noiseBuffer(dur);hpF.type='highpass';hpF.frequency.value=hp;lpF.type='lowpass';lpF.frequency.value=kit==='lofi'?Math.min(lp,6500):lp;g.gain.setValueAtTime(gain,when);g.gain.exponentialRampToValueAtTime(.0001,when+dur);src.connect(hpF).connect(lpF).connect(g).connect(out);src.start(when);};
+    const osc=(wave,f0,f1,dur,gain=1)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=wave;o.frequency.setValueAtTime(f0,when);if(f1)o.frequency.exponentialRampToValueAtTime(Math.max(1,f1),when+dur);g.gain.setValueAtTime(gain,when);g.gain.exponentialRampToValueAtTime(.0001,when+dur);o.connect(g).connect(out);o.start(when);o.stop(when+dur+.03);sources.push(o);};
+    const noise=(dur,gain=.5,hp=1000,lp=18000)=>{const src=audioCtx.createBufferSource(),hpF=audioCtx.createBiquadFilter(),lpF=audioCtx.createBiquadFilter(),g=audioCtx.createGain();src.buffer=noiseBuffer(dur);hpF.type='highpass';hpF.frequency.value=hp;lpF.type='lowpass';lpF.frequency.value=kit==='lofi'?Math.min(lp,6500):lp;g.gain.setValueAtTime(gain,when);g.gain.exponentialRampToValueAtTime(.0001,when+dur);src.connect(hpF).connect(lpF).connect(g).connect(out);src.start(when);sources.push(src);};
     const decayMul=kit==='vintage'?1.18:kit==='electronic'?.82:kit==='brush'?1.35:1;
     if(type==='kick'){const start=kit==='electronic'?165:kit==='jazz'?105:135;const end=kit==='electronic'?52:42;osc('sine',start,end,.16*decayMul,.95);if(kit==='studio'||kit==='funk')noise(.018,.12,1200,6500);}
     else if(type==='snare'){noise((kit==='brush'?.22:.13)*decayMul,kit==='brush'?.55:.72,kit==='brush'?900:1200,kit==='lofi'?5200:12000);osc('triangle',kit==='electronic'?220:185,120,.08,.24);}
@@ -730,13 +813,26 @@
     else if(type==='rim'){noise(.04,.36,1800,11000);osc('triangle',1250,780,.04,.28);}
     else if(type==='clap'){noise(.09,.46,900,11000);}
     else if(type==='cowbell'){osc('square',560,null,.13,.28);osc('square',845,null,.11,.20);}
+    return sources;
   }
 
+  function rememberDrumSources(time,sources){
+    if(!sources?.length)return;
+    scheduledDrumSources.push({time,sources});
+    const cutoff=(audioCtx?.currentTime||0)-.5;
+    if(scheduledDrumSources.length>500)scheduledDrumSources=scheduledDrumSources.filter(e=>e.time>cutoff);
+  }
+  function cancelFutureDrumSources(){
+    if(!audioCtx){scheduledDrumSources=[];return;}
+    const now=audioCtx.currentTime+.006;
+    scheduledDrumSources.forEach(e=>{if(e.time>now)e.sources.forEach(src=>{try{src.stop();}catch{}});});
+    scheduledDrumSources=scheduledDrumSources.filter(e=>e.time<=now);
+  }
   function scheduleDrumBar(barStart,barDuration){
     if(!['drum','both'].includes(state.playbackMode))return;const g=state.groove,stepDur=barDuration/16,swingDelay=(g.swing/75)*stepDur*.38,h=g.humanize/100;
     for(let s=0;s<16;s++){
       let t=barStart+s*stepDur+(s%2?swingDelay:0)+(Math.random()-.5)*.012*h;t=Math.max(barStart,t);drumVisualQueue.push({time:t,step:s});
-      DRUM_INSTRUMENTS.forEach(([key])=>{const inst=g.instruments[key];if(!inst||inst.muted||!inst.pattern[s])return;if(g.dropout>0&&Math.random()*100<g.dropout)return;synthDrum(key,t,inst.volume);});
+      DRUM_INSTRUMENTS.forEach(([key])=>{const inst=g.instruments[key];if(!inst||inst.muted||!inst.pattern[s])return;if(g.dropout>0&&Math.random()*100<g.dropout)return;rememberDrumSources(t,synthDrum(key,t,inst.volume));});
     }
   }
 
@@ -763,13 +859,184 @@
     return meter;
   }
 
-  async function start(){clockLast=null;clockChecks=0;clockErrorSum=0;clockErrorMax=0;clockRecoveries=0;configureIOSAudioSession('playback',true);
-    if(tunerStream)stopTunerMic();await ensureAudio();ensureNormalPattern();if(state.meterChainEnabled)ensureChain();stepIndex=0;barIndex=0;playbackChainIndex=0;playbackChainBarCount=0;visualChainIndex=state.meterChainEnabled?0:-1;visualChainBarCount=0;selectedChainIndex=state.meterChainEnabled?0:selectedChainIndex;sessionBaseBpm=state.bpm;tempoDir=state.training.tempoMode==='down'?-1:1;const firstTime=audioCtx.currentTime+.07,firstMeter=getPlaybackMeter(),firstBeatDur=(60/state.bpm)*(4/firstMeter.denominator),ci=state.practice.countInBars||0;visualQueue=[];drumVisualQueue=[];if(ci>0){for(let b=0;b<ci;b++){for(let beat=0;beat<firstMeter.beats;beat++){const t=firstTime+(b*firstMeter.beats+beat)*firstBeatDur;rememberMetroSources(t,synthClick(t,state.sound,beat===0,state.volume,beat===0?'strong':'normal',1));visualQueue.push({time:t,beat,chainIndex:-1,chainBar:0,countIn:true});}}}nextNoteTime=firstTime+ci*firstMeter.beats*firstBeatDur;countInEndTime=ci>0?nextNoteTime:0;startTime=nextNoteTime;elapsed=0;playing=true;currentBeat=-1;currentDrumStep=-1;requestWakeLock();startPracticeLog(!state.groove.genreEnabled||state.playbackMode==='metro'?'metronome':'groove');
-    const LOOKAHEAD_SEC=.26,LATE_RECOVERY_SEC=.10,TICK_MS=18;
-    const tick=()=>{if(!playing||!audioCtx)return;const now=audioCtx.currentTime;if(nextNoteTime<now-LATE_RECOVERY_SEC){clockRecoveries++;clockLast=null;nextNoteTime=now+.035;visualQueue=visualQueue.filter(e=>e.time>now-.02);drumVisualQueue=drumVisualQueue.filter(e=>e.time>now-.02);}while(nextNoteTime<now+LOOKAHEAD_SEC){const m=scheduleStep(nextNoteTime),beatDuration=(60/state.bpm)*(4/m.denominator),subInfo=SUBDIVISIONS[state.subdivision]||SUBDIVISIONS[1];nextNoteTime+=beatDuration/subInfo.count;}scheduler=setTimeout(tick,TICK_MS);};tick();renderCore();startVisualLoop();
+  function ensureClockDrivers(){
+    if(!audioCtx)return;
+    // AudioWorklet callbacks are driven by the audio renderer, rather than a
+    // visibility-throttled window.setTimeout timer. They only ask the main
+    // thread to prepare future audio nodes; actual clicks remain Web Audio.
+    if(!clockWorkletNode&&!clockWorkletLoading&&audioCtx.audioWorklet&&window.AudioWorkletNode){
+      const workletContext=audioCtx;
+      clockWorkletLoading=workletContext.audioWorklet.addModule('./audio-clock-worklet.js?v=0.16.8')
+        .then(()=>{
+          if(audioCtx!==workletContext||clockWorkletNode)return;
+          clockWorkletNode=new AudioWorkletNode(audioCtx,'beatronome-audio-clock');
+          clockWorkletGain=audioCtx.createGain();clockWorkletGain.gain.value=0;
+          clockWorkletGain.connect(audioCtx.destination);
+          if(playing)clockWorkletNode.connect(clockWorkletGain);
+          clockWorkletNode.port.onmessage=()=>{if(playing){clockDriver='audio-worklet';scheduleTick();}};
+          if(playing)clockWorkletNode.port.postMessage({type:'start'});
+        })
+        .catch(err=>{console.warn('Audio clock worklet unavailable, using fallbacks',err);})
+        .finally(()=>{if(audioCtx===workletContext)clockWorkletLoading=null;});
+    }
+    if(!clockWorker&&typeof Worker!=='undefined'){
+      try{clockWorker=new Worker('./clock-worker.js?v=0.16.8');
+        clockWorker.onmessage=()=>{if(playing){if(clockDriver!=='audio-worklet')clockDriver='worker';scheduleTick();}};
+        clockWorker.onerror=e=>{console.warn('Scheduler worker unavailable',e.message);clockWorker?.terminate();clockWorker=null;};
+      }catch(e){console.warn('Scheduler worker unavailable',e);}
+    }
+    if(clockWorkletNode&&clockWorkletGain){try{clockWorkletNode.disconnect();}catch{}clockWorkletNode.connect(clockWorkletGain);}
+    clockWorkletNode?.port.postMessage({type:'start'});
+    clockWorker?.postMessage({type:'start'});
   }
-  function stop(){stopPracticeLog();playing=false;if(scheduler){clearInterval(scheduler);clearTimeout(scheduler);}scheduler=null;cancelFutureMetroSources();scheduledMetroSources=[];cancelAnimationFrame(rafId);stepIndex=0;barIndex=0;playbackChainIndex=0;playbackChainBarCount=0;visualChainIndex=-1;visualChainBarCount=0;visualQueue=[];drumVisualQueue=[];currentBeat=-1;currentDrumStep=-1;elapsed=0;countInEndTime=0;renderCore();updateDrumStepVisual();}
+  function advanceMissedStep(){
+    const meter=getPlaybackMeter(),sub=(SUBDIVISIONS[state.subdivision]||SUBDIVISIONS[1]);
+    stepIndex++;
+    if(stepIndex>=meter.beats*sub.count){
+      stepIndex=0;barIndex++;
+      if(state.meterChainEnabled&&state.meterChain.length){
+        playbackChainBarCount++;
+        if(playbackChainBarCount>=Math.max(1,Number(meter.repeatBars)||1)){
+          playbackChainBarCount=0;playbackChainIndex=(playbackChainIndex+1)%state.meterChain.length;
+        }
+      }
+      const t=state.training;
+      if(t.autoTempoEnabled&&barIndex%Math.max(1,t.everyBars)===0){
+        let next=state.bpm;
+        if(t.tempoMode==='down')next=Math.max(t.targetBpm,state.bpm-Math.abs(t.tempoStep));
+        else if(t.tempoMode==='pyramid'){
+          next=state.bpm+t.tempoStep*tempoDir;
+          if(tempoDir>0&&next>=t.targetBpm){next=t.targetBpm;tempoDir=-1;}
+          else if(tempoDir<0&&next<=sessionBaseBpm){next=sessionBaseBpm;tempoDir=1;}
+        }else next=Math.min(t.targetBpm,state.bpm+Math.abs(t.tempoStep));
+        setBpm(next);
+      }
+    }
+    return (60/state.bpm)*(4/meter.denominator)/sub.count;
+  }
+  function scheduleTick(){
+    if(scheduleBusy||!playing||!audioCtx||audioCtx.state!=='running')return;
+    scheduleBusy=true;
+    try{
+      const now=audioCtx.currentTime;
+      // An inactive window may only receive a timer once a second. Pre-buffer
+      // complete metronome beats into the audio timeline before that occurs.
+      // Auto Tempo uses a shorter horizon to avoid showing a future BPM early.
+      const horizon=document.hidden?(state.training.autoTempoEnabled?1.0:3.0):.32;
+      if(nextNoteTime<now-.10){
+        clockRecoveries++;clockLast=null;
+        let skipped=0;
+        while(nextNoteTime<now+.04&&skipped<2500){
+          nextNoteTime+=advanceMissedStep();skipped++;
+        }
+        if(skipped>=2500)nextNoteTime=now+.04;
+        visualQueue=visualQueue.filter(e=>e.time>=now-.03);
+        drumVisualQueue=drumVisualQueue.filter(e=>e.time>=now-.03);
+      }
+      let steps=0;
+      while(playing&&nextNoteTime<now+horizon&&steps<350){
+        const meter=scheduleStep(nextNoteTime);
+        const sub=SUBDIVISIONS[state.subdivision]||SUBDIVISIONS[1];
+        nextNoteTime+=(60/state.bpm)*(4/meter.denominator)/sub.count;
+        steps++;
+      }
+    }finally{scheduleBusy=false;}
+  }
+  async function startCore(attempt){
+    clockLast=null;clockChecks=0;clockErrorSum=0;clockErrorMax=0;clockRecoveries=0;clockDriver='timeout';
+    // Keep the playback category stable during the initial iOS unlock.
+    configureIOSAudioSession('playback');
+    if(tunerStream)stopTunerMic();
+    await ensureAudio();
+    if(attempt!==startAttemptId)return false; // STOP or reset during async resume
+    ensureNormalPattern();if(state.meterChainEnabled)ensureChain();
+    stepIndex=0;barIndex=0;playbackChainIndex=0;playbackChainBarCount=0;
+    visualChainIndex=state.meterChainEnabled?0:-1;visualChainBarCount=0;
+    selectedChainIndex=state.meterChainEnabled?0:selectedChainIndex;
+    sessionBaseBpm=state.bpm;tempoDir=state.training.tempoMode==='down'?-1:1;
+    const firstTime=audioCtx.currentTime+.07,firstMeter=getPlaybackMeter();
+    const firstBeatDur=(60/state.bpm)*(4/firstMeter.denominator),ci=state.practice.countInBars||0;
+    visualQueue=[];drumVisualQueue=[];
+    if(ci>0){
+      for(let b=0;b<ci;b++)for(let beat=0;beat<firstMeter.beats;beat++){
+        const time=firstTime+(b*firstMeter.beats+beat)*firstBeatDur;
+        rememberMetroSources(time,synthClick(time,state.sound,beat===0,state.volume,beat===0?'strong':'normal',1));
+        visualQueue.push({time,beat,chainIndex:-1,chainBar:0,countIn:true});
+      }
+    }
+    nextNoteTime=firstTime+ci*firstMeter.beats*firstBeatDur;
+    countInEndTime=ci>0?nextNoteTime:0;
+    startTime=nextNoteTime;elapsed=0;playing=true;currentBeat=-1;currentDrumStep=-1;
+    requestWakeLock();startPracticeLog(!state.groove.genreEnabled||state.playbackMode==='metro'?'metronome':'groove');
+    ensureClockDrivers();
+    scheduleTick();
+    // setTimeout remains a portable fallback for browsers without AudioWorklet
+    // and when a worker is suspended by the operating system.
+    const fallbackTick=()=>{
+      if(!playing)return;
+      scheduleTick();
+      scheduler=setTimeout(fallbackTick,document.hidden?240:32);
+    };
+    scheduler=setTimeout(fallbackTick,32);
+    renderCore();startVisualLoop();
+    return true;
+  }
+  function start(){
+    if(playing)return Promise.resolve(true);
+    if(startPending)return startPending;
+    const attempt=++startAttemptId;
+    const pending=startCore(attempt).catch(err=>{
+      if(attempt!==startAttemptId)return false;
+      console.warn('Metronome audio start failed',err);
+      if(playing)stop();
+      showAudioRecovery('소리를 시작하지 못했습니다. 오디오 복구를 눌러 다시 시도하세요.');
+      return false; // click handlers should not create an unhandled rejection
+    }).finally(()=>{if(startPending===pending)startPending=null;});
+    startPending=pending;
+    return pending;
+  }
+  function stop(){
+    ++startAttemptId; // cancel a pending iOS unlock/first-start operation
+    startPending=null; // a new user tap must not reuse a cancelled unlock
+    stopPracticeLog();playing=false;
+    if(scheduler)clearTimeout(scheduler);scheduler=null;
+    clockWorker?.postMessage({type:'stop'});
+    clockWorkletNode?.port.postMessage({type:'stop'});
+    try{clockWorkletNode?.disconnect();}catch{}
+    cancelFutureMetroSources();cancelFutureDrumSources();scheduledMetroSources=[];scheduledDrumSources=[];cancelAnimationFrame(rafId);
+    stepIndex=0;barIndex=0;playbackChainIndex=0;playbackChainBarCount=0;
+    visualChainIndex=-1;visualChainBarCount=0;visualQueue=[];drumVisualQueue=[];
+    currentBeat=-1;currentDrumStep=-1;elapsed=0;countInEndTime=0;
+    renderCore();updateDrumStepVisual();
+  }
+  async function recoverAudioPlayback(){
+    const wasPlaying=playing;
+    // User-tapped recovery recreates Web Audio if Safari reports "running"
+    // but nothing is audible; without changing saved BPM, sound or presets.
+    if(wasPlaying)stop();
+    else{++startAttemptId;startPending=null;}
+    configureIOSAudioSession('playback',true); // WebKit audio-category workaround only on explicit recovery
+    releaseAudioContext();
+    audioRecoveryCount++;
+    if(wasPlaying){return start();}
+    // The new context and resume are invoked in this same click event.
+    try{await ensureAudio();notify('오디오를 복구했습니다. START를 눌러 확인하세요.');return true;}
+    catch(err){console.warn('Manual audio recovery failed',err);showAudioRecovery('오디오 복구가 차단되었습니다. 다른 음원 재생을 중단하고 다시 눌러주세요.');return false;}
+  }
+  function resumePlayingOnReturn(){
+    if(!playing||!audioCtx)return;
+    if(audioCtx.state==='running'){scheduleTick();return;}
+    // The resume request can be rejected without a user gesture. Keep the
+    // original playing intent and show the manual action as fallback.
+    resumeAudioContext(audioCtx).then(ok=>{
+      if(!playing)return;
+      if(ok){audioRecoveryNeeded=false;updateAudioRecoveryUi();scheduleTick();}
+      else showAudioRecovery('오디오가 일시 중단되었습니다. 소리 복구를 눌러주세요.');
+    }).catch(()=>showAudioRecovery('오디오가 일시 중단되었습니다. 소리 복구를 눌러주세요.'));
+  }
   function startVisualLoop(){
+    cancelAnimationFrame(rafId);
+    if(document.hidden)return;
     let lastUi=0;const draw=()=>{if(!playing||!audioCtx)return;const now=audioCtx.currentTime;const visualNow=now-(state.ui.audioLatencyMs||0)/1000;elapsed=Math.max(0,now-startTime);let beatChanged=false,chainChanged=false,drumChanged=false;
       while(visualQueue.length&&visualQueue[0].time<=visualNow+.012){const e=visualQueue.shift();currentBeat=e.beat;beatChanged=true;if(state.meterChainEnabled){const mc=e.chainIndex!==visualChainIndex,rc=e.chainBar!==visualChainBarCount;visualChainIndex=e.chainIndex;visualChainBarCount=e.chainBar||0;if(mc){selectedChainIndex=clamp(e.chainIndex,0,state.meterChain.length-1);chainChanged=true;}else if(rc)renderMeterChain();}}
       while(drumVisualQueue.length&&drumVisualQueue[0].time<=visualNow+.012){currentDrumStep=drumVisualQueue.shift().step;drumChanged=true;}
@@ -856,7 +1123,7 @@
   function knowledgePractice(item){captureUndo('Knowledge 연습 시작');state.groove.genreEnabled=false;state.playbackMode='metro';state.bpm=item?.bpm||100;state.subdivision=item?.type==='scale'?2:1;state.practice.countInBars=1;persist();renderAll();switchTab('metronome');notify(`${item?.label||'이론'} · ${state.bpm} BPM 연습`);}
   window.BeatronomeBridge={recordKnowledge:knowledgeRecord,toggleKnowledgeFavorite:knowledgeToggleFavorite,startKnowledgePractice:knowledgePractice,isKnowledgeFavorite:id=>(state.library.knowledgeFavorites||[]).some(x=>x.id===id),refreshKnowledgeMemory:renderKnowledgeMemory};
 
-  const APP_VERSION='0.16.6';
+  const APP_VERSION='0.16.8';
   let swRegistration=null;
   let offlinePreparing=false;
   let updateWorker=null;
@@ -930,7 +1197,9 @@
   $('meterChainToggle').onclick=()=>{if(playing)stop();captureUndo('Meter Chain 전환');state.meterChainEnabled=!state.meterChainEnabled;if(state.meterChainEnabled){ensureChain();selectedChainIndex=0;notify('Meter Chain을 켰습니다.');}persist();renderCore();};
   $$('#commonMeterRow [data-meter]').forEach(btn=>btn.onclick=()=>{const[b,d]=btn.dataset.meter.split('/').map(Number);addMeter(b,d);});
   $('chainMoveLeft').onclick=()=>moveSelectedMeter(-1);$('chainMoveRight').onclick=()=>moveSelectedMeter(1);$('chainDuplicate').onclick=duplicateSelectedMeter;$('chainDelete').onclick=deleteSelectedMeter;$('chainRepeatMinus').onclick=()=>changeSelectedRepeat(-1);$('chainRepeatPlus').onclick=()=>changeSelectedRepeat(1);
-  $('playButton').onclick=()=>playing?stop():start();
+  $('playButton').onclick=()=>playing?(audioCtx?.state==='running'?stop():recoverAudioPlayback()):start();
+  $('audioRecoveryButton').onclick=recoverAudioPlayback;
+  updateAudioRecoveryUi();
   $('tapTempo').onclick=handleTapTempo;
   function startRepeat(dir){if(state.ui.bpmLocked){notify('BPM Lock이 켜져 있습니다.');return;}userSetBpm(state.bpm+dir);repeatDelay=setTimeout(()=>{repeatTimer=setInterval(()=>userSetBpm(state.bpm+dir),70);},420);}function stopRepeat(){clearTimeout(repeatDelay);clearInterval(repeatTimer);if(bpmPersistTimer){clearTimeout(bpmPersistTimer);bpmPersistTimer=null;persist();}}
   $('minusBpm').onpointerdown=()=>startRepeat(-1);$('plusBpm').onpointerdown=()=>startRepeat(1);['pointerup','pointercancel','pointerleave'].forEach(ev=>{$('minusBpm').addEventListener(ev,stopRepeat);$('plusBpm').addEventListener(ev,stopRepeat);});
@@ -992,13 +1261,15 @@
   window.BeatronomeAPI={
     isPlaying:()=>playing,
     start:()=>start(),
+    resumeAudio:()=>ensureAudio().then(()=>{if(playing)scheduleTick();return audioCtx?.state==='running';}).catch(()=>false),
+    recoverAudio:()=>recoverAudioPlayback(),
     stop:()=>stop(),
     getBpm:()=>state.bpm,
     setBpm:(value)=>userSetBpm(clamp(Number(value)||state.bpm,BPM_MIN,BPM_MAX),{capture:true}),
     switchTab:(name)=>switchTab(name),
     notify:(message)=>notify(message),
     getVersion:()=>APP_VERSION,
-    getDebugSnapshot:()=>({version:APP_VERSION,playing,bpm:state.bpm,meter:`${getPlaybackMeter().beats}/${getPlaybackMeter().denominator}`,subdivision:state.subdivision,tab:state.ui.lastTab,tunerActive:!!tunerStream,audioState:audioCtx?.state||'not-created',cloudConnected:cloudSessionValid(),offline:!navigator.onLine}),
+    getDebugSnapshot:()=>({version:APP_VERSION,playing,bpm:state.bpm,meter:`${getPlaybackMeter().beats}/${getPlaybackMeter().denominator}`,subdivision:state.subdivision,tab:state.ui.lastTab,tunerActive:!!tunerStream,audioState:audioCtx?.state||'not-created',audioRecoveryNeeded,audioRecoveryCount,cloudConnected:cloudSessionValid(),offline:!navigator.onLine}),
     restoreCloudSafetyBackup:()=>restoreLatestCloudBackup(),
     getRecoveryCount:()=>load(CLOUD_SAFETY_KEY,[]).length,
     getTimingStats:()=>getTimingStats(),
@@ -1016,7 +1287,7 @@
   document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openGlobalSearch();return;}if(e.key==='Escape'){closeGlobalSearch();if(stageMode)setStageMode(false);return;}if(e.target?.matches('input,textarea,select')||e.metaKey||e.ctrlKey||e.altKey)return;const k=e.key.toLowerCase();if(e.code==='Space'){e.preventDefault();playing?stop():start();}else if(e.key==='ArrowUp'){e.preventDefault();userSetBpm(state.bpm+(e.shiftKey?5:1),{capture:true});}else if(e.key==='ArrowDown'){e.preventDefault();userSetBpm(state.bpm-(e.shiftKey?5:1),{capture:true});}else if(k==='t'){e.preventDefault();handleTapTempo();}else if(k==='m'){e.preventDefault();toggleMiniMute();}else if(k==='f'){e.preventDefault();setFocusMode(!focusMode);}else if(k==='l'){e.preventDefault();toggleBpmLock();}else if(k==='s'){e.preventDefault();setStageMode(!stageMode);}else if(/^[1-9]$/.test(e.key)){const p=presets[Number(e.key)-1];if(p)loadPreset(p);}});
   $$('.bottom-nav button').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));$('savePreset').onclick=savePreset;if($('openSettings'))$('openSettings').onclick=()=>{$('settingsModal').classList.remove('hidden');refreshOfflineStatus();renderCloudUi();};$('closeSettings').onclick=()=>$('settingsModal').classList.add('hidden');$('settingsModal').onclick=e=>{if(e.target===$('settingsModal'))$('settingsModal').classList.add('hidden');};$('resetSettings').onclick=resetSettings;$('prepareOffline').onclick=()=>{if(offlinePreparing)return;if($('prepareOffline').textContent==='다시 확인')refreshOfflineStatus();else prepareOffline(true);};
   $('cloudLogin').onclick=cloudSignIn;$('cloudSignup').onclick=cloudSignUp;$('cloudSyncNow').onclick=()=>syncCloud(false);$('cloudLogout').onclick=cloudLogout;$('cloudAutoSync').onchange=e=>{cloudMeta.autoSync=!!e.target.checked;persistCloudMeta();renderCloudUi();if(cloudMeta.autoSync)scheduleCloudSync(200);};
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){configureIOSAudioSession('playback',true);requestWakeLock();refreshOfflineStatus();checkForAppUpdate();if(cloudSessionValid()&&navigator.onLine)scheduleCloudSync(300);}else{flushPendingBpmSave();wakeLock=null;}});window.addEventListener('pagehide',flushPendingBpmSave);window.addEventListener('pageshow',()=>{configureIOSAudioSession('playback',true);requestWakeLock();refreshOfflineStatus();checkForAppUpdate();renderCloudUi();if(cloudSessionValid()&&navigator.onLine)scheduleCloudSync(300);});window.addEventListener('online',()=>{refreshOfflineStatus().then(st=>{if(st&&!st.ready)prepareOffline(false);});checkForAppUpdate();if(cloudSessionValid())syncCloud(false);});window.addEventListener('offline',()=>{refreshOfflineStatus();setUpdateUi(updateReady?'ready':'offline');});window.addEventListener('beforeunload',()=>{releaseWakeLock();flushPendingBpmSave();stopPracticeLog();if(scheduler)clearInterval(scheduler);if(tunerStream)stopTunerMic();if(audioCtx)audioCtx.close();});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){configureIOSAudioSession('playback');if(playing){resumePlayingOnReturn();startVisualLoop();}requestWakeLock();refreshOfflineStatus();checkForAppUpdate();if(cloudSessionValid()&&navigator.onLine)scheduleCloudSync(300);}else{flushPendingBpmSave();if(playing){scheduleTick();cancelAnimationFrame(rafId);}wakeLock=null;}});window.addEventListener('pagehide',flushPendingBpmSave);window.addEventListener('pageshow',()=>{configureIOSAudioSession('playback');resumePlayingOnReturn();requestWakeLock();refreshOfflineStatus();checkForAppUpdate();renderCloudUi();if(cloudSessionValid()&&navigator.onLine)scheduleCloudSync(300);});window.addEventListener('online',()=>{refreshOfflineStatus().then(st=>{if(st&&!st.ready)prepareOffline(false);});checkForAppUpdate();if(cloudSessionValid())syncCloud(false);});window.addEventListener('offline',()=>{refreshOfflineStatus();setUpdateUi(updateReady?'ready':'offline');});window.addEventListener('beforeunload',()=>{releaseWakeLock();flushPendingBpmSave();stopPracticeLog();if(scheduler)clearTimeout(scheduler);clockWorker?.terminate();clockWorkletNode?.disconnect();if(tunerStream)stopTunerMic();if(audioCtx)audioCtx.close();});
 
   ensureNormalPattern();if(state.meterChainEnabled)ensureChain();renderAll();renderCloudUi();setOfflineUi(null);requestWakeLock();document.addEventListener('pointerdown',requestWakeLock,{once:true,passive:true});restoreResumeSession();const initialTab=document.getElementById(`tab${(state.ui.lastTab||'metronome')[0].toUpperCase()+(state.ui.lastTab||'metronome').slice(1)}`)?state.ui.lastTab:'metronome';switchTab(initialTab);registerOfflineWorker();if(!onboardingDisabled()&&!sessionStorage.getItem('beatronome-onboarding-deferred'))setTimeout(openOnboarding,450);else if(localStorage.getItem(SETTINGS_KEY))setTimeout(()=>notify('지난 세션 설정을 복원했습니다.'),350);if(cloudSessionValid()&&navigator.onLine){ensureCloudSession().then(ok=>{renderCloudUi();if(ok)syncCloud(true);});}
 })();

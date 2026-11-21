@@ -1,6 +1,13 @@
-# Beatronome v0.16.5 — Loop & YouTube Speed Controls
+# Beatronome v0.16.8 — YouTube 초기화 / iOS 오디오 복구
 
-See `V0163_FIX_NOTES.md` for changes and QA scope.
+현재 배포 기준 버전은 **v0.16.8**입니다. 최신 변경/검증은 `QA_V0168.md`를, 기존 v0.16.7 기능은 `QA_V0167.md`를, 누적 개발 기록은 `PROJECT_HISTORY/`를 참고하세요.
+
+- YouTube 탭 URL 옆 **초기화**: 영상 iframe을 정리하고 빈 화면, URL·시간·현재 영상 Loop 등을 초기화합니다. 저장된 마커 목록과 사용자가 설정한 재생 속도는 보존됩니다.
+- iPhone/iPad 오디오: 재생 시작 시 오디오 세션 고정, iOS `interrupted` 상태 대응, 첫 클릭에서 18개 샘플 로딩을 기다리지 않도록 수정, 화면 복귀 시 재개 시도. 소리가 안 들리면 메트로놈 화면의 **↻ 소리 복구**를 누릅니다.
+- 기존 프리셋, 사용자 설정키, Meter Chain, Cloud Sync·오프라인 데이터 구조를 유지합니다.
+- iOS 실제 기기, 실제 YouTube 영상의 소리 출력까지 자동 테스트한 것은 아닙니다.
+
+이하 구버전 설명은 보존했습니다. v0.16.5~v0.16.8 변경은 개별 QA 문서와 PROJECT_HISTORY 폴더를 확인하세요.
 
 # Beatronome v0.16.2 – Design System + Interaction + Performance
 
@@ -86,3 +93,10 @@ See `V0163_FIX_NOTES.md` for changes and QA scope.
 - Legacy saved settings, presets, cloud merges are sanitized so hidden Internal Clock cannot become active.
 - Diagnostics bridge adds `getPracticeState()` without leaking secrets.
 - Auto sync preserves edits made while a cloud request is in flight; reschedules any remaining dirty changes.
+
+
+## v0.16.7 — Background Clock / Unified Layout / Exposed Meter Chain / YouTube Joint Playback
+- 브라우저 백그라운드 타이머 제한에 대비하여 AudioWorklet의 오디오 스레드 heartbeat, Web Worker 보조, 백그라운드 3초 선행 스케줄을 도입. 늦은 틱 복구 때에는 기존 BPM 위상을 유지하도록 누락된 step을 건너뜀. 사용 환경/OS 정책상 다른 앱이 WebAudio 자체를 중지하면 완전한 백그라운드 재생은 보장할 수 없음.
+- 태블릿/PC에도 모바일과 같은 단일 컬럼, 하단 5탭 내비게이션, 주요 카드 순서를 적용. 최대 760px 앱 너비로 큰 화면에서는 가운데 정렬.
+- Meter Chain을 메트로놈 홈 프리셋 바로 아래/고급 훈련 바로 위로 이동. 기존 설정·컨트롤 ID/저장 구조 유지.
+- YouTube 화면에 독립적인 `영상 + 메트로놈` 버튼과 토글을 노출. 같은 클릭 동작 내에서 WebAudio 시작을 시도하도록 변경, 플레이어 재생/일시정지 시 소유권을 구분하여 연동. 자동 박자 맞춤이나 YouTube 오디오 우회 기능 없음.
