@@ -481,6 +481,7 @@
   function renderMeterChain(){
     $('meterChainToggle').classList.toggle('on',state.meterChainEnabled);$('meterChainBody').classList.toggle('hidden',!state.meterChainEnabled);if(!state.meterChainEnabled)return;ensureChain();
     const list=$('meterChainList');list.innerHTML='';state.meterChain.forEach((m,i)=>{const b=document.createElement('button');const accents=m.pattern.filter(x=>x==='accent').length,mutes=m.pattern.filter(x=>x==='mute').length;b.className=`meter-chain-chip${i===selectedChainIndex?' selected':''}${playing&&i===visualChainIndex?' playing-meter':''}`;const prog=playing&&i===visualChainIndex&&m.repeatBars>1?` · ${Math.min(visualChainBarCount+1,m.repeatBars)}/${m.repeatBars}`:'';b.innerHTML=`<span class="chain-number">${i+1}</span><strong>${m.beats}/${m.denominator}</strong><em>×${m.repeatBars}마디${prog}</em><small>${accents}A${mutes?` · ${mutes}M`:''}</small>`;b.onclick=()=>{if(playing)stop();selectedChainIndex=i;currentBeat=-1;renderCore();};list.appendChild(b);});
+    $('chainEditBeats').value=String(state.meterChain[selectedChainIndex].beats);$('chainEditDenominator').value=String(state.meterChain[selectedChainIndex].denominator);
     $('chainMoveLeft').disabled=selectedChainIndex<=0;$('chainMoveRight').disabled=selectedChainIndex>=state.meterChain.length-1;$('chainDelete').disabled=state.meterChain.length<=1;$('chainRepeatValue').textContent=`${state.meterChain[selectedChainIndex].repeatBars}마디`;$('chainRepeatMinus').disabled=state.meterChain[selectedChainIndex].repeatBars<=1;$('chainRepeatPlus').disabled=state.meterChain[selectedChainIndex].repeatBars>=32;
   }
   function addMeter(beats,den){if(playing)stop();captureUndo('Meter Chain 변경');ensureChain();state.meterChain.push(makeMeter(beats,den));selectedChainIndex=state.meterChain.length-1;persist();renderCore();notify(`${beats}/${den} 박자를 추가했습니다.`);}
@@ -492,7 +493,7 @@
   function renderVisualBeat(){const meter=getSelectedMeter(),containers=[$('visualBeatLamps'),$('focusLamps')].filter(Boolean),subInfo=SUBDIVISIONS[state.subdivision]||SUBDIVISIONS[1];if($('visualMeterLabel'))$('visualMeterLabel').textContent=`${meter.beats}/${meter.denominator}`;if($('heroSubdivisionLabel'))$('heroSubdivisionLabel').textContent=subInfo.label;if($('focusMeter'))$('focusMeter').textContent=`${meter.beats}/${meter.denominator}`;containers.forEach(c=>{c.innerHTML='';c.style.setProperty('--hero-columns',String(Math.min(meter.beats,8)));for(let i=0;i<meter.beats;i++){const x=document.createElement('i');x.className=`visual-lamp ${i===0?'accent':'normal'}${playing&&currentBeat===i?' on':''}`;x.textContent=String(i+1);x.setAttribute('aria-label',`${i+1}박`);c.appendChild(x);}});}
   function renderVisualBeatActive(){[$('visualBeatLamps'),$('focusLamps')].filter(Boolean).forEach(c=>Array.from(c.children).forEach((x,i)=>x.classList.toggle('on',playing&&currentBeat===i)));}
   function renderQuickPresets(){const wrap=$('quickPresetList');if(!wrap)return;const strip=wrap.closest('.quick-preset-strip');wrap.innerHTML='';strip?.classList.toggle('empty',!presets.length);if(!presets.length){wrap.innerHTML='<span class="quick-preset-empty">저장된 프리셋 없음</span>';return;}presets.slice(0,3).forEach((p,i)=>{const b=document.createElement('button');b.dataset.presetId=p.id;b.textContent=`${i+1}. ${p.name}`;b.onclick=()=>loadPreset(p);wrap.appendChild(b);});}
-  function renderUiExtras(){document.body.classList.toggle('simple-ui',state.practice.simpleMode);document.body.classList.toggle('one-hand-mode',state.ui.oneHand);document.body.dataset.theme=state.ui.theme;document.body.classList.toggle('performance-ui',state.ui.performanceMode);document.body.classList.remove('ui-compact','ui-large');if(state.ui.interfaceSize==='compact')document.body.classList.add('ui-compact');if(state.ui.interfaceSize==='large')document.body.classList.add('ui-large');if($('toggleSimpleMode'))$('toggleSimpleMode').textContent=state.practice.simpleMode?'고급 기능 펼치기':'고급 기능 접기';if($('countInBars'))$('countInBars').value=state.practice.countInBars;if($('flashToggle'))$('flashToggle').classList.toggle('on',state.practice.flash);if($('vibrateToggle'))$('vibrateToggle').classList.toggle('on',state.practice.vibrate);if($('focusBpm'))$('focusBpm').textContent=state.bpm;if($('focusPlay'))$('focusPlay').textContent=playing?'Ⅱ STOP':'▶ START';if($('focusOverlay'))$('focusOverlay').classList.toggle('playing',playing);if($('bpmLock')){$('bpmLock').textContent=state.ui.bpmLocked?'LOCKED':'UNLOCKED';$('bpmLock').classList.toggle('locked',state.ui.bpmLocked);}if($('interfaceSize'))$('interfaceSize').value=state.ui.interfaceSize;if($('themeSelect'))$('themeSelect').value=state.ui.theme;if($('performanceToggle'))$('performanceToggle').classList.toggle('on',state.ui.performanceMode);renderQuickActions();renderCoreSettingSummary();if($('oneHandToggle'))$('oneHandToggle').classList.toggle('on',state.ui.oneHand);if($('stageTapToggle'))$('stageTapToggle').classList.toggle('on',state.ui.stageTapPlay);if($('oneHandDock'))$('oneHandDock').classList.toggle('hidden',!state.ui.oneHand);if($('oneHandPlay'))$('oneHandPlay').textContent=playing?'Ⅱ':'▶';if($('oneHandLock'))$('oneHandLock').classList.toggle('locked',state.ui.bpmLocked);if($('latencyCalibration')){$('latencyCalibration').value=state.ui.audioLatencyMs;$('latencyCalibrationOut').textContent=`${state.ui.audioLatencyMs>0?'+':''}${state.ui.audioLatencyMs} ms`;}if(stageMode)renderStage();renderVisualBeat();renderQuickPresets();if($('quickSoundSelect')){$('quickSoundSelect').value=state.sound;}$$('[data-core-tab]').forEach(b=>b.classList.toggle('selected',document.querySelector(`#tab${b.dataset.coreTab[0].toUpperCase()+b.dataset.coreTab.slice(1)}`)?.classList.contains('active')));}
+  function renderUiExtras(){document.body.classList.toggle('simple-ui',state.practice.simpleMode);document.body.classList.toggle('one-hand-mode',state.ui.oneHand);document.body.dataset.theme=state.ui.theme;document.body.classList.toggle('performance-ui',state.ui.performanceMode);document.body.classList.remove('ui-compact','ui-large');if(state.ui.interfaceSize==='compact')document.body.classList.add('ui-compact');if(state.ui.interfaceSize==='large')document.body.classList.add('ui-large');if($('toggleSimpleMode')){$('toggleSimpleMode').textContent=state.practice.simpleMode?'고급 기능 펼치기':'고급 기능 접기';$('toggleSimpleMode').setAttribute('aria-pressed',String(!state.practice.simpleMode));}if($('countInBars'))$('countInBars').value=state.practice.countInBars;if($('flashToggle')){$('flashToggle').classList.toggle('on',state.practice.flash);$('flashToggle').setAttribute('aria-pressed',String(state.practice.flash));}if($('vibrateToggle')){$('vibrateToggle').classList.toggle('on',state.practice.vibrate);$('vibrateToggle').setAttribute('aria-pressed',String(state.practice.vibrate));}if($('focusBpm'))$('focusBpm').textContent=state.bpm;if($('focusPlay'))$('focusPlay').textContent=playing?'Ⅱ STOP':'▶ START';if($('focusOverlay'))$('focusOverlay').classList.toggle('playing',playing);if($('bpmLock')){$('bpmLock').textContent=state.ui.bpmLocked?'LOCKED':'UNLOCKED';$('bpmLock').classList.toggle('locked',state.ui.bpmLocked);}if($('interfaceSize'))$('interfaceSize').value=state.ui.interfaceSize;if($('themeSelect'))$('themeSelect').value=state.ui.theme;if($('performanceToggle'))$('performanceToggle').classList.toggle('on',state.ui.performanceMode);renderQuickActions();renderCoreSettingSummary();if($('oneHandToggle'))$('oneHandToggle').classList.toggle('on',state.ui.oneHand);if($('stageTapToggle'))$('stageTapToggle').classList.toggle('on',state.ui.stageTapPlay);if($('oneHandDock'))$('oneHandDock').classList.toggle('hidden',!state.ui.oneHand);if($('oneHandPlay'))$('oneHandPlay').textContent=playing?'Ⅱ':'▶';if($('oneHandLock'))$('oneHandLock').classList.toggle('locked',state.ui.bpmLocked);if($('latencyCalibration')){$('latencyCalibration').value=state.ui.audioLatencyMs;$('latencyCalibrationOut').textContent=`${state.ui.audioLatencyMs>0?'+':''}${state.ui.audioLatencyMs} ms`;}if(stageMode)renderStage();renderVisualBeat();renderQuickPresets();if($('quickSoundSelect')){$('quickSoundSelect').value=state.sound;}$$('[data-core-tab]').forEach(b=>b.classList.toggle('selected',document.querySelector(`#tab${b.dataset.coreTab[0].toUpperCase()+b.dataset.coreTab.slice(1)}`)?.classList.contains('active')));}
   function renderTraining(){
     const t=state.training;$$('[data-toggle]').forEach(btn=>{const k=btn.dataset.toggle;btn.classList.toggle('on',!!t[k]);btn.setAttribute('aria-pressed',String(!!t[k]));btn.setAttribute('aria-label',`${btn.closest('.training-row')?.querySelector('.training-row-copy strong')?.textContent||k} ${t[k]?'켜짐':'꺼짐'}`);const body=document.querySelector(`[data-body="${k}"]`);if(body)body.classList.toggle('hidden',!t[k]);btn.closest('.training-row')?.classList.toggle('enabled',!!t[k]);});
     $('randomMute').value=t.randomMute;$('randomMuteOut').textContent=`${t.randomMute}%`;setRangeStyle($('randomMute'),0,90,t.randomMute);
@@ -866,7 +867,7 @@
     // thread to prepare future audio nodes; actual clicks remain Web Audio.
     if(!clockWorkletNode&&!clockWorkletLoading&&audioCtx.audioWorklet&&window.AudioWorkletNode){
       const workletContext=audioCtx;
-      clockWorkletLoading=workletContext.audioWorklet.addModule('./audio-clock-worklet.js?v=0.16.8')
+      clockWorkletLoading=workletContext.audioWorklet.addModule('./audio-clock-worklet.js?v=0.16.9')
         .then(()=>{
           if(audioCtx!==workletContext||clockWorkletNode)return;
           clockWorkletNode=new AudioWorkletNode(audioCtx,'beatronome-audio-clock');
@@ -880,7 +881,7 @@
         .finally(()=>{if(audioCtx===workletContext)clockWorkletLoading=null;});
     }
     if(!clockWorker&&typeof Worker!=='undefined'){
-      try{clockWorker=new Worker('./clock-worker.js?v=0.16.8');
+      try{clockWorker=new Worker('./clock-worker.js?v=0.16.9');
         clockWorker.onmessage=()=>{if(playing){if(clockDriver!=='audio-worklet')clockDriver='worker';scheduleTick();}};
         clockWorker.onerror=e=>{console.warn('Scheduler worker unavailable',e.message);clockWorker?.terminate();clockWorker=null;};
       }catch(e){console.warn('Scheduler worker unavailable',e);}
@@ -1123,7 +1124,7 @@
   function knowledgePractice(item){captureUndo('Knowledge 연습 시작');state.groove.genreEnabled=false;state.playbackMode='metro';state.bpm=item?.bpm||100;state.subdivision=item?.type==='scale'?2:1;state.practice.countInBars=1;persist();renderAll();switchTab('metronome');notify(`${item?.label||'이론'} · ${state.bpm} BPM 연습`);}
   window.BeatronomeBridge={recordKnowledge:knowledgeRecord,toggleKnowledgeFavorite:knowledgeToggleFavorite,startKnowledgePractice:knowledgePractice,isKnowledgeFavorite:id=>(state.library.knowledgeFavorites||[]).some(x=>x.id===id),refreshKnowledgeMemory:renderKnowledgeMemory};
 
-  const APP_VERSION='0.16.8';
+  const APP_VERSION='0.16.9';
   let swRegistration=null;
   let offlinePreparing=false;
   let updateWorker=null;
@@ -1190,16 +1191,37 @@
   }
   function resetSettings(){if(playing)stop();if(tunerStream)stopTunerMic();const library=state.library,cloudDeletedPresetIds=state.cloudDeletedPresetIds;state=deepMerge(defaults,{library,cloudDeletedPresetIds});trainingExpanded=state.practice.trainingExpanded;selectedChainIndex=0;selectedGenre='Rock';persist();renderAll();notify('기본값으로 초기화했습니다.');}
 
-  for(let i=1;i<=16;i++){const o=document.createElement('option');o.value=o.textContent=i;$('beatsPerBar').appendChild(o);}
+  // Native selects are shared by the live metronome and Meter Chain editors.
+  for(let i=1;i<=16;i++){
+    for(const id of ['beatsPerBar','chainEditBeats','chainAddBeats']){
+      const o=document.createElement('option');o.value=o.textContent=String(i);$(id).appendChild(o);
+    }
+  }
+  $('chainAddBeats').value='4';
   $('beatsPerBar').onchange=e=>{const next=Number(e.target.value);if(playing)stop();captureUndo('박자 변경');setSelectedMeterField('beats',next);renderCore();};
   $('denominator').onchange=e=>{const next=Number(e.target.value);if(playing)stop();captureUndo('박자 변경');setSelectedMeterField('denominator',next);renderCore();};
   $('subdivision').onchange=e=>{const next=Number(e.target.value);changeSubdivisionLive(next);};
   $('meterChainToggle').onclick=()=>{if(playing)stop();captureUndo('Meter Chain 전환');state.meterChainEnabled=!state.meterChainEnabled;if(state.meterChainEnabled){ensureChain();selectedChainIndex=0;notify('Meter Chain을 켰습니다.');}persist();renderCore();};
   $$('#commonMeterRow [data-meter]').forEach(btn=>btn.onclick=()=>{const[b,d]=btn.dataset.meter.split('/').map(Number);addMeter(b,d);});
   $('chainMoveLeft').onclick=()=>moveSelectedMeter(-1);$('chainMoveRight').onclick=()=>moveSelectedMeter(1);$('chainDuplicate').onclick=duplicateSelectedMeter;$('chainDelete').onclick=deleteSelectedMeter;$('chainRepeatMinus').onclick=()=>changeSelectedRepeat(-1);$('chainRepeatPlus').onclick=()=>changeSelectedRepeat(1);
+  for(const [id,field] of [['chainEditBeats','beats'],['chainEditDenominator','denominator']]){
+    $(id).onchange=e=>{
+      if(!state.meterChainEnabled)return;
+      const selected=getSelectedMeter();const next=Number(e.target.value);
+      if(next===Number(selected[field]))return;
+      if(playing)stop();captureUndo('Meter Chain 박자 수정');setSelectedMeterField(field,next);renderCore();
+    };
+  }
+  $('chainAddCustom').onclick=()=>addMeter(Number($('chainAddBeats').value),Number($('chainAddDenominator').value));
   $('playButton').onclick=()=>playing?(audioCtx?.state==='running'?stop():recoverAudioPlayback()):start();
   $('audioRecoveryButton').onclick=recoverAudioPlayback;
   updateAudioRecoveryUi();
+  // iOS Safari long-press should activate app controls, not text selection/copy.
+  // Exempt editable inputs and contenteditable to preserve normal text editing.
+  const isEditableTarget=el=>!!el?.closest?.('input,textarea,[contenteditable=""],[contenteditable="true"]');
+  const isUiTouchControl=el=>!!el?.closest?.('button,.bpm-drag,.tempo-dial,.bottom-nav,.beat-grid,.meter-chain-panel .meter-chain-list');
+  document.addEventListener('contextmenu',e=>{if(!isEditableTarget(e.target)&&isUiTouchControl(e.target))e.preventDefault();});
+  document.addEventListener('selectstart',e=>{if(!isEditableTarget(e.target)&&isUiTouchControl(e.target))e.preventDefault();});
   $('tapTempo').onclick=handleTapTempo;
   function startRepeat(dir){if(state.ui.bpmLocked){notify('BPM Lock이 켜져 있습니다.');return;}userSetBpm(state.bpm+dir);repeatDelay=setTimeout(()=>{repeatTimer=setInterval(()=>userSetBpm(state.bpm+dir),70);},420);}function stopRepeat(){clearTimeout(repeatDelay);clearInterval(repeatTimer);if(bpmPersistTimer){clearTimeout(bpmPersistTimer);bpmPersistTimer=null;persist();}}
   $('minusBpm').onpointerdown=()=>startRepeat(-1);$('plusBpm').onpointerdown=()=>startRepeat(1);['pointerup','pointercancel','pointerleave'].forEach(ev=>{$('minusBpm').addEventListener(ev,stopRepeat);$('plusBpm').addEventListener(ev,stopRepeat);});
@@ -1226,9 +1248,6 @@
 
   if($('openMiniMode'))$('openMiniMode').onclick=()=>setMiniMode(true);$('settingsMiniMode').onclick=()=>setMiniMode(true);$('closeMiniMode').onclick=()=>setMiniMode(false);$('miniPlay').onclick=()=>playing?stop():start();$('miniTap').onclick=()=>$('tapTempo').click();$('miniMinus').onpointerdown=()=>startRepeat(-1);$('miniPlus').onpointerdown=()=>startRepeat(1);['pointerup','pointercancel','pointerleave'].forEach(ev=>{$('miniMinus').addEventListener(ev,stopRepeat);$('miniPlus').addEventListener(ev,stopRepeat);});$('miniMute').onclick=toggleMiniMute;
   // Legacy mobile scroll dock was removed in v0.12.0; no bindings should target it.
-  $('openCoreSettings').onclick=()=>$('coreSettingsModal').classList.remove('hidden');
-  $('closeCoreSettings').onclick=()=>$('coreSettingsModal').classList.add('hidden');
-  $('coreSettingsModal').onclick=e=>{if(e.target===$('coreSettingsModal'))$('coreSettingsModal').classList.add('hidden');};
   $('beatStatePopover').querySelectorAll('[data-beat-state]').forEach(b=>b.onclick=()=>setBeatState(beatPopoverIndex,b.dataset.beatState));
   document.addEventListener('pointerdown',e=>{const pop=$('beatStatePopover');if(pop&&!pop.classList.contains('hidden')&&!pop.contains(e.target)&&!e.target.closest('.beat-dot'))closeBeatStatePopover();});
   $('themeSelect').onchange=e=>{state.ui.theme=e.target.value;persist();renderUiExtras();};

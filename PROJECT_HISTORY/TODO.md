@@ -1,7 +1,11 @@
-# Beatronome 작업/검증 TODO (2026-11-21 · v0.16.8)
+# Beatronome 작업/검증 TODO (2026-11-21 · v0.16.9)
 
 | ID | 중요도 | 요청 / 검증 | 현재 상태 | 종료 조건 |
 |---|---|---|---|---|
+| T-016 | P0 | iOS 롱프레스 시 버튼 복사/검색 메뉴 노출 | v0.16.9 비편집 UI CSS 및 이벤트 수정, Chromium 모의 통과 | 실제 iPhone Safari/PWA에서 TAP/BPM/beat-dot 0.5~2초 누르기 |
+| T-017 | P1 | 메인 박자·분모/TAP/분할 및 클릭/고급/FOCUS 가시화 | v0.16.9 320/390/768/1366px Chromium UI 동작 통과 | 실제 iPhone/iPad/PC 세로·가로 UI 확인 |
+| T-018 | P1 | Count-in/Pulse/진동 고급으로 이동 및 로컬 상태 저장 | v0.16.9 상태 저장 객체 확인 | 모바일 실기기 각 기능 실행/재실행 확인 |
+| T-019 | P1 | Meter Chain 사용자 지정 박자·분모 편집·추가 | v0.16.9 11/16 추가→13/8 변경/저장 확인 | 실제 리듬 소리/체인 반복/프리셋 복원 확인 |
 | T-014 | P0 | iPhone/iPad 메트로놈 최초 재생이 무음이 되는 현상 | v0.16.8 `interrupted`/resume/수동 복구 및 샘플 비차단 로딩 구현, 모의 QA | iOS Safari/설치형 PWA에서 START 단독, 화면 전환 후, YouTube 함께 재생을 실제 청음해 판정 |
 | T-015 | P1 | YouTube 불러온 영상 초기화 | v0.16.8 영상/URL/ID/Loop 지움·다시 불러오기 모의 QA | 실제 YouTube iframe을 불러오기→지우기→다시 불러오기 |
 | T-010 | P0 | PDF·다른 앱으로 이동할 때 메트로놈 템포 저하 | v0.16.7 AudioWorklet/Worker·선예약·복구 구현 및 모의 QA 통과 | Android/iOS에서 120BPM 2~5분 백그라운드 청음, 끊김/드리프트 기록 |

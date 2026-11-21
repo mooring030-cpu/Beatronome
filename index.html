@@ -8,17 +8,18 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Beatronome" />
   <title>Beatronome</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=0.16.8" />
+  <link rel="manifest" href="./manifest.webmanifest?v=0.16.9" />
   <link rel="icon" href="./favicon.png" type="image/png" />
   <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
-  <link rel="stylesheet" href="./styles.css?v=0.16.8" />
-  <link rel="stylesheet" href="./polish.css?v=0.16.8" />
-  <link rel="stylesheet" href="./design-v016.css?v=0.16.8" />
-  <link rel="stylesheet" href="./responsive-v0163.css?v=0.16.8" />
-  <link rel="stylesheet" href="./fix-v0165.css?v=0.16.8" />
-  <link rel="stylesheet" href="./fix-v0166.css?v=0.16.8" />
-  <link rel="stylesheet" href="./fix-v0167.css?v=0.16.8" />
-  <link rel="stylesheet" href="./fix-v0168.css?v=0.16.8" />
+  <link rel="stylesheet" href="./styles.css?v=0.16.9" />
+  <link rel="stylesheet" href="./polish.css?v=0.16.9" />
+  <link rel="stylesheet" href="./design-v016.css?v=0.16.9" />
+  <link rel="stylesheet" href="./responsive-v0163.css?v=0.16.9" />
+  <link rel="stylesheet" href="./fix-v0165.css?v=0.16.9" />
+  <link rel="stylesheet" href="./fix-v0166.css?v=0.16.9" />
+  <link rel="stylesheet" href="./fix-v0167.css?v=0.16.9" />
+  <link rel="stylesheet" href="./fix-v0168.css?v=0.16.9" />
+  <link rel="stylesheet" href="./fix-v0169.css?v=0.16.9" />
 </head>
 <body>
 <div id="app">
@@ -31,7 +32,7 @@
         <div class="beat-hero-head">
           <button class="hero-home-logo" id="homeLogoButton" aria-label="메트로놈 홈" title="Beatronome 홈"><img src="./icon-192.png" alt="Beatronome"></button>
           <div class="beat-hero-copy"><span class="eyebrow">BEAT</span><strong id="visualMeterLabel">4/4</strong><small id="heroSubdivisionLabel">Quarter</small></div>
-          <span class="hero-version">v0.16.8</span>
+          <span class="hero-version">v0.16.9</span>
         </div>
         <div class="top-beat-hint"><span>박자를 눌러</span><b>A 강박</b><i>• 일반</i><em>× 무음</em></div>
         <div class="beat-grid top-beat-grid" id="beatGrid" aria-label="박자 패턴"></div>
@@ -54,20 +55,33 @@
         </div>
         <div class="tempo-action-summary" id="soundSummary">Classic Click · Quarter</div>
         <div class="audio-recovery-row hidden" id="audioRecoveryRow"><span>iPhone/iPad 소리가 안 나오나요?</span><button id="audioRecoveryButton" type="button" aria-label="메트로놈 오디오 재연결">↻ 소리 복구</button></div>
-        <div class="bpm-controls">
-          <button class="round-control" id="minusBpm">−</button>
-          <button class="tap-button" id="tapTempo">TAP<small id="tapHint">4회 정도 탭</small></button>
-          <button class="round-control" id="plusBpm">＋</button>
+        <div class="bpm-controls rhythm-toolbar" aria-label="박자와 분할 바로 설정">
+          <div class="rhythm-meter-picker" role="group" aria-label="박자와 분모">
+            <label for="beatsPerBar">박자<select id="beatsPerBar" aria-label="한 마디 박자 수"></select></label>
+            <span class="rhythm-slash" aria-hidden="true">/</span>
+            <label for="denominator">분모<select id="denominator" aria-label="박자 분모"><option value="2">2</option><option value="4" selected>4</option><option value="8">8</option><option value="16">16</option></select></label>
+          </div>
+          <button class="tap-button rhythm-tap" id="tapTempo" type="button">TAP<small id="tapHint">4회 탭</small></button>
+          <label class="rhythm-subdivision" for="subdivision">분할
+            <select id="subdivision" aria-label="음표 분할"><option value="1">♩ 1</option><option value="2">♪ 2</option><option value="3">3연음</option><option value="5">3연음 1·3</option><option value="4">16분</option><option value="6">16분 1·4</option></select>
+          </label>
+        </div>
+        <div class="bpm-step-row" aria-label="BPM 미세 조절">
+          <button class="round-control" id="minusBpm" type="button" aria-label="BPM 1 감소">−</button>
+          <span>BPM 조절 <b>±1</b></span>
+          <button class="round-control" id="plusBpm" type="button" aria-label="BPM 1 증가">＋</button>
         </div>
       </section>
       </section>
 
 
-      <section class="core-setting-strip card">
-        <button class="core-setting-summary" id="openCoreSettings" aria-label="메트로놈 세부 설정 열기">
-          <div><span class="eyebrow">SETUP</span><strong id="coreSettingSummary">4/4 · Quarter · Classic</strong></div>
-          <span id="coreSettingSub">Count-in OFF</span><b>›</b>
-        </button>
+      <section class="core-setting-strip card inline-core-settings" aria-label="클릭 사운드와 화면 모드">
+        <div class="inline-core-caption"><span class="eyebrow">QUICK SETUP</span><strong>클릭 사운드 · 화면 모드</strong></div>
+        <div class="inline-core-grid">
+          <label for="quickSoundSelect" class="inline-sound-picker">클릭<select id="quickSoundSelect" aria-label="클릭 사운드"></select></label>
+          <button class="outline-small" id="toggleSimpleMode" type="button" aria-pressed="false">고급 기능 펼치기</button>
+          <button class="outline-small inline-focus-button" id="focusModeButton" type="button">FOCUS</button>
+        </div>
       </section>
 
       <section class="quick-preset-strip card"><div><span class="eyebrow">QUICK PRESETS</span><strong>최근 프리셋</strong></div><div class="quick-preset-list" id="quickPresetList"></div><button class="outline-small ui-redundant" id="quickSavePreset">＋ 저장</button></section>
@@ -93,6 +107,14 @@
               <div><strong>이 박자 반복</strong><span>선택한 박자를 몇 마디 연속 재생할지 설정</span></div>
               <div class="chain-repeat-stepper"><button id="chainRepeatMinus">−</button><strong id="chainRepeatValue">1마디</strong><button id="chainRepeatPlus">＋</button></div>
             </div>
+            <div class="chain-meter-editor" role="group" aria-label="선택한 Meter Chain 박자 수정">
+              <div class="chain-field-heading"><strong>선택한 박자 수정</strong><span>선택된 단계의 박자/분모를 숫자로 변경</span></div>
+              <div class="chain-meter-inputs">
+                <label for="chainEditBeats">박자<select id="chainEditBeats" aria-label="선택한 체인 박자 수"></select></label>
+                <span aria-hidden="true">/</span>
+                <label for="chainEditDenominator">분모<select id="chainEditDenominator" aria-label="선택한 체인 분모"><option value="2">2</option><option value="4">4</option><option value="8">8</option><option value="16">16</option></select></label>
+              </div>
+            </div>
             <div class="common-meter-label">빠른 추가</div>
             <div class="common-meter-row" id="commonMeterRow">
               <button data-meter="2/4">+ 2/4</button>
@@ -104,7 +126,13 @@
               <button data-meter="9/8">+ 9/8</button>
               <button data-meter="12/8">+ 12/8</button>
             </div>
-            <div class="meter-chain-note">각 항목별로 1~32마디 반복을 지정할 수 있습니다. 예: 4/4 ×2 → 7/8 ×1 → 3/4 ×4.</div>
+            <div class="chain-custom-add" role="group" aria-label="사용자 지정 박자 추가">
+              <label for="chainAddBeats">박자<select id="chainAddBeats" aria-label="추가할 체인 박자 수"></select></label>
+              <span aria-hidden="true">/</span>
+              <label for="chainAddDenominator">분모<select id="chainAddDenominator" aria-label="추가할 체인 분모"><option value="2">2</option><option value="4" selected>4</option><option value="8">8</option><option value="16">16</option></select></label>
+              <button id="chainAddCustom" type="button">＋ 추가</button>
+            </div>
+            <div class="meter-chain-note">1~16박, 분모 2·4·8·16을 지정해 직접 추가할 수 있습니다. 각 박자는 1~32마디 반복됩니다.</div>
           </div>
         </div>
       </section>
@@ -115,6 +143,21 @@
           <span id="trainingChevron">⌃</span>
         </button>
         <div class="training-list" id="trainingList">
+          <div class="training-utility-group">
+            <div class="training-utility-heading"><span>ADVANCED OPTIONS</span><strong>고급 기능</strong></div>
+            <div class="training-utility-item">
+              <label for="countInBars"><strong>Count-in</strong><span>시작 전에 1·2·4마디를 미리 재생</span></label>
+              <select id="countInBars" aria-label="카운트 인"><option value="0">OFF</option><option value="1">1마디</option><option value="2">2마디</option><option value="4">4마디</option></select>
+            </div>
+            <div class="training-utility-item">
+              <div><strong>화면 Pulse</strong><span>박자에 맞춰 화면 반짝임</span></div>
+              <button class="switch compact" type="button" id="flashToggle" aria-pressed="false" aria-label="화면 Pulse 켜기"><i></i></button>
+            </div>
+            <div class="training-utility-item">
+              <div><strong>진동</strong><span>지원하는 기기에서 박자 진동</span></div>
+              <button class="switch compact" type="button" id="vibrateToggle" aria-pressed="false" aria-label="진동 켜기"><i></i></button>
+            </div>
+          </div>
           <div class="training-row" data-row="randomMute">
             <div class="training-row-head"><div class="training-row-icon">⤨</div><div class="training-row-copy"><strong>Random Mute</strong><span>클릭을 무작위로 숨깁니다</span></div><button class="switch" data-toggle="randomMuteEnabled"><i></i></button></div>
             <div class="training-row-body hidden" data-body="randomMuteEnabled"><div class="range-wrap"><input id="randomMute" type="range" min="0" max="90" step="5"><output id="randomMuteOut"></output></div></div>
@@ -437,7 +480,7 @@
         <article class="manual-card card" data-manual="메트로놈 bpm tap tempo"><h3>메트로놈 기본</h3><p>BPM 숫자를 드래그하거나 다이얼·+/−·TAP으로 속도를 맞춥니다. TAP은 4회 이상 일정하게 누르면 안정적인 BPM을 계산합니다.</p><b>추천</b><span>처음에는 60~80 BPM에서 정확도를 익힌 뒤 5 BPM씩 올리세요.</span></article>
         <article class="manual-card card" data-manual="count in 카운트인"><h3>Count-in</h3><p>START 전에 1·2·4마디를 먼저 들려줍니다. 곡이나 루틴 시작 전에 자세와 호흡을 맞출 때 유용합니다.</p></article>
         <article class="manual-card card" data-manual="visual beat flash vibration 시각 진동"><h3>Visual Beat / Pulse / 진동</h3><p>박자를 화면의 점으로 확인합니다. 화면 Pulse와 진동은 소리를 크게 듣기 어려운 환경에서 보조 신호로 사용할 수 있습니다.</p></article>
-        <article class="manual-card card" data-manual="meter chain 박자 변박"><h3>Meter Chain</h3><p>4/4 ×2 → 7/8 ×1 → 3/4 ×4처럼 여러 박자와 반복 마디 수를 이어서 연습합니다. 메트로놈 홈 화면의 고급 훈련 바로 위에서 설정할 수 있습니다.</p></article>
+        <article class="manual-card card" data-manual="meter chain 박자 변박"><h3>Meter Chain</h3><p>4/4 ×2 → 7/8 ×1 → 3/4 ×4처럼 여러 박자와 반복 마디 수를 이어서 연습합니다. 메트로놈 홈 화면에서 박자 연결을 켜고 단계별 박자/분모를 바로 수정할 수 있습니다.</p></article>
         <article class="manual-card card" data-manual="training random mute internal clock auto tempo gradual"><h3>Training</h3><p>Random Mute는 클릭을 랜덤으로 숨기고, Internal Clock은 소리/무음 마디를 반복합니다. Auto Tempo는 일정 마디마다 BPM을 자동 변경합니다.</p><b>추천</b><span>4마디 소리 + 2마디 무음부터 시작하면 내부 박자 훈련에 좋습니다.</span></article>
         <article class="manual-card card" data-manual="groove drum genre swing humanize"><h3>Groove Engine</h3><p>Rock·Jazz·Funk 등 프리셋을 선택하거나 16-step에서 Kick/Snare/Hi-hat을 직접 편집합니다. 장르 없이 메트로놈만 사용하려면 ‘없음 · 메트로놈만’을 선택합니다.</p></article>
         <article class="manual-card card" data-manual="tuner guitar bass drop tuning"><h3>튜너</h3><p>일렉/어쿠스틱 기타와 베이스 4·5·6현을 지원합니다. Drop D/C/B, 다운튜닝, Open tuning, Custom을 선택할 수 있습니다. 마이크를 켜면 cents 편차가 표시됩니다.</p></article>
@@ -500,34 +543,17 @@
     <button data-beat-state="normal"><b>•</b><span>Normal</span></button>
     <button data-beat-state="mute"><b>×</b><span>Mute</span></button>
   </div>
-  <div class="modal-backdrop hidden" id="coreSettingsModal"><div class="settings-sheet core-settings-sheet"><div class="sheet-handle"></div><div class="page-title"><div><span class="eyebrow">METRONOME SETUP</span><h2>빠른 설정</h2></div><button class="icon-button" id="closeCoreSettings">×</button></div>
-        <div class="quick-options quick-options-four">
-          <label>박자<select id="beatsPerBar"></select></label>
-          <label>분모<select id="denominator"><option>2</option><option selected>4</option><option>8</option><option>16</option></select></label>
-          <label>분할<select id="subdivision"><option value="1">♩ 1</option><option value="2">♪ 2</option><option value="3">3연음</option><option value="5">3연음 1·3</option><option value="4">16분</option><option value="6">16분 1·4</option></select></label>
-          <label>클릭<select id="quickSoundSelect"></select></label>
-        </div>
-        <div class="beat-utility-row">
-          <label>Count-in<select id="countInBars"><option value="0">OFF</option><option value="1">1마디</option><option value="2">2마디</option><option value="4">4마디</option></select></label>
-          <button class="outline-small" id="toggleSimpleMode">고급 기능 펼치기</button>
-          <button class="outline-small" id="focusModeButton">FOCUS</button>
-        </div>
-        <div class="visual-options advanced-only beat-visual-options">
-          <label>화면 Pulse<button class="switch compact" id="flashToggle"><i></i></button></label>
-          <label>진동<button class="switch compact" id="vibrateToggle"><i></i></button></label>
-        </div>
-      </div></div>
   <div class="modal-backdrop hidden" id="settingsModal"><div class="settings-sheet"><div class="sheet-handle"></div><div class="page-title"><div><span class="eyebrow">SETTINGS</span><h2>앱 설정</h2></div><button class="icon-button" id="closeSettings">×</button></div><div class="settings-item"><span class="settings-icon">⌂</span><div><strong>PWA 홈 화면 설치</strong><span>브라우저 메뉴에서 ‘홈 화면에 추가’를 선택하면 앱처럼 사용할 수 있습니다.</span></div></div><div class="settings-item"><span class="settings-icon">☀</span><div><strong>화면 자동 꺼짐 방지</strong><span>Beatronome이 화면에 열려 있는 동안 Screen Wake Lock을 유지합니다. 튜너·그루브·연습·지식 화면에서도 화면이 자동으로 꺼지지 않습니다.</span></div></div><div class="settings-item offline-settings"><span class="settings-icon">⇩</span><div><strong id="offlineReadyTitle">오프라인 사용 준비</strong><span id="offlineStatusText">상태를 확인하는 중입니다.</span><div class="offline-progress"><i id="offlineProgressBar"></i></div><small id="offlineConnectionText">네트워크 상태 확인 중</small></div><button class="outline-small" id="prepareOffline">준비하기</button></div><div class="settings-item"><span class="settings-icon">↻</span><div><strong id="appUpdateTitle">앱 업데이트</strong><span id="appUpdateText">새 버전을 자동 확인합니다.</span><small id="appUpdateHint">사용 중에는 화면을 바꾸지 않습니다.</small></div></div><div class="settings-item"><span class="settings-icon">▣</span><div><strong>악보 연습 Mini Mode</strong><span>Beatronome을 작은 컨트롤 화면으로 바꿉니다. 갤럭시에서는 최근 앱 → Beatronome 아이콘 → ‘팝업 화면으로 보기’를 함께 사용하면 PDF 악보 위에 작은 창으로 둘 수 있습니다.</span></div><button class="outline-small" id="settingsMiniMode">열기</button></div><div class="settings-item cloud-settings-item"><span class="settings-icon">☁</span><div class="cloud-settings-copy"><strong>Cloud Sync</strong><span id="cloudStatusText">로그인하면 폰·Mac·태블릿에서 설정과 프리셋을 동기화합니다.</span><small id="cloudLastSync">로컬 저장만 사용 중</small><div id="cloudSignedOut" class="cloud-auth-panel"><input id="cloudEmail" type="email" inputmode="email" autocomplete="email" placeholder="이메일"><input id="cloudPassword" type="password" autocomplete="current-password" placeholder="비밀번호 (6자 이상)"><div class="cloud-auth-actions"><button class="outline-small" id="cloudLogin">로그인</button><button class="outline-small" id="cloudSignup">회원가입</button></div></div><div id="cloudSignedIn" class="cloud-account-panel hidden"><div class="cloud-account-line"><b id="cloudUserEmail">—</b><span id="cloudStateBadge">SYNCED</span></div><label class="cloud-auto-row"><span>자동 동기화</span><input id="cloudAutoSync" type="checkbox" checked></label><div class="cloud-auth-actions"><button class="outline-small" id="cloudSyncNow">지금 동기화</button><button class="outline-small" id="cloudLogout">로그아웃</button></div></div><div id="cloudSetupHint" class="cloud-setup-hint hidden">Supabase에 Beatronome 테이블이 아직 없습니다. ZIP의 <b>supabase_setup.sql</b>을 SQL Editor에서 한 번 실행하세요.</div></div></div><div class="settings-item ui-redundant"><span class="settings-icon">?</span><div><strong>사용 매뉴얼</strong><span>각 기능의 사용법과 추천 연습 방법을 확인합니다.</span></div><button class="outline-small" id="settingsManual">열기</button></div><div class="settings-item pro-settings"><span class="settings-icon">◐</span><div><strong>Theme</strong><span>무대와 연습실에 맞는 다크 테마를 선택합니다.</span></div><select id="themeSelect"><option value="jazz">Jazz Club</option><option value="studio">Studio Dark</option></select></div>
 <div class="settings-item pro-settings"><span class="settings-icon">⚡</span><div><strong>저사양 성능 모드</strong><span>애니메이션·그림자·블러를 줄여 오래된 기기에서 반응성을 우선합니다.</span></div><button class="switch" id="performanceToggle"><i></i></button></div>
-<div class="settings-item pro-settings"><span class="settings-icon">Aa</span><div><strong>Interface Size</strong><span>화면과 글자 크기를 선택합니다.</span></div><select id="interfaceSize"><option value="compact">Compact</option><option value="normal">Normal</option><option value="large">Large</option></select></div><div class="settings-item pro-settings"><span class="settings-icon">☝</span><div><strong>One Hand Mode</strong><span>START·TAP·BPM 조작을 엄지 위치에 고정합니다.</span></div><button class="switch" id="oneHandToggle"><i></i></button></div><div class="settings-item pro-settings"><span class="settings-icon">▶</span><div><strong>Stage 화면 탭 재생</strong><span>Stage Mode의 빈 공간을 탭해 START/STOP 합니다. 공연 중 오조작이 걱정되면 OFF로 두세요.</span></div><button class="switch" id="stageTapToggle"><i></i></button></div><div class="settings-item pro-settings"><span class="settings-icon">◷</span><div><strong>Audio Latency Calibration</strong><span>Bluetooth 사용 시 Visual Beat 표시를 소리에 맞춥니다.</span><div class="latency-setting"><input id="latencyCalibration" type="range" min="-250" max="250" step="5"><output id="latencyCalibrationOut">0 ms</output></div></div></div><div class="settings-item pro-settings"><span class="settings-icon">◎</span><div><strong>처음 사용 안내</strong><span>20초 핵심 안내를 다시 볼 수 있습니다.</span></div><button class="outline-small" id="replayOnboarding">다시 보기</button></div><div class="settings-item"><span class="settings-icon">↺</span><div><strong>현재 설정 초기화</strong><span>프리셋은 유지하고 메트로놈/훈련 설정만 기본값으로 되돌립니다.</span></div><button class="outline-small" id="resetSettings">초기화</button></div><div class="version-note">Beatronome v0.16.8 Design · Interaction · Performance<br>Pure Metronome Mode · Offline-first PWA · 400% Output Boost · Mac Quick Boost · iPhone Playback<br>Basic Sample Click · Guitar/Bass Tuner · Mini Mode<br>Groove Engine · Meter Chain · Training · Jazz UI</div></div></div>
+<div class="settings-item pro-settings"><span class="settings-icon">Aa</span><div><strong>Interface Size</strong><span>화면과 글자 크기를 선택합니다.</span></div><select id="interfaceSize"><option value="compact">Compact</option><option value="normal">Normal</option><option value="large">Large</option></select></div><div class="settings-item pro-settings"><span class="settings-icon">☝</span><div><strong>One Hand Mode</strong><span>START·TAP·BPM 조작을 엄지 위치에 고정합니다.</span></div><button class="switch" id="oneHandToggle"><i></i></button></div><div class="settings-item pro-settings"><span class="settings-icon">▶</span><div><strong>Stage 화면 탭 재생</strong><span>Stage Mode의 빈 공간을 탭해 START/STOP 합니다. 공연 중 오조작이 걱정되면 OFF로 두세요.</span></div><button class="switch" id="stageTapToggle"><i></i></button></div><div class="settings-item pro-settings"><span class="settings-icon">◷</span><div><strong>Audio Latency Calibration</strong><span>Bluetooth 사용 시 Visual Beat 표시를 소리에 맞춥니다.</span><div class="latency-setting"><input id="latencyCalibration" type="range" min="-250" max="250" step="5"><output id="latencyCalibrationOut">0 ms</output></div></div></div><div class="settings-item pro-settings"><span class="settings-icon">◎</span><div><strong>처음 사용 안내</strong><span>20초 핵심 안내를 다시 볼 수 있습니다.</span></div><button class="outline-small" id="replayOnboarding">다시 보기</button></div><div class="settings-item"><span class="settings-icon">↺</span><div><strong>현재 설정 초기화</strong><span>프리셋은 유지하고 메트로놈/훈련 설정만 기본값으로 되돌립니다.</span></div><button class="outline-small" id="resetSettings">초기화</button></div><div class="version-note">Beatronome v0.16.9 Design · Interaction · Performance<br>Pure Metronome Mode · Offline-first PWA · 400% Output Boost · Mac Quick Boost · iPhone Playback<br>Basic Sample Click · Guitar/Bass Tuner · Mini Mode<br>Groove Engine · Meter Chain · Training · Jazz UI</div></div></div>
   <div class="toast hidden" id="toast"></div>
 </div>
-<script src="./cloud-config.js?v=0.16.8"></script>
-<script src="./app.js?v=0.16.8"></script>
-<script src="./pitch-shifter.js?v=0.16.8"></script>
-<script src="./backing.js?v=0.16.8"></script>
-<script src="./knowledge.js?v=0.16.8"></script>
-<script src="./quality.js?v=0.16.8"></script>
-<script src="./ux-v016.js?v=0.16.8"></script>
+<script src="./cloud-config.js?v=0.16.9"></script>
+<script src="./app.js?v=0.16.9"></script>
+<script src="./pitch-shifter.js?v=0.16.9"></script>
+<script src="./backing.js?v=0.16.9"></script>
+<script src="./knowledge.js?v=0.16.9"></script>
+<script src="./quality.js?v=0.16.9"></script>
+<script src="./ux-v016.js?v=0.16.9"></script>
 </body>
 </html>

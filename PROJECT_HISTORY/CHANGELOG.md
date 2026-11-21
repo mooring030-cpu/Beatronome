@@ -1,3 +1,12 @@
+## v0.16.9 | 2026-11-21 | iOS Long-press · Inline Meter/Subdivision · Advanced Utilities · Numeric Meter Chain
+- 사용자 요청 4건: iPhone 조작 버튼 롱프레스 시 복사 메뉴, 메인에서 빠른 설정을 바로 조작, Count-in/Pulse/진동 고급 기능 이동, Meter Chain 박자·분모 숫자 선택.
+- `index.html`: 팝업 `coreSettingsModal`을 제거하고 **박자/분모 - TAP - 분할** 3열로 배치; BPM −/+ 버튼 유지. 클릭 사운드·고급 기능 토글·FOCUS를 별도 노출; Count-in/Pulse/진동을 고급 훈련 내부로 이동. Meter Chain 선택 단계 편집·사용자 숫자 추가 UI 신설.
+- `app.js`: 기존 설정 객체 및 저장키에 연결해 단일 제어 ID 유지; 체인 선택 단계 편집/추가 이벤트 및 렌더 동기화. 길게 누를 때 앱 버튼의 contextmenu/selectstart만 차단하고 텍스트 입력은 예외 처리. 워커/워크렛 URL의 버전 갱신.
+- `fix-v0169.css`: 터치 콜아웃 금지(버튼 한정), 작은 화면 3열 리듬 설정 및 간결한 TAP, 메인 설정 및 고급 기능·체인 편집 레이아웃.
+- `sw.js`: 0.16.9 캐시 및 새 스타일 등록, HTML·JS·CSS 쿼리 통일.
+- 기존 WebAudio/YouTube/Cloud Sync 엔진은 수정하지 않음.
+- **검증:** Node v0.16.6 회귀 + v0.16.9 정적 QA, Chromium 320/390/768/1366px 실제 DOM 조작 테스트 통과. 가상 브라우저는 URL 직접 접속 제한으로 `set_content` 내장 자산을 사용. iPhone 실기기 터치·실제 오디오 출력·YouTube는 미검증. 상세 `../QA_V0169.md`.
+
 # Beatronome 누적 변경 이력
 
 > 기록 근거: 제공된 v0.16.6 ZIP 안의 `README.md`, `QA_*.md`, `V*.md` 및 실제 `app.js`, `backing.js`, `index.html`, `sw.js` 검토. 누락된 초기 버전은 임의로 복원하지 않음.

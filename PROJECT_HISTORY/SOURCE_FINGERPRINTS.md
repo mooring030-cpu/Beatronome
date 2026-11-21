@@ -45,3 +45,19 @@
 | `manifest.webmanifest` | `39eda7622798c21f4c571dec04692619e87369342a9edbedf0ef0093a40c250a` |
 | `fix-v0168.css` | `bed0b5f6cd3f0e66e1ad74d2452fd026a641f3d55201f76008eb5e96d9baca98` |
 | `QA_V0168_TESTS.js` | `6dc4126a76c6894a59d3816929a04299006f515ed3a7ae97ea549570d185cdfe` |
+
+## v0.16.9 갱신 소스 (2026-11-21) SHA-256
+
+- 작업 기준: `Beatronome_v0.16.8_YouTube_Clear_iOS_Audio_Recovery_With_History_2026-11-21.zip`
+- 기준 v0.16.8 ZIP SHA-256: `efeb3d57ee6760c980c41a3c93e396b6d85a4c9b497195e2008000077d6def6a`
+- 신규 CSS `fix-v0169.css` 포함, 기존 `backing.js`는 미수정.
+
+| 파일 | SHA-256 |
+|---|---|
+| `index.html` | `5910bd24f432d0fedb2eb696109fff0c116b012c55c5471a53c5eb34c06d60e2` |
+| `app.js` | `2064bd092b67e18d6816def3fab79e3b8f26507d4d4aa202b2f4796e5f26627e` |
+| `sw.js` | `55e1c90e51b260dc187fc2cd489b1c18b6c00f3e51bef2b010707e618113d037` |
+| `fix-v0169.css` | `cc9a95ea2e5ab924740c9d9f8c28937089f91c08e27e45ba00c33fee1748c49a` |
+| `QA_V0169_TESTS.js` | `498518be85463d91bc58e59a6da28c3fb6c7a88777a76f8c2767b60df8219052` |
+| `backing.js` | `1012601ef7ae8aff3fed106ff25c9ffadc02cc3e190a7de83dff81004c9779ec` |
+| `manifest.webmanifest` | `39eda7622798c21f4c571dec04692619e87369342a9edbedf0ef0093a40c250a` |

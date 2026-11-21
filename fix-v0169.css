@@ -1,0 +1,101 @@
+/* Beatronome v0.16.9 — iOS touch safety + always-visible rhythm controls. */
+/* Keep native text selection in input/search fields; disable iOS lookup/copy on app buttons. */
+button, button *, .bottom-nav, .bottom-nav *, .beat-dot, .beat-dot *,
+.bpm-drag, .bpm-drag *, .tempo-dial, .tempo-dial *, .meter-chain-chip,
+.rhythm-toolbar .rhythm-slash, .rhythm-toolbar label,
+.training-utility-heading {
+  -webkit-user-select:none!important;
+  user-select:none!important;
+  -webkit-touch-callout:none!important;
+}
+button, .bottom-nav button, .rhythm-toolbar select, .chain-meter-inputs select,
+.chain-custom-add select {touch-action:manipulation}
+button:focus-visible, .rhythm-toolbar select:focus-visible,
+.chain-meter-inputs select:focus-visible, .chain-custom-add select:focus-visible,
+.inline-core-grid select:focus-visible, #countInBars:focus-visible{
+  outline:2px solid #d8b66b!important;outline-offset:2px;
+}
+/* Native picker options remain accessible and can be scrolled normally. */
+.rhythm-toolbar{width:100%!important;max-width:100%!important;margin:12px 0 0!important;
+  padding:0!important;display:grid!important;grid-template-columns:minmax(0,1.28fr) minmax(65px,.73fr) minmax(0,1.08fr)!important;
+  gap:7px!important;align-items:stretch!important}
+.rhythm-toolbar .rhythm-meter-picker{display:grid;grid-template-columns:minmax(0,1fr) 7px minmax(0,1fr);
+  gap:3px;min-width:0;align-items:end;padding:7px 6px;background:#0b1925;border:1px solid rgba(215,170,85,.28);border-radius:13px}
+.rhythm-toolbar .rhythm-meter-picker label,.rhythm-toolbar .rhythm-subdivision{display:flex;flex-direction:column;min-width:0;
+  color:#adbbc8;font-size:10px;line-height:1.15;font-weight:750;gap:5px}
+.rhythm-toolbar .rhythm-meter-picker label{align-items:center}
+.rhythm-toolbar .rhythm-meter-picker select{padding:4px 1px;text-align:center;text-align-last:center;min-width:0;width:100%;height:33px;
+  font-size:17px;font-weight:850;line-height:1;border:0!important;border-radius:7px;color:#f1e1bf;background:#132535!important;
+  -webkit-appearance:none;appearance:none}
+.rhythm-toolbar .rhythm-slash{align-self:end;text-align:center;padding-bottom:10px;color:#ddb46d;font-size:17px;font-weight:700}
+.rhythm-toolbar .rhythm-subdivision{gap:5px;padding:7px 6px;background:#0b1925;border:1px solid rgba(215,170,85,.28);border-radius:13px}
+.rhythm-toolbar .rhythm-subdivision select{width:100%;min-width:0;max-width:100%;height:33px;padding:4px 14px 4px 5px;
+  font-size:clamp(11px,2.7vw,14px);font-weight:800;text-overflow:ellipsis;color:#f0dfba!important;background:#132535!important;
+  border-radius:7px;border-color:rgba(215,170,85,.18)!important}
+.instrument-console .bpm-controls .rhythm-tap,.rhythm-toolbar .rhythm-tap{display:flex!important;flex-direction:column;
+  min-width:0!important;width:100%!important;height:auto!important;min-height:68px!important;padding:6px 2px!important;
+  justify-content:center!important;align-items:center!important;gap:2px!important;border:1px solid rgba(220,177,91,.46)!important;
+  border-radius:13px!important;background:#22313d!important;color:#f3dfb4!important;font-size:clamp(15px,4vw,19px)!important;font-weight:900!important}
+.rhythm-toolbar .rhythm-tap small{font-size:9px!important;white-space:nowrap;letter-spacing:-.2px!important;color:#c5d1d7;opacity:.85}
+.bpm-step-row{display:flex;justify-content:center;align-items:center;gap:12px;margin:7px auto 0;min-height:39px}
+.bpm-step-row span{font-size:11px;font-weight:750;color:#8fa0ae;white-space:nowrap}
+.bpm-step-row b{color:#e9c37b;font-weight:900}
+.bpm-step-row .round-control{width:42px!important;height:38px!important;min-width:42px!important;min-height:38px!important;
+  border-radius:11px!important;font-size:20px!important}
+/* Setup is a visible, usable card instead of a hidden bottom sheet. */
+#tabMetronome>.inline-core-settings{padding:13px 14px!important;margin:0!important;overflow:visible!important;
+  border:1px solid rgba(222,185,105,.23)!important;background:linear-gradient(180deg,#152333,#101d2b)!important}
+.inline-core-caption{display:flex;flex-direction:column;gap:2px;margin-bottom:11px}
+.inline-core-caption strong{font-size:14px;color:#f2e4ce}
+.inline-core-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1.15fr) minmax(0,.72fr);
+  gap:8px;align-items:end}
+.inline-core-grid .inline-sound-picker{min-width:0;display:flex;flex-direction:column;gap:6px;
+  color:#aab7c2;font-weight:700;font-size:11px}
+.inline-core-grid select{width:100%;min-width:0;height:45px;border:1px solid rgba(222,185,105,.25);border-radius:11px;
+  background:#0e1b29;color:#f3e9da;font-weight:750;font-size:13px;padding:7px 6px}
+.inline-core-grid button{min-width:0;min-height:45px;height:auto!important;padding:8px 6px!important;
+  border:1px solid rgba(222,185,105,.3)!important;border-radius:11px!important;
+  background:#192838!important;color:#edd8ac!important;font-weight:850;font-size:clamp(10px,2.8vw,13px);line-height:1.28}
+.inline-core-grid #toggleSimpleMode[aria-pressed="true"]{background:#503647!important;border-color:#c69b67!important}
+.inline-core-grid .inline-focus-button{background:#253341!important}
+/* Advanced options live inside the existing advanced training group. */
+.training-utility-group{padding:15px;display:grid;gap:8px;border-bottom:1px solid rgba(222,185,105,.19)}
+.training-utility-heading{display:flex;flex-direction:column;gap:3px;margin:0 0 5px}
+.training-utility-heading span{font-size:10px;letter-spacing:1.5px;font-weight:850;color:#d9b66c}
+.training-utility-heading strong{font-size:15px;color:#f1e5d3}
+.training-utility-item{display:flex;align-items:center;justify-content:space-between;min-width:0;gap:10px;
+  padding:11px 12px;border:1px solid rgba(222,185,105,.13);border-radius:12px;background:#0c1a27}
+.training-utility-item>div,.training-utility-item>label{display:flex;flex-direction:column;min-width:0;gap:4px;flex:1}
+.training-utility-item strong{font-size:13px;color:#f0e2cb}
+.training-utility-item span{font-size:11px;line-height:1.35;color:#9cacb9}
+.training-utility-item select{flex:0 0 auto;max-width:120px;min-height:43px;padding:8px 9px;border:1px solid rgba(222,185,105,.22);
+  border-radius:10px;background:#142537;color:#efdfc4;font-size:13px;font-weight:750}
+.training-utility-item .switch{flex:0 0 auto}
+/* Meter Chain selected meter editing and custom numbered adding. */
+.chain-meter-editor,.chain-custom-add{border:1px solid rgba(220,182,112,.21);background:#0d1e2c;border-radius:13px;
+  padding:11px;margin:12px 0;min-width:0}
+.chain-field-heading{display:flex;flex-direction:column;gap:4px;margin-bottom:11px}
+.chain-field-heading strong{font-size:13px;color:#eee1c5}
+.chain-field-heading span{font-size:11px;color:#9cabb8}
+.chain-meter-inputs,.chain-custom-add{display:flex;align-items:flex-end;gap:9px;flex-wrap:nowrap;min-width:0}
+.chain-meter-inputs label,.chain-custom-add label{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;font-size:11px;
+  font-weight:750;color:#adb9c1}
+.chain-meter-inputs>span,.chain-custom-add>span{align-self:flex-end;padding-bottom:13px;color:#d6b674;font-size:20px}
+.chain-meter-inputs select,.chain-custom-add select{height:44px;width:100%;min-width:0;
+  border-radius:10px;border:1px solid rgba(222,185,105,.26);background:#172839;
+  color:#f0dfbd;font-weight:850;font-size:16px;padding:6px 9px}
+.chain-custom-add button{align-self:flex-end;flex:1.1;min-width:0;min-height:44px;
+  border:1px solid #cfa85a;border-radius:10px;background:#cda657;color:#0c1823;
+  font-weight:900;font-size:13px;padding:9px 6px;white-space:nowrap}
+@media(max-width:390px){
+  .rhythm-toolbar{gap:5px!important;grid-template-columns:minmax(0,1.25fr) minmax(59px,.7fr) minmax(0,1.08fr)!important}
+  .rhythm-toolbar .rhythm-meter-picker,.rhythm-toolbar .rhythm-subdivision{padding:6px 4px}
+  .rhythm-toolbar .rhythm-meter-picker select{font-size:15px;height:33px}
+  .rhythm-toolbar .rhythm-subdivision select{font-size:11px;padding:4px 10px 4px 2px}
+  .rhythm-toolbar .rhythm-tap small{font-size:8px!important}
+  .inline-core-grid{gap:5px;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,.65fr)}
+  .inline-core-grid button{font-size:10px;padding:8px 3px!important}
+  .training-utility-item{padding:10px 8px}
+  .chain-custom-add{gap:6px;padding:9px}
+  .chain-custom-add button{font-size:11px}
+}

@@ -1,9 +1,13 @@
-# Beatronome 오류 추적 (v0.16.8)
+# Beatronome 오류 추적 (v0.16.9)
 
 **상태 정의:** 코드 수정 / 자동 테스트 / 실기기 완료를 분리한다.
 
 | ID | 문제 | 소스 반영 | 현재 검증 상태 | 추가 확인 |
 |---|---|---|---|---|
+| BUG-009 | iPhone 메트로놈·TAP 등 길게 누르는 UI에서 기본 복사/텍스트 선택 메뉴 노출 | v0.16.9 | 비편집 조작만 `user-select`/`touch-callout` 금지 및 contextmenu/selectstart 차단, Chromium 모의 이벤트 통과 | 실제 iOS Safari/PWA 긴 누르기에서 메뉴 미노출 검증 |
+| UX-013 | 빠른 설정이 팝업에 있어 박자/분할·클릭을 메인에서 조작 불가 | v0.16.9 | 320/390/768/1366px에서 박자/분모·분할·클릭·FOCUS·고급 토글 바로 표시 및 작동 확인 | iPhone·iPad 실제 화면 세로/가로 확인 |
+| UX-014 | Count-in/Pulse/진동을 고급 기능 안으로 분류해야 함 | v0.16.9 | 고급 훈련 내부로 이동; 모의 상태 저장 및 ON/OFF 통과 | iOS 진동 지원 여부 OS 제약 확인 |
+| UX-015 | Meter Chain에서 숫자로 박자/분모 선택/추가 불편 | v0.16.9 | 선택 단계 변경, 신규 11/16 추가, 13/8 수정 및 로컬 저장 객체 확인 | 실기기 박자 전환 청음 및 앱 재실행 검증 |
 | BUG-008 | iPhone/iPad에서 재생 버튼 눌러도 간헐적 무음, 재시작 시 개선 | v0.16.8 | `interrupted` 대응, start 오디오 세션 안정화 및 재개·수동 재구성 모의 통과 | 실제 iOS Safari/PWA에서 최초 실행·화면 전환·무음 스위치 확인 |
 | UX-012 | YouTube 불러온 영상을 빈 화면으로 초기화할 수 없음 | v0.16.8 | iframe 제거/재생성, URL·ID·Loop·시간 리셋 및 지연 API 이벤트 무시 모의 통과 | 실제 YouTube API 재로딩 검사 |
 | BUG-006 | PDF·다른 앱 전환 시 클릭 간격이 느려지거나 불규칙해짐 | v0.16.7 | AudioWorklet/Worker·선예약·위상 복구 소스, 자동 오디오 모의 통과 | iPhone/Android 실제 백그라운드 전환 |
@@ -34,3 +38,7 @@
 **BUG-008 — iOS Web Audio Context `interrupted` 및 오디오 세션 상태:** 기존 v0.16.7 `ensureAudio()`가 `suspended`만 resume하고, 오디오 렌더러가 `interrupted`인 상태에서도 `playing=true`를 만들거나 브라우저 재시작이 필요할 수 있었다. 또한 시작 시 `audioSession.type`을 ambient→playback으로 전환하는 타이머는 초기 unlock과 겹칠 위험이 있다. 초기 시작에서는 playback을 안정적으로 지정하고, 상태를 검사하며 복귀 시 resume 및 사용자 동작 기반 '소리 복구'를 제공한다. **일부 WebKit OS 차단·오디오 포커스 제한은 웹에서 보장 불가.**
 
 **UX-012 — iframe 동적 제거 및 목표 요소:** YouTube SDK는 원래 플레이어 컨테이너를 iframe으로 대체한다. 단순 상태만 초기화하면 다시 불러올 때 SDK 대상 요소가 없는 문제가 생길 수 있어 목표 `<div>`도 새로 만들었다. 지연 콜백이 초기화 뒤 상태를 되살리지 못하도록 generation guard 추가.
+
+## v0.16.9 추가 대응
+- **BUG-009:** 기본 텍스트 선택/복사 메뉴가 롱프레스 제스처를 가로채는 현상을 줄이기 위해 버튼/박자/템포 비편집 영역의 `-webkit-user-select: none`, `-webkit-touch-callout: none` 및 이벤트 취소를 적용했다. 검색, 비밀번호, YouTube URL 등의 편집 가능한 입력에는 적용하지 않는다. WebKit 실기기 테스트가 남아 있다.
+- **UX-013~015:** 팝업에만 있던 설정을 기능별 접근성에 따라 나눴다. BPM 상단에 박자·분모/TAP/분할, 별도 카드에 클릭/Focus/고급 전환, 고급 훈련에 Count-in/화면 Pulse/진동, Meter Chain에 숫자 선택을 배치했다. 기존 설정 저장 키를 그대로 사용한다.

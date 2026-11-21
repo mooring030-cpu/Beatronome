@@ -45,9 +45,9 @@ for wav in (ROOT/'audio'/'basic').glob('*.wav'):
             if w.getnframes()==0:issues.append('Empty WAV: '+wav.name)
     except Exception as e:issues.append('Invalid WAV: '+wav.name+' '+str(e))
 if count!=18:issues.append('Expected 18 basic WAV samples, got '+str(count))
-# Historical v0.16.7 QA asserts the literal old version and is retained as a record.
-# The current tests also cover its key layout/timing/YouTube invariants.
-for name in ('QA_V0166_TESTS.js','QA_V0168_TESTS.js'):
+# Version-specific historical tests remain archived; the latest test checks its integration.
+# v0.16.6 is version agnostic, and v0.16.9 includes v0.16.8 key controls.
+for name in ('QA_V0166_TESTS.js','QA_V0169_TESTS.js'):
     if (ROOT/name).exists():
         x=subprocess.run(['node',str(ROOT/name)],capture_output=True,text=True,cwd=ROOT)
         if x.returncode:issues.append(name+' failed: '+x.stderr[-500:])
