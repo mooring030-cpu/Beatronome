@@ -1,12 +1,12 @@
-/* Beatronome v0.16.9: version-isolated, offline-first application shell.
+/* Beatronome v0.17.0: version-isolated, offline-first application shell.
  * Active sessions are never force-reloaded and existing controllers are not claimed.
  */
-const VERSION = '0.16.9';
+const VERSION = '0.17.0';
 const CACHE = `beatronome-offline-v${VERSION}`;
 const BASIC = Array.from({length:6},(_,i)=>['strong','weak','normal'].map(role=>`./audio/basic/bank${i+1}_${role}.wav`)).flat();
 const SHELL = [
   './','./index.html',
-  ...['styles.css','polish.css','design-v016.css','responsive-v0163.css','fix-v0165.css','fix-v0166.css','fix-v0167.css','fix-v0168.css','fix-v0169.css','clock-worker.js','audio-clock-worklet.js','ux-v016.js','cloud-config.js','app.js','knowledge.js','pitch-shifter.js','backing.js','quality.js','manifest.webmanifest'].map(n=>`./${n}?v=${VERSION}`),
+  ...['beatronome.bundle.css','clock-worker.js','audio-clock-worklet.js','ux-v016.js','cloud-config.js','app.js','knowledge.js','pitch-shifter.js','backing.js','quality.js','manifest.webmanifest'].map(n=>`./${n}?v=${VERSION}`),
   './THIRD_PARTY_NOTICES.txt','./favicon.png','./apple-touch-icon.png',
   './icon-192.png','./icon-512.png','./app-artwork.png',...BASIC
 ];

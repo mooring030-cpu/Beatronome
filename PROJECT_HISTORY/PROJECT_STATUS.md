@@ -1,48 +1,11 @@
-# Beatronome 현재 프로젝트 현황
+# Beatronome 프로젝트 현재 상태
 
-**최신 소스 기준:** 2026-11-21, **v0.16.9** — GitHub Pages 대상 웹앱·PWA. 사용자의 v0.16.6 통합본에서 업데이트.
+- 소스 버전: **v0.17.0** (2026-11-21)
+- 릴리스 성격: 데이터 결함 수정 + 사용자 선택형 실시간 오디오 스케줄 + 백업/복원 + 장기 개선 기능 통합
+- 실행 방식: GitHub Pages용 정적 웹앱/PWA. 프로젝트 기존 저장키 유지.
+- 주요 컴포넌트: 메트로놈, Groove/튜너, Meter Chain, 고급 훈련, 로컬 Backing, YouTube, Knowledge, 프리셋·Cloud Sync, 설정·QA.
+- 자동 테스트: Node 17, Chromium DOM 18, Chromium WebAudio 가상 실행 1시나리오, 리소스/문법/해시 검사.
+- 고객 환경: **실제 iPhone/iPad Safari PWA, YouTube 실영상, Supabase 실계정, GitHub Pages 배포 미확인.**
+- 알려진 시스템 제한: iOS에서 OS가 Web Audio/웹앱을 중단하는 경우 브라우저 코드만으로 백그라운드 무중단을 보장할 수 없음.
 
-## 모듈 현황
-
-| 기능 | 현재 구현 | 주의사항 |
-|---|---|---|
-| 메트로놈 | BPM, **메인 노출 박자·분모/TAP/분할**, 클릭·FOCUS, accent, 프리셋 | 백그라운드 예약 강화(v0.16.7); OS의 Web Audio 일시정지 시 지속 재생 보장은 불가 |
-| Meter Chain | **메트로놈 화면**의 고급 훈련 위 독립 카드; 선택한 박자·분모의 **숫자 편집/추가** | 팝업을 열지 않고 이용; 실제 박자 전환 청음 필요 |
-| Grooves | 드럼 패턴·Kit·Swing·볼륨 | 선예약 드럼 중지 처리 추가; 실기기 회귀 확인 필요 |
-| Tuner | 오디오 분석, 기타·베이스 | 태블릿/PC에서도 모바일형 단일 열 렌더링 |
-| Internal Clock/고급 훈련 | ON/OFF, 숨길 때 OFF, 저장/복원, Auto Tempo | v0.16.6 반영 로직 유지. 자동 템포와 백그라운드 선예약 혼합 시 실기기 청음 필요 |
-| Local Backing | 음원·파형·Loop·Speed·Key | 기존 기능 유지, 회귀 확인 필요 |
-| YouTube | IFrame, Loop·Speed, **영상 + 메트로놈 버튼** | 실제 YouTube 서비스/OS 오디오 포커스 미검증; 2개 스트림 첫 박 자동 일치 기능 없음 |
-| Knowledge | 음악 이론, 최근 본 항목, 즐겨찾기 | v0.16.6 칩 스타일 유지 |
-| 프리셋/클라우드 | 로컬 저장·백업·Supabase 로직 | 실제 2기기 충돌 해결과 실서비스 점검은 별도 |
-| PWA/오프라인 | 0.16.7 버전 캐시·새 CSS/Worklet/Worker 포함 | GitHub Pages 실제 업데이트/오프라인 검증 필요 |
-
-## v0.16.9 추가 변경
-
-- iOS 버튼 긴 누르기에서 복사/선택이 끼어들지 않도록 비편집 UI에만 차단 스타일/이벤트 적용. **iOS 실기기 동작은 아직 미검증.**
-- 빠른 설정 팝업 제거: 화면 내 박자/분모·분할·클릭/고급·FOCUS로 이동.
-- Count-in, 화면 Pulse, 진동: 고급 훈련 내부에서 조정 가능.
-- Meter Chain: 선택 단계 편집 및 새 항목을 숫자로 추가; 기존 빠른 추가 유지.
-- 자동 QA + 4가지 화면 너비 Chromium DOM 테스트 통과. 오디오/YouTube 엔진은 v0.16.8 그대로.
-
-## v0.16.8 추가 변경
-
-- `backing.js`: YouTube 초기화로 iframe/URL/ID/Loop/시간을 제거, 늦은 로드 콜백 방지.
-- `app.js`: iOS AudioContext `interrupted` 상태·사용자 제스처·무음 복구 버튼, Basic 샘플 비차단 초기화.
-- `fix-v0168.css`: 추가 버튼 스타일; `sw.js`/HTML 버전 0.16.8.
-
-## v0.16.7 핵심 소스 변경
-
-1. `app.js`: AudioWorklet heartbeat + WebWorker 보조 + 백그라운드 3초 선예약 + 스케줄 공백 후 기존 박자 위상으로 복구; 재생 중단 시 미리 예약한 음원 제거.
-2. `fix-v0167.css`: 휴대폰/태블릿/PC에 공통으로 모바일형 단일 열·하단 고정 5개 탭 적용(최대 760px).
-3. `index.html`: Meter Chain을 기본 화면에 노출, YouTube 동시 재생 UI 신설.
-4. `backing.js`: YouTube + 메트로놈을 **같은 사용자 클릭 동작**에서 시작 요청. 영상 일시정지 시 자체 시작한 메트로놈만 정지.
-5. `sw.js`: v0.16.7 오프라인 캐시 및 신규 파일 등록.
-
-## 현재 검증 수준
-
-- v0.16.8 Node 정적/모의 회귀 검사 통과. 이전 v0.16.7 Chromium 렌더 QA 기록은 유효하나 **이번 변경에 대한 Chromium 렌더 시도는 환경 URL 차단으로 수행하지 못함.**
-- 오디오 `visibilitychange` 이벤트 모의, YouTube IFrame 객체 모의 검사 통과.
-- **미검증:** 실제 PDF/다른 앱 백그라운드 전환 2~5분, AudioWorklet URL 로딩 실사용, 모바일 OS의 오디오 포커스, 실제 YouTube, iOS PWA, Supabase, 실제 배포 캐시.
-
-**릴리스 판단:** 수정 소스 전달 가능. 플랫폼 특성상 백그라운드 재생 및 실제 YouTube 동시 소리는 실기기 확인이 반드시 필요함. 상세: `../QA_V0167.md`.
+`QA_V0170.md`, `HARDWARE_QA_CHECKLIST.md` 및 현행 `TODO.md`를 함께 관리합니다.

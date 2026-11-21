@@ -1,4 +1,4 @@
-/* Beatronome v0.16.5 - UX behaviors. Core audio/state is owned by app.js.
+/* Beatronome UX behaviors (runtime version from BeatronomeAPI). Core audio/state is owned by app.js.
    This layer intentionally does not intercept ordinary scrolling, wheel or beat timing. */
 (() => {
   'use strict';
@@ -194,5 +194,5 @@
     if(!id)return;e.preventDefault();open(id,btn);
   });
   // Expose diagnostics-friendly, non-sensitive UI status.
-  window.BeatronomeUX={version:'0.16.5',getState:()=>({motionEnabled:motionOK(),selectedTab:activeId,presetMenuOpen:!backdrop.classList.contains('hidden')})};
+  window.BeatronomeUX={version:window.BeatronomeAPI?.getVersion?.()||'0.17.0',getState:()=>({motionEnabled:motionOK(),selectedTab:activeId,presetMenuOpen:!backdrop.classList.contains('hidden')})};
 })();

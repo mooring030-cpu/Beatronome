@@ -1,3 +1,15 @@
+## v0.17.0 | 2026-11-21 | Audit-wide Stability, Audio, Data Backup, Meter Chain & Manual Sync
+
+- 기준: v0.16.9 소스 + 31항목 종합 점검(확인된 결함 B-01~07, 실기기 위험 R-01~10, 개선 제안 I-01~14).
+- **확인 결함 수정**: 드럼 OFF 정규화 B01, 5초 실행 취소 B02, 백그라운드 타이머 B03, 전체 백업 B04, YouTube SDK 실패 재시도 B05, 현재 버전 전용 QA B06, Quality/UX 버전 불일치 B07.
+- **오디오**: 예약음원 취소·적용 시점 선택; 백그라운드 예약 기반 구조 유지·복귀 시 타이머/오디오 복구 보완. iOS/PDF/BT 청음은 미검증.
+- **동시재생**: 로컬 Backing/YouTube 동일 사용자 클릭 내 시도; 수동 Sync Offset ±500ms, TAP BPM. 영상과 샘플 정확한 위상 동기 보장 없음.
+- **사용자 데이터**: v2 JSON 백업(설정, 루틴, 프리셋, Backing 영상/마커), 선택 복원/실패 롤백, Cloud 동시 편집 백업 및 JSON 내보내기.
+- **UI**: Meter Chain 현재/다음, 저장 패턴, 진동 미지원 경고, 오디오 진단, VoiceOver/키보드 일부 레이블, 1개 CSS 런타임 번들.
+- **회귀 검사**: Node 17/17, Chromium DOM 18/18, Chromium AudioContext running→BPM 조작→stop, JS/CSS/ID/캐시 검사. 하드웨어/실서비스 검증 미실시: `QA_V0170.md`·`HARDWARE_QA_CHECKLIST.md` 참고.
+- **배포**: GitHub Pages 배포는 사용자가 수행하며 배포 상태는 검증하지 않음. 진행 중 세션 강제 새로고침하지 않는 SW 정책 유지.
+
+
 ## v0.16.9 | 2026-11-21 | iOS Long-press · Inline Meter/Subdivision · Advanced Utilities · Numeric Meter Chain
 - 사용자 요청 4건: iPhone 조작 버튼 롱프레스 시 복사 메뉴, 메인에서 빠른 설정을 바로 조작, Count-in/Pulse/진동 고급 기능 이동, Meter Chain 박자·분모 숫자 선택.
 - `index.html`: 팝업 `coreSettingsModal`을 제거하고 **박자/분모 - TAP - 분할** 3열로 배치; BPM −/+ 버튼 유지. 클릭 사운드·고급 기능 토글·FOCUS를 별도 노출; Count-in/Pulse/진동을 고급 훈련 내부로 이동. Meter Chain 선택 단계 편집·사용자 숫자 추가 UI 신설.

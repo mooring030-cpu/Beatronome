@@ -1,63 +1,49 @@
-# 제공된 원본 소스 식별값
+# Beatronome v0.17.0 SHA-256 fingerprints
 
-- 원본 파일명: `Beatronome_v0.16.6_Recent_InternalClock_SaveSync_Fix(1).zip`
-- 원본 ZIP SHA-256: `203eb28e6856bcb2309212ea7ce5b9432fa2d5a0ca61fad913a7146a34456ea6`
-- 원본 ZIP 안의 파일 개수: **53개**
-- 기록일: **2026-11-17**
-- **원본 v0.16.6 아카이브는 변경하지 않음.** 2026-11-17 통합 패키지는 실행 파일 바이트를 유지했으나, 2026-11-21 v0.16.7 소스에서 아래 실행 파일을 의도적으로 수정했다. 이 문서의 원본 해시는 계속 v0.16.6 원본에 대한 값이다.
+- 릴리스 버전: 0.17.0
+- 본문: BUILD_FINGERPRINTS.json 참조
+- 파일 수: 43
 
-## 주요 실행 파일의 원본 SHA-256
-
-- `app.js`: `c3874662cb1beb768d4428142e67149e0a78e6696f4047c2ab1d521ffb2b4e75`
-- `backing.js`: `eee5b1ce0c26e7acb76548d33cc3f61b3bc033235f891b7aaf35c55042af05ae`
-- `knowledge.js`: `95fc570694138cec9b1c82e490c58e2e2447a571a8db0b383a3b4eaf579615a1`
-- `quality.js`: `6e38232827fb492cf9c169ae719c89a69efce9aafe02ddafced7a13d1d0fd69b`
-- `ux-v016.js`: `91212f0c5184e8cfad1d19e37e5337129b3b6c59ecf9de487e23e25ed36d4ba9`
-- `sw.js`: `5decc28185ea2800b4dafd1ce58ef598c495734e8d85dd5c30775ed7e18befb0`
-- `index.html`: `e7cae4fdd8fa47e79e2b26db4bd9a481b0da4327c2712cec5b4b07ec2ca9237a`
-- `fix-v0166.css`: `b5e85fdf90d7ce164ae4ae1d9ed07b4d03435385ab3535c090b49b602d261ebc`
-- `manifest.webmanifest`: `39eda7622798c21f4c571dec04692619e87369342a9edbedf0ef0093a40c250a`
+- `QA_V0170_TESTS.js`: `ca7011e186b5cd2b2b679d83d3a39e40b045c9cb6fc426085fcef653c78d5eb8`
+- `app.js`: `5d1a6471dbc5d9e2bbd11641ea583e733c865c0c31aa3399ac858775188706d6`
+- `audio-clock-worklet.js`: `d95504d1ead529444bb909e8beb698512583960027e864ae0f29624385cff1fe`
+- `audio/basic/bank1_normal.wav`: `fdfc4e9055c8796c412dae455e0d34d56d8d5f753ac9478cfbf334d3c5fd474f`
+- `audio/basic/bank1_strong.wav`: `4a76564b199bc35f7dda25ed0ed07948668606e004217ffe38b0ac80e848ddc6`
+- `audio/basic/bank1_weak.wav`: `17088c315267aebbfc85718192c86f5baf8589bf814ca0e13ad592a490ffa9c3`
+- `audio/basic/bank2_normal.wav`: `3a2500a71a541777e2e35d18990537d33d0e6c0314c9253d323891c44003626b`
+- `audio/basic/bank2_strong.wav`: `96815441fde8f0dc7d8cdf7d49c4557ef7c367f0b8c42097da4ec6d69a6595d0`
+- `audio/basic/bank2_weak.wav`: `db3c1dde74259c75b5267ec3205cbed0af45f30dd00723610d50c907c2c31f2e`
+- `audio/basic/bank3_normal.wav`: `e8db3228cb50617248d7e90202a5be8521fd64ed42fe900f4730a1fc597e9cb0`
+- `audio/basic/bank3_strong.wav`: `e9e2c1c2fdd665ba38e645ba3ed31e0df1fa676ad92740595e3f417fcb674afc`
+- `audio/basic/bank3_weak.wav`: `b3efadb25666bac56f817e991e02d7befd0c02ea82da40d73a04a02afc7930de`
+- `audio/basic/bank4_normal.wav`: `2260f68f857ffe07de2faa8e853773a0e171d2c94b7b359b591db703f50d651b`
+- `audio/basic/bank4_strong.wav`: `aea7ad5870963883a9e77b0fb01b4f6f29fc54f801fa018185e6f078c046bb97`
+- `audio/basic/bank4_weak.wav`: `87923ceb4fffa08e318d5192d51b94f6f76f80c7ce660a0a7591c75c1dd50df2`
+- `audio/basic/bank5_normal.wav`: `efcad06ec0bf1f43ec149d115158414a07e125539a4207f9171174fd164bb1c8`
+- `audio/basic/bank5_strong.wav`: `6f62e9ac869cfe77640678223635dccc94d737bfe9ae88cdedbd55c1bea54cdf`
+- `audio/basic/bank5_weak.wav`: `47fbdc4e2807396c360604f14d97f67d91c231134ff7e24b9fa564b715edbaf0`
+- `audio/basic/bank6_normal.wav`: `90d63c5903f17fa114cf3466b059b103e4d92cea7d1a1f93fb23cb3143df96b0`
+- `audio/basic/bank6_strong.wav`: `83e2af83fe6fa70a365a66e1118b3e181a39c9044cb68e0a921b64282b06e6ce`
+- `audio/basic/bank6_weak.wav`: `7569cc2cb5b4ac98f0f2d4b1fa8a5beb34172a7ddfdfa6fa0b446cb113c27cd8`
+- `backing.js`: `463ffd79d6d07d5c414d78c2f6e58c8efef115e15b061b466f6923e7466a8998`
+- `beatronome.bundle.css`: `7d041e9a7a77bcabc7f3559cb2e8b9e8913be94df3ad8474968f327fe7f06dc7`
+- `clock-worker.js`: `ed7c7c87bba515fc1a497839a788bc8ea982429e29315bebdd622669e6ceb206`
 - `cloud-config.js`: `5c8ed4d1da677049c64762d951720c6e32660158319d91a550aa91d5a887361a`
-
-## v0.16.7 갱신 소스 (2026-11-21) SHA-256
-
-| 파일 | SHA-256 |
-|---|---|
-| `app.js` | `fd1365edfa34740babc56ed762d75ef2f4fb23ef51b50a9fc4dda96423d6ec79` |
-| `backing.js` | `e3ea6cc5f26fdc4ec582690d29032a88f0636fbb9be3bc05f0f5e1fad96d5ac7` |
-| `index.html` | `d3d96c3b450784ece4fcb5afb860b970d24d2f5946d606bb1ddae0446769b77a` |
-| `sw.js` | `3c705e1ea798e7d71eb90e4572f4deea194fef7d238c1910af5d889297d9d14d` |
-| `fix-v0167.css` | `9fd1ea744a805b314298b9b0fda141fd6d1458be8248dd8933d244088c1b0def` |
-| `audio-clock-worklet.js` | `d95504d1ead529444bb909e8beb698512583960027e864ae0f29624385cff1fe` |
-| `clock-worker.js` | `ed7c7c87bba515fc1a497839a788bc8ea982429e29315bebdd622669e6ceb206` |
-| `QA_V0167_TESTS.js` | `d74f35d41031147aa56bf690dd27827a65a650880bfc54ba19c7e5482c5b9888` |
-
-**주:** 이력 Markdown 파일 자체와 최종 ZIP 패키지의 해시는 패키징 시점에 달라질 수 있으므로 이 표에는 실행 파일 및 신규 QA 스크립트만 기록한다.
-
-## v0.16.8 갱신 소스 (2026-11-21) SHA-256
-
-| 파일 | SHA-256 |
-|---|---|
-| `app.js` | `302d39c6c693711fd69b0ac0fa3a297ee036e8093431b369ea68dad47604345f` |
-| `backing.js` | `1012601ef7ae8aff3fed106ff25c9ffadc02cc3e190a7de83dff81004c9779ec` |
-| `index.html` | `89f3f1e6bac6a9afe6b04752d77e9084ca53081fcd9d739410adda2c23863714` |
-| `sw.js` | `41affd24cb44e2c14bce17dcc3b2eb056a1b0c475c75dc775d488366d4c383b8` |
-| `manifest.webmanifest` | `39eda7622798c21f4c571dec04692619e87369342a9edbedf0ef0093a40c250a` |
-| `fix-v0168.css` | `bed0b5f6cd3f0e66e1ad74d2452fd026a641f3d55201f76008eb5e96d9baca98` |
-| `QA_V0168_TESTS.js` | `6dc4126a76c6894a59d3816929a04299006f515ed3a7ae97ea549570d185cdfe` |
-
-## v0.16.9 갱신 소스 (2026-11-21) SHA-256
-
-- 작업 기준: `Beatronome_v0.16.8_YouTube_Clear_iOS_Audio_Recovery_With_History_2026-11-21.zip`
-- 기준 v0.16.8 ZIP SHA-256: `efeb3d57ee6760c980c41a3c93e396b6d85a4c9b497195e2008000077d6def6a`
-- 신규 CSS `fix-v0169.css` 포함, 기존 `backing.js`는 미수정.
-
-| 파일 | SHA-256 |
-|---|---|
-| `index.html` | `5910bd24f432d0fedb2eb696109fff0c116b012c55c5471a53c5eb34c06d60e2` |
-| `app.js` | `2064bd092b67e18d6816def3fab79e3b8f26507d4d4aa202b2f4796e5f26627e` |
-| `sw.js` | `55e1c90e51b260dc187fc2cd489b1c18b6c00f3e51bef2b010707e618113d037` |
-| `fix-v0169.css` | `cc9a95ea2e5ab924740c9d9f8c28937089f91c08e27e45ba00c33fee1748c49a` |
-| `QA_V0169_TESTS.js` | `498518be85463d91bc58e59a6da28c3fb6c7a88777a76f8c2767b60df8219052` |
-| `backing.js` | `1012601ef7ae8aff3fed106ff25c9ffadc02cc3e190a7de83dff81004c9779ec` |
-| `manifest.webmanifest` | `39eda7622798c21f4c571dec04692619e87369342a9edbedf0ef0093a40c250a` |
+- `design-v016.css`: `bd82a74b27b762413118457ea9bd1208d4c681e1490e90b6080b9c1796ed61ed`
+- `fix-v0165.css`: `8c5d81c3453f5aa49e0e2d425551a7d805b5c0854b0918f41f42307e60cdcd11`
+- `fix-v0166.css`: `b5e85fdf90d7ce164ae4ae1d9ed07b4d03435385ab3535c090b49b602d261ebc`
+- `fix-v0167.css`: `9fd1ea744a805b314298b9b0fda141fd6d1458be8248dd8933d244088c1b0def`
+- `fix-v0168.css`: `bed0b5f6cd3f0e66e1ad74d2452fd026a641f3d55201f76008eb5e96d9baca98`
+- `fix-v0169.css`: `cc9a95ea2e5ab924740c9d9f8c28937089f91c08e27e45ba00c33fee1748c49a`
+- `fix-v0170.css`: `67549a92e5d30e0f33e0b9628b7ce872fe958f716a563484d2845d6335f78564`
+- `index.html`: `6cf0a4f7d292510a097c51ac8a2a5584c44704201113617da2c8a97d189a8b54`
+- `knowledge.js`: `95fc570694138cec9b1c82e490c58e2e2447a571a8db0b383a3b4eaf579615a1`
+- `manifest.webmanifest`: `39eda7622798c21f4c571dec04692619e87369342a9edbedf0ef0093a40c250a`
+- `pitch-shifter.js`: `2ef2be3ab91726b3af525cd504dd5ba9e3dd81c9fcfb616527c1285367b736b2`
+- `polish.css`: `333856005c73e7620a5532d8eee91ffbe2a78e307e0936a2a1cd524af2454dea`
+- `quality.js`: `b7591105f875232b470d0a5fb91ee6ac77279b9cf522e0308ed7e7ac6361434b`
+- `responsive-v0163.css`: `041a839b2cb9b55c61d12626d1ec3dfab0f61d5e67ed5846a7a37da37ed540a2`
+- `styles.css`: `def4fa0f6091ea14dbf612282db53ab634dc0c0c9a3a6d0540caf722422f7255`
+- `supabase_setup.sql`: `7f0444ea58a89859be1dc11b4dc320a2b8b7f81ea4dd7cf0cb062dc106d99ffe`
+- `sw.js`: `fa297a9baa03a86a8c4317ad5779fd4a2e18204b6b711bb0c24861dd49302c21`
+- `ux-v016.js`: `292c412e8dbb9a9f0259359fd54b1a83db99722b640e0459adb7c87737a886ef`
